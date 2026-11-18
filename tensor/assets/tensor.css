@@ -1,11 +1,12 @@
+@import url("frontmatter.css");
 /* Tensor textbook stylesheet — 색은 :root 변수만 바꾸면 전체가 바뀝니다 */
 
 @page { size: A4; margin: 0; }
 :root{
   --p:#6B3FD4; --p2:#8B67E6; --pl:#F1ECFC; --pm:#CDBDF3; --pd:#3E2390;
   --g:#55565E; --gl:#F2F2F4; --gm:#D9D9DE; --ink:#1d1d1f; --muted:#7a7a85;
-  --serif:"Noto Serif CJK KR","Noto Serif KR",serif;
-  --sans:"Pretendard","Noto Sans CJK KR",sans-serif;
+  --serif:"Noto Serif KR","Pretendard",TensorSymbols,serif;
+  --sans:"Pretendard",TensorSymbols,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#888}
@@ -245,3 +246,5 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .cond{font-family:var(--sans);font-size:8pt;border-top:.6pt dotted var(--p);margin-top:2mm;padding-top:1.5mm}
 .cond b{display:inline-block;border:.8pt solid var(--p);color:var(--p);padding:0 1.2mm;margin-right:1.5mm;font-size:7pt}
 .tg.ind{border-style:dashed}
+
+.katex .hangul_fallback,.katex .cjk_fallback{font-family:var(--serif)}

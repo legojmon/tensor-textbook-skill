@@ -1,27 +1,45 @@
-# TENSOR — 강의록 + 원서로 만드는 시험 특화 교재
+# TENSOR 교재 제작
 
-Claude에 **강의록 PDF와 원서 PDF를 첨부**하고 아래 프롬프트를 그대로 붙여넣으세요.
+강의록과 원서 PDF를 첨부하고 사용하는 도구에 맞는 프롬프트를 복사하세요.
+
+**Claude**
 
 ```text
-아래 GitHub 레포의 Tensor 스킬로 교재를 만들어줘.
-https://github.com/legojmon/tensor-textbook-skill
+https://github.com/legojmon/tensor-textbook-skill 저장소의 tensor/SKILL.md를 읽고 첨부한 강의록과 원서로 TENSOR 교재를 만들어줘. 저장소를 열 수 없으면 dist/tensor.zip을 요청해. 같은 스킬의 setup.py와 selfcheck.py로 조판을 확인하고, 자료 누락과 시험 범위를 짚고 TOPIC 구성안을 보여줘. 내가 확인하면 내지와 앞·뒤표지, 책등, 펼침면 PDF를 만들어줘. 책 전체를 만들 때는 저자 원고와 사진을 받아 서문과 전체 차례도 넣어줘.
+```
 
-1. 레포를 받아서 tensor/SKILL.md 와 tensor/references 의 문서를 먼저 전부 읽고, 거기 적힌 순서 그대로 진행해.
-2. 첨부한 강의록 PDF와 원서 PDF를 분석한 뒤, 빠진 자료(강의록 일부·원서·해설집 등)나 필요한 정보가 있으면 반드시 먼저 물어봐.
-3. TOPIC 구성안을 표로 보여주고 내가 확인한 다음에 원고를 써.
-4. 내지 PDF와 표지·책등·인쇄용 펼침면 PDF까지 만들어줘.
-(레포를 받을 수 없으면 https://github.com/legojmon/tensor-textbook-skill/raw/main/dist/tensor.zip 을 첨부하라고 알려줘.)
+**Codex** · 이 저장소를 프로젝트로 연 뒤 사용하세요.
+
+```text
+$tensor 첨부한 강의록과 원서로 TENSOR 교재를 만들어줘. tensor/SKILL.md의 공통 엔진으로 견본 조판을 확인해. 자료 누락과 시험 범위를 짚고 TOPIC 구성안을 보여줘. 내가 확인하면 내지와 앞·뒤표지, 책등, 펼침면 PDF를 만들어줘. 책 전체를 만들 때는 저자 원고와 사진을 받아 서문과 전체 차례도 넣어줘.
 ```
 
 ## 데모
 
-[내지 데모 PDF](examples/demo/demo.pdf) — 회로이론 14장 라플라스 변환, TOPIC 01 (문제는 전부 자체 제작)
+[회로이론 14장 내지 PDF](examples/demo/demo.pdf) · 라플라스 변환, 자체 제작 예제와 연습문제
 
-![내지 데모](docs/preview.png)
+![회로이론 내지](docs/preview.png)
 
-[표지 데모 PDF](examples/demo/cover/spread.pdf) — 뒷표지 · 책등 · 앞표지 펼침면
+[표지와 책등 펼침면 PDF](examples/demo/cover/spread.pdf)
 
-![표지 데모](docs/cover.png)
+![표지와 책등](docs/cover.png)
 
----
-<sub>원서·강의 자료로 만든 교재는 개인 학습용으로만 쓰세요. · 서울대학교 로고(`tensor/assets/cover/snu_logo_white.*`)는 서울대학교의 상징으로 학교 규정에 따라 사용하세요. · 표지 설계: 김준형 · 최재원 · 코드 MIT License</sub>
+[공동 서문·저자 소개·전체 차례가 있는 회로이론 견본](examples/opening/book.pdf) · [뒷표지 소개 글](examples/opening/back.pdf) · [두 저자가 작성할 원고](tensor/assets/authors/author-workbook.md)
+
+<details>
+<summary>처음 설치하거나 같은 원고의 조판 결과를 확인할 때</summary>
+
+Python 3.12와 Node.js/npm을 준비한 뒤 저장소 루트에서 실행하세요. Windows·macOS·Linux에서 같은 Python 진입점을 사용합니다. macOS·Linux에서 Python 실행 파일이 `python3`이면 아래 명령의 `python`을 바꾸세요.
+
+```sh
+python tensor/scripts/setup.py
+python tensor/scripts/selfcheck.py
+```
+
+`selfcheck.py`는 공통 렌더러로 회로이론 견본을 PDF로 만든 뒤 기준 이미지와 쪽별로 비교합니다. 용지 크기와 쪽수가 같고, 각 쪽에서 명암 차이가 16/255를 넘는 픽셀이 2% 이하여야 통과합니다. 같은 원고·그림·글꼴을 사용한 결과를 비교합니다. 새로 집필한 문장은 모델에 따라 달라질 수 있습니다.
+
+저자와 과목 입력 양식은 [앞부분 작성 지침](tensor/references/frontmatter.md)에 있습니다. Claude에 직접 가져오려면 [배포용 스킬](dist/tensor.zip)을 사용하세요.
+
+</details>
+
+원서와 강의 자료로 만든 교재는 개인 학습용으로 사용하세요. 서울대학교 로고는 학교 규정에 따라 사용하세요. 표지 설계 김준형 · 최재원. 코드 MIT License.

@@ -14,18 +14,20 @@ description: 임의의 대학 과목 강의록 PDF와 원서 PDF로 수능 개�
 3. `references/book-format.md` — 책 구조, 페이지 순서, HTML 부품, 자동 쪽 나눔·문제 쪽 배치
 4. `references/example-manuscript.html` — **완성 원고 견본.** 밀도·순서·말투를 이것에 맞춘다
 5. `references/cover-design.md` — 표지·책등 규칙
+6. 책 전체를 만들 때 `references/frontmatter.md` — 저자 원고·서문·전체 차례와 Part 가이드
 
 ---
 
 ## 0단계. 환경 준비
 ```bash
-bash <skill>/scripts/setup.sh          # KaTeX, Pretendard, schemdraw, sympy, playwright
+python <skill>/scripts/setup.py        # 최초 1회, 현재 Python 환경에 설치
+python <skill>/scripts/selfcheck.py    # 고정 견본을 조판해 기준 쪽과 대조
 ```
 `<skill>` 은 이 SKILL.md 가 있는 폴더다.
 
 ## 1단계. 입력 분석 (자동)
 ```bash
-python3 <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf [--solutions 해설집.pdf] --out work/
+python <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf [--solutions 해설집.pdf] --out work/
 ```
 - `work/INVENTORY.md` 를 읽는다: 원서 장 범위, 절 목록, 예제·연습·장 끝 문제, 강의 ↔ 원서 대응표.
 - `work/lecture/sheet_*.png` 를 **전부** 본다. 수식·그림은 텍스트 추출이 깨진다. 대응표에 빠진 강의 예제는 수치·그림을 원서와 비교해 직접 짝짓는다.
@@ -33,7 +35,7 @@ python3 <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf
 - 강의록이 원서를 쓰지 않는 과목(자체 노트)이면 강의록을 "원서"로 보고 진행하되 1-B에서 알린다.
 
 ## 1-B단계. 제작 전 확인 질문 — **생략 금지**
-분석이 끝나면 **만들기 전에 반드시** 사용자에게 묻는다. 질문 도구(AskUserQuestion / 선택지 입력)가 있으면 그것으로, 각 질문에 **자유 입력 칸**을 남긴다. 사용자가 이미 말한 항목은 "이렇게 이해했다"로 확인만 한다.
+분석이 끝나면 **만들기 전에 반드시** 사용자에게 묻는다. 질문 도구(Claude의 AskUserQuestion / Codex의 선택지 입력 / 채팅)가 있으면 그것으로, 각 질문에 **자유 입력 칸**을 남긴다. 사용자가 이미 말한 항목은 "이렇게 이해했다"로 확인만 한다.
 
 **항상 확인** (분석 결과를 보여주며)
 1. 과목명(정식 명칭)과 장: "강의록은 ○장 ○○, 원서 『제목』 ○판 p.○–○로 찾았습니다. 맞나요?"
@@ -104,16 +106,18 @@ python3 <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf
 - `assets/template.html` → `work/book.html`. 고정 쪽(표지·목차·Preview·Review)은 `<section class="page">`, TOPIC 본문은 `<article class="manuscript">` 안에 블록을 순서대로, 문제는 `<section class="problems" data-per="2">` 안에 `.qitem` 을 순서대로 쓴다. 쪽 나눔·번호·탭·꼬리말·목차 쪽번호·문제 머리는 `paginate.js` 가 만든다.
 - **문체는 `writing-style.md` 를 그대로 따른다.** 각 부품은 그 문서의 작성 틀을 쓴다.
 
+책 전체나 저자 글을 요청하면 `assets/authors/author-workbook.md`의 시작 질문 세 개를 보여준다. 저자별 경험과 독자에게 할 말은 각자 받고, 공동 서문과 표기 순서는 함께 확인한다. 메모로 답해도 된다. 편집자가 제안한 서문은 초안으로 표시하고 저자의 개인 경험과 인용은 직접 받은 내용만 쓴다. `references/frontmatter.md`에 따라 앞부분을 넣고 차례의 시작 쪽을 PDF에서 대조한다.
+
 ## 6단계. 검증
 - 모든 답을 **sympy(또는 해당 과목에 맞는 계산)** 로 확인하고 원서 Answer·해설집과 대조. 다르면 원인을 찾기 전까지 싣지 않는다.
 - 문체·구조·번호·수식 자동 점검 (경고 0개까지):
 ```bash
-python3 <skill>/scripts/lint.py work/book.html --inventory work/INVENTORY.md
+python <skill>/scripts/lint.py work/book.html --inventory work/INVENTORY.md
 ```
 
 ## 7단계. 렌더링·검수
 ```bash
-python3 <skill>/scripts/render.py work/book.html --png work/preview/
+python <skill>/scripts/render.py work/book.html --strict --png work/preview/
 ```
 - `[넘침]` 0개, `[브라우저]` 오류 0개.
 - 미리보기 PNG를 **전부** 열어 아래 체크리스트로 검수 → 고치고 다시 렌더링.
@@ -121,7 +125,7 @@ python3 <skill>/scripts/render.py work/book.html --png work/preview/
 ## 8단계. 표지·책등
 ```bash
 cp <skill>/assets/cover/cover.example.json work/cover.json   # 1-B 답으로 채운다
-python3 <skill>/scripts/cover.py work/cover.json -o work/cover/
+python <skill>/scripts/cover.py work/cover.json -o work/cover/
 ```
 - `back_paras` 는 지어내지 말고 내지 Preview·표지 안내문 문장을 다듬어 쓴다.
 - 기호(`symbol`)는 과목을 상징하는 **굵은 직사각형·원 위주의 단순한 블록**. 회로는 `circuit`, 그 외는 `blocks` 또는 `references/cover-design.md` 규칙대로 SVG 조각을 만든다.

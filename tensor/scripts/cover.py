@@ -23,11 +23,11 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
 }
 색은 cover_color, spine_color 두 개만 바꾼다. 나머지(글자색·배경·레이아웃)는 고정이다.
 """
-import argparse, asyncio, base64, json, mimetypes, os, sys
+import argparse, base64, json, mimetypes, os, sys
 from pathlib import Path
 
 SKILL = Path(__file__).resolve().parent.parent
-BUILD = Path(os.environ.get("TENSOR_BUILD", SKILL / ".build"))
+BUILD = Path(os.environ.get("TENSOR_BUILD", SKILL / ".build")).resolve()
 W, H = 794, 1123          # A4 @96dpi
 PX_PER_MM = 96 / 25.4
 BLEED_MM = 3
@@ -224,27 +224,10 @@ def build(cfg):
     return docs, sp_mm
 
 
-async def render_all(docs, out):
-    sys.path.insert(0, str(Path(__file__).parent))
-    from render import find_chrome
-    from playwright.async_api import async_playwright
+def render_all(docs, out):
+    from render import print_sheets
     out.mkdir(parents=True, exist_ok=True)
-    async with async_playwright() as p:
-        kw = {"args": ["--no-sandbox"]}
-        if find_chrome():
-            kw["executable_path"] = find_chrome()
-        b = await p.chromium.launch(**kw)
-        for name, html in docs.items():
-            hp = out / f".{name}.html"
-            hp.write_text(html, encoding="utf-8")
-            pg = await b.new_page()
-            await pg.goto(hp.as_uri())
-            await pg.evaluate("document.fonts.ready")
-            await pg.wait_for_timeout(300)
-            await pg.pdf(path=str(out / f"{name}.pdf"), prefer_css_page_size=True, print_background=True)
-            await pg.close()
-            hp.unlink()
-        await b.close()
+    print_sheets([(html, out, out / f"{name}.pdf", False) for name, html in docs.items()])
     import pymupdf
     for name in docs:
         d = pymupdf.open(str(out / f"{name}.pdf"))
@@ -267,7 +250,7 @@ def main():
     if not cfg.get("logo") or not Path(cfg["logo"]).exists():
         print("[안내] 로고 파일이 없어 점선 자리만 표시했습니다. 투명 배경 PNG/SVG 로고를 받아 \"logo\"에 넣으세요.")
     docs, sp = build(cfg)
-    asyncio.run(render_all(docs, Path(a.out).resolve()))
+    render_all(docs, Path(a.out).resolve())
     print(f"책등 두께 {sp}mm ({'지정값' if cfg.get('spine_mm') else str(cfg.get('pages', 200)) + '쪽 기준 자동 계산 — 제본집 실측값으로 바꾸세요'})")
     print("생성:", ", ".join(f"{n}.pdf" for n in docs), "→", a.out)
 

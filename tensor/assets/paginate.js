@@ -46,12 +46,14 @@
 
   function newPage(topic, first, anchor) {
     const pg = el("section", "page flowpage");
+    pg.dataset.chapter = anchor.dataset.chapter;
+    pg.dataset.chtitle = anchor.dataset.chtitle;
     pg.dataset.topic = topic.dataset.no;
     pg.dataset.topictitle = topic.dataset.title;
     const content = el("div", "content");
     content.style.height = CONTENT_H + "mm";
     if (first) {
-      pg.appendChild(el("div", "topic-band", `${CH} &nbsp;${CHT}`));
+      pg.appendChild(el("div", "topic-band", `${pg.dataset.chapter} &nbsp;${pg.dataset.chtitle}`));
       const no = topic.dataset.no;
       content.appendChild(el("div", "topic-title",
         `<span class="no">TOPIC <i>${no[0]}</i>${no.slice(1)}</span>${topic.dataset.title}`));
@@ -147,6 +149,8 @@
     const items = Array.from(sec.querySelectorAll(":scope > .qitem"));
     for (let i = 0; i < items.length; i += per) {
       const pg = el("section", `page qpage per${per}`);
+      pg.dataset.chapter = sec.dataset.chapter;
+      pg.dataset.chtitle = sec.dataset.chtitle;
       if (i === 0 && sec.dataset.id) pg.dataset.id = sec.dataset.id;
       pg.dataset.run = sec.dataset.title || "";
       const content = el("div", "content qcontent");
@@ -170,6 +174,77 @@
     sec.remove();
   }
 
+  function labelChapters() {
+    let chapter = B.dataset.chapter || "";
+    let title = B.dataset.chtitle || "";
+    B.querySelectorAll(".page, article.manuscript, section.problems").forEach(node => {
+      if (node.dataset.front) return;
+      if (node.classList.contains("cover")) {
+        chapter = node.dataset.chapter || B.dataset.chapter || "";
+        title = node.dataset.chtitle || B.dataset.chtitle || "";
+      }
+      node.dataset.chapter ||= chapter;
+      node.dataset.chtitle ||= title;
+    });
+  }
+
+  function makeBookContents() {
+    const host = B.querySelector(".book-toc");
+    if (!host) return;
+    const seen = new Set();
+    const entries = [];
+    for (const pg of B.querySelectorAll(".page:not([data-front])")) {
+      let label;
+      if (pg.classList.contains("cover")) label = [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". ");
+      else if (pg.dataset.topic) {
+        const key = [pg.dataset.chapter, pg.dataset.topic].join("/");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        label = "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle;
+      } else if (pg.dataset.id) label = pg.dataset.run || pg.dataset.id;
+      if (label) entries.push([pg, label]);
+    }
+    let sheet = host;
+    const rows = [];
+    entries.forEach(([target, label], i) => {
+      if (i && i % 21 === 0) {
+        const next = host.cloneNode(true);
+        next.querySelector(".fm-toc").replaceChildren();
+        sheet.after(next);
+        sheet = next;
+      }
+      const row = el("div", "fm-toc-row" + (target.classList.contains("cover") ? " chapter" : ""));
+      const text = el("span"), number = el("span");
+      text.textContent = label;
+      row.append(text, number);
+      sheet.querySelector(".fm-toc").appendChild(row);
+      rows.push([number, target]);
+    });
+    const pages = Array.from(B.querySelectorAll(".page"));
+    const start = Number(B.dataset.start || 1);
+    rows.forEach(([number, target]) => { number.textContent = start + pages.indexOf(target); });
+  }
+
+  function paginateFrontMatter() {
+    for (const first of B.querySelectorAll(".fm:not(.book-toc):not(.fm-part)")) {
+      let page = first;
+      let body = page.querySelector(".fm-body");
+      const items = Array.from(body.children);
+      body.replaceChildren();
+      for (const item of items) {
+        body.appendChild(item);
+        const limit = page.getBoundingClientRect().bottom - 24 * MM;
+        if (item.getBoundingClientRect().bottom <= limit || body.children.length === 1) continue;
+        item.remove();
+        const next = first.cloneNode(true);
+        body = next.querySelector(".fm-body");
+        body.replaceChildren(item);
+        page.after(next);
+        page = next;
+      }
+    }
+  }
+
   function decorate() {
     const start = parseInt(B.dataset.start || "1", 10);
     const pages = Array.from(document.querySelectorAll(".page"));
@@ -187,13 +262,14 @@
       let ttl;
       if (pg.dataset.run) ttl = pg.dataset.run;
       else if (odd && topic) ttl = `<span class="t">TOPIC ${topic}</span>&nbsp; ${pg.dataset.topictitle}`;
-      else ttl = `<span class="t">${CH}</span>&nbsp; ${CHT}`;
+      else ttl = `<span class="t">${pg.dataset.chapter}</span>&nbsp; ${pg.dataset.chtitle}`;
       foot.innerHTML = `<span class="num">${n}</span><span class="bar"></span><span class="ttl">${ttl}</span>`;
     });
     // 문제 머리의 PAGE 칸: 관련 TOPIC 첫 쪽
     document.querySelectorAll("[data-qpage]").forEach((sp) => {
       const t = sp.dataset.qpage;
-      const target = t && document.querySelector(`.flowpage[data-topic="${t}"]`);
+      const chapter = sp.closest(".page").dataset.chapter;
+      const target = t && pages.find(p => p.dataset.topic === t && p.dataset.chapter === chapter);
       if (target) sp.textContent = start + pages.indexOf(target);
       else if (!sp.textContent) sp.textContent = "–";
     });
@@ -201,8 +277,8 @@
     document.querySelectorAll("[data-ref]").forEach((td) => {
       const ref = td.dataset.ref;
       let target = null;
-      if (ref.startsWith("topic-")) target = document.querySelector(`.flowpage[data-topic="${ref.slice(6)}"]`);
-      else target = document.querySelector(`.page[data-id="${ref}"]`);
+      const chapter = td.closest(".page")?.dataset.chapter;
+      target = pages.find(p => p.dataset.chapter === chapter && (ref.startsWith("topic-") ? p.dataset.topic === ref.slice(6) : p.dataset.id === ref));
       if (target) {
         const idx = Array.from(document.querySelectorAll(".page")).indexOf(target);
         td.textContent = start + idx;
@@ -227,12 +303,15 @@
     CH = B.dataset.chapter || "";
     CHT = B.dataset.chtitle || "";
     PART = B.dataset.part || "Part2";
+    labelChapters();
     await waitAssets();
     document.querySelectorAll("article.manuscript").forEach((art) => {
       art.querySelectorAll(":scope > section.topic").forEach((t) => flowTopic(t, art));
       art.remove();
     });
     document.querySelectorAll("section.problems").forEach((sec) => layoutProblems(sec, sec));
+    paginateFrontMatter();
+    makeBookContents();
     decorate();
     B.setAttribute("data-ready", "1");
   }

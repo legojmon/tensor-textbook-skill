@@ -1,120 +1,90 @@
-#!/usr/bin/env python3
-"""Tensor 교재 HTML → 인쇄용 PDF 렌더러.
-
-사용법:
-    python3 render.py book.html                # book.pdf 생성
-    python3 render.py book.html -o out.pdf --png previews/   # 쪽별 미리보기 PNG도 생성
-
-HTML 안의 다음 가상 경로를 실제 파일 경로로 바꿔서 렌더링한다.
-    tensor://css/        -> <skill>/assets/
-    tensor://katex/      -> <build>/node_modules/katex/dist/
-    tensor://pretendard/ -> <build>/node_modules/pretendard/dist/web/static/
-<build> 는 setup.sh 가 만든 폴더(기본: <skill>/.build)이며 TENSOR_BUILD 환경변수로 바꿀 수 있다.
-
-렌더링 후 각 .page 안에서 아래 여백(본문 하단 한계선)을 넘는 요소가 있으면 경고를 출력한다.
-경고가 나오면 해당 쪽 내용을 다음 쪽으로 넘기거나 줄여서 다시 렌더링한다.
-"""
-import argparse, asyncio, os, shutil, sys, tempfile
+"""Render a TENSOR manuscript and optional page previews with the shared Chromium driver."""
+import argparse
+import json
+import os
+import re
 from pathlib import Path
+import shutil
+import subprocess
+import tempfile
 
-SKILL = Path(__file__).resolve().parent.parent
-BUILD = Path(os.environ.get("TENSOR_BUILD", SKILL / ".build"))
-
-CHROME_CANDIDATES = [
-    os.environ.get("TENSOR_CHROME", ""),
-    "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser",
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "C:/Program Files/Google/Chrome/Application/chrome.exe",
-]
-
-OVERFLOW_JS = r"""
-() => {
-  const mm = 96/25.4, out = [];
-  document.querySelectorAll('.page').forEach((pg, i) => {
-    const pr = pg.getBoundingClientRect();
-    const limit = pr.bottom - 24*mm;            // 꼬리말 위 한계선
-    let worst = 0;
-    pg.querySelectorAll('p,.step,.sol,.concept,.core,.tip,.grade,.vs,.ex,.fig,.qitem,table,.katex-display')
-      .forEach(el => {
-        if (el.closest('.foot,.fn,.cover,.toc')) return;
-        const b = el.getBoundingClientRect().bottom;
-        if (b > limit) worst = Math.max(worst, b - limit);
-      });
-    if (worst > 1) out.push([i+1, Math.round(worst/mm)]);
-  });
-  return out;
-}
-"""
-
-
-def resolve(html: str) -> str:
-    katex = (BUILD / "node_modules/katex/dist").as_uri() + "/"
-    pret = (BUILD / "node_modules/pretendard/dist/web/static").as_uri() + "/"
-    css = (SKILL / "assets").as_uri() + "/"
-    return (html.replace("tensor://katex/", katex)
-                .replace("tensor://pretendard/", pret)
-                .replace("tensor://css/", css))
+SKILL = Path(__file__).resolve().parents[1]
+BUILD = Path(os.environ.get("TENSOR_BUILD", SKILL / ".build")).resolve()
 
 
 def find_chrome():
-    for c in CHROME_CANDIDATES:
-        if c and Path(c).exists():
-            return c
-    return None  # playwright 내장 chromium 사용
+    candidates = (os.environ.get("TENSOR_CHROME"), shutil.which("google-chrome"), shutil.which("chromium"),
+                  shutil.which("chromium-browser"), "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                  "C:/Program Files/Google/Chrome/Application/chrome.exe")
+    return next((str(p) for p in candidates if p and Path(p).is_file()), None)
 
 
-async def main(a):
-    from playwright.async_api import async_playwright
-    need = [BUILD / "node_modules/katex/dist/katex.min.js", BUILD / "node_modules/pretendard/dist/web/static/pretendard.css"]
-    missing = [str(n) for n in need if not n.exists()]
-    if missing:
-        sys.exit("[오류] 렌더링 자원이 없습니다. 먼저 `bash <skill>/scripts/setup.sh` 를 실행하세요.\n  없음: " + ", ".join(missing))
-    src = Path(a.html).resolve()
-    tmp = src.with_name(f".{src.stem}.resolved.html")
-    tmp.write_text(resolve(src.read_text(encoding="utf-8")), encoding="utf-8")
-    out = Path(a.output) if a.output else src.with_suffix(".pdf")
-    async with async_playwright() as p:
-        kw = {"args": ["--no-sandbox"]}
-        ch = find_chrome()
-        if ch:
-            kw["executable_path"] = ch
-        b = await p.chromium.launch(**kw)
-        pg = await b.new_page(viewport={"width": 900, "height": 1200})
-        errs = []
-        pg.on("console", lambda m: errs.append(m.text) if m.type in ("error", "warning") else None)
-        pg.on("pageerror", lambda e: errs.append("JS 오류: " + str(e)))
-        await pg.goto(tmp.as_uri())
-        try:
-            await pg.wait_for_selector("body[data-ready='1']", timeout=20000)
-        except Exception:
-            print("[경고] KaTeX 렌더 완료 신호를 받지 못했습니다. tensor://katex 경로와 setup.sh 실행 여부를 확인하세요.")
-        await pg.evaluate("document.fonts.ready")
-        await pg.wait_for_timeout(600)
-        over = await pg.evaluate(OVERFLOW_JS)
-        await pg.pdf(path=str(out), prefer_css_page_size=True, print_background=True)
-        await b.close()
-    tmp.unlink(missing_ok=True)
-    print(f"PDF: {out}")
-    for e in errs:
-        print(f"[브라우저] {e}")
-    if over:
-        for n, mm in over:
-            print(f"[넘침] {n}쪽: 본문이 하단 한계선을 약 {mm}mm 넘었습니다.")
-    else:
-        print("넘침 없음")
-    if a.png:
+def resolve(html):
+    modules = BUILD / "node_modules"
+    resources = {"css": SKILL / "assets", "katex": modules / "katex/dist",
+                 "pretendard": modules / "pretendard/dist/web/static", "serif": modules / "@fontsource/noto-serif-kr"}
+    from matplotlib import get_data_path
+    symbols = (Path(get_data_path()) / "fonts/ttf/STIXGeneral.ttf").as_uri()
+    html = html.replace("</head>", f'<style>@font-face{{font-family:TensorSymbols;src:url("{symbols}")}}</style></head>', 1)
+    if "tensor://serif/" not in html:
+        links = "".join(f'<link rel="stylesheet" href="tensor://serif/{weight}.css">' for weight in (400, 700))
+        html = html.replace("</head>", links + "</head>", 1)
+    for prefix, directory in resources.items():
+        html = html.replace(f"tensor://{prefix}/", directory.as_uri() + "/")
+    return html
+
+
+def pin_sans(html):
+    # Pretendard's upstream CSS prefers a locally installed font. Embed the locked files first.
+    directory = (BUILD / "node_modules/pretendard/dist/web/static").as_uri()
+    weights = ["Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black"]
+    faces = "".join(f'@font-face{{font-family:Pretendard;font-weight:{i*100};src:url("{directory}/woff2/Pretendard-{name}.woff2")}}'
+                    for i, name in enumerate(weights, 1))
+    return re.sub(r'<link\b[^>]*href=["\'][^"\']*/pretendard\.css["\'][^>]*>', lambda _: f"<style>{faces}</style>",
+                  html, flags=re.IGNORECASE)
+
+
+def print_sheets(inputs, strict=True):
+    """Each input is (HTML string, base directory for relative assets, PDF path, is manuscript)."""
+    if not (BUILD / "node_modules/playwright-core/package.json").is_file():
+        raise SystemExit("조판 환경 준비가 필요합니다. python tensor/scripts/setup.py")
+    temporary = []
+    sheets = []
+    try:
+        for html, directory, output, body in inputs:
+            with tempfile.NamedTemporaryFile(dir=directory, prefix=".tensor-", suffix=".resolved.html",
+                                             delete=False, mode="w", encoding="utf-8") as src:
+                temporary.append(Path(src.name))
+                src.write(pin_sans(html))
+            sheets.append({"html": str(temporary[-1].resolve()), "pdf": str(output.resolve()), "body": body})
+        job = {"sheets": sheets, "strict": strict, "build": str(BUILD), "systemChrome": find_chrome()}
+        node = shutil.which("node")
+        if not node:
+            raise SystemExit("Node.js를 찾을 수 없습니다.")
+        subprocess.run([node, str(SKILL / "scripts/print.cjs")], input=json.dumps(job).encode(), check=True,
+                       timeout=max(120, 75 * len(sheets)))
+    finally:
+        for filename in temporary:
+            filename.unlink(missing_ok=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("html", type=Path)
+    parser.add_argument("-o", "--output", type=Path)
+    parser.add_argument("--png", type=Path)
+    parser.add_argument("--dpi", type=int, default=80)
+    parser.add_argument("--strict", action="store_true")
+    args = parser.parse_args()
+    output = args.output or args.html.with_suffix(".pdf")
+    print_sheets([(resolve(args.html.read_text(encoding="utf-8")), args.html.parent, output, True)], args.strict)
+    if args.png:
         import pymupdf
-        d = pymupdf.open(str(out))
-        Path(a.png).mkdir(parents=True, exist_ok=True)
-        for i in range(len(d)):
-            d[i].get_pixmap(dpi=a.dpi).save(f"{a.png}/p{i+1:03d}.png")
-        print(f"미리보기 PNG {len(d)}장: {a.png}")
+        args.png.mkdir(parents=True, exist_ok=True)
+        with pymupdf.open(output) as doc:
+            for number, page in enumerate(doc, 1):
+                page.get_pixmap(dpi=args.dpi).save(args.png / f"p{number:03d}.png")
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("html")
-    ap.add_argument("-o", "--output")
-    ap.add_argument("--png", help="쪽별 미리보기 PNG 폴더")
-    ap.add_argument("--dpi", type=int, default=80)
-    asyncio.run(main(ap.parse_args()))
+    main()

@@ -19,6 +19,17 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
+from matplotlib import font_manager
+
+build = Path(os.environ.get("TENSOR_BUILD", Path(__file__).resolve().parents[1] / ".build"))
+font_path = build / "node_modules/pretendard/dist/public/static/Pretendard-Regular.otf"
+if not font_path.is_file():
+    raise FileNotFoundError("회로도 글꼴 준비: python tensor/scripts/setup.py")
+font_manager.fontManager.addfont(str(font_path))
+FONT = font_manager.FontProperties(fname=str(font_path)).get_name()
+matplotlib.rcParams.update({"font.family": FONT, "mathtext.fontset": "stix", "svg.fonttype": "path", "svg.hashsalt": "tensor"})
+schemdraw.use("matplotlib")
 
 THEME = os.environ.get("TENSOR_THEME", "mono")   # mono(흑백 인쇄, 기본) | color
 ACCENT = "#111111" if THEME == "mono" else "#6B3FD4"   # 강조 소자: 흑백에서는 굵은 검정선으로 구분
@@ -33,13 +44,15 @@ __all__ = ["elm", "drawing", "save", "out_terms", "plot_response",
 
 def drawing(fontsize=12):
     d = schemdraw.Drawing(show=False)
-    d.config(unit=U, fontsize=fontsize, lw=1.1, color=INK, font="Noto Sans CJK KR")
+    d.config(unit=U, fontsize=fontsize, lw=1.1, color=INK, font=FONT)
     return d
 
 
 def save(d, path):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    d.save(path)
+    figure = d.draw(show=False)
+    figure.fig.savefig(path, bbox_inches="tight", pad_inches=0.08, transparent=True, metadata={"Date": None})
+    plt.close(figure.fig)
     return path
 
 
@@ -238,6 +251,6 @@ def plot_response(path, f, tmax, ylim, yticks, xticks, pre=None, marks=(), ylabe
     ax.grid(alpha=0.25, lw=0.4)
     fig.tight_layout(pad=0.2)
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    fig.savefig(path)
+    fig.savefig(path, metadata={"Date": None})
     plt.close(fig)
     return path

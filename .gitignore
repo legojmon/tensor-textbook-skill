@@ -4,3 +4,7 @@ __pycache__/
 .*.resolved.html
 *.pyc
 .DS_Store
+
+/authors/
+/work/
+.venv/

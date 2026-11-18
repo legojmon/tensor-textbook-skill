@@ -1,0 +1,7 @@
+beautifulsoup4==4.15.0
+matplotlib==3.11.2
+numpy==2.5.3
+pillow==12.3.0
+pymupdf==1.28.2
+schemdraw==0.23
+sympy==1.14.0

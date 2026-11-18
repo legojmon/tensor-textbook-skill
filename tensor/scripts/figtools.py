@@ -11,7 +11,7 @@
   # 원본을 그대로 쓰기로 한 경우(개인 인쇄용): 흑백·대비 보정
   python3 figtools.py mono in.png -o fig/a01.png
 """
-import argparse, subprocess, sys, tempfile
+import argparse
 from pathlib import Path
 
 
@@ -29,30 +29,22 @@ def crop(a):
     print(a.o)
 
 
-def to_png(path, width=900):
-    p = Path(path)
-    if p.suffix.lower() != ".svg":
-        return p
-    out = Path(tempfile.mkdtemp()) / (p.stem + ".png")
-    for exe in ("google-chrome", "chromium", "chromium-browser"):
-        try:
-            subprocess.run([exe, "--headless", "--no-sandbox", "--disable-gpu", f"--screenshot={out}",
-                            f"--window-size={width},{int(width*0.66)}", "--default-background-color=ffffffff",
-                            p.resolve().as_uri()], check=True, capture_output=True, timeout=60)
-            return out
-        except Exception:
-            continue
-    try:
-        import cairosvg
-        cairosvg.svg2png(url=str(p), write_to=str(out), output_width=width)
-        return out
-    except Exception:
-        sys.exit("SVG를 PNG로 바꿀 도구가 없습니다 (chrome 또는 cairosvg 필요)")
+def read_figure(path, width=900):
+    from PIL import Image
+    import pymupdf
+    if Path(path).suffix.lower() != ".svg":
+        with Image.open(path) as image:
+            return image.convert("RGB")
+    with pymupdf.open(path) as document:
+        page = document[0]
+        scale = width / page.rect.width
+        pix = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), colorspace=pymupdf.csRGB, alpha=False)
+        return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
 
 def compare(a):
     from PIL import Image, ImageDraw, ImageOps
-    ims = [ImageOps.contain(Image.open(to_png(x)).convert("RGB"), (900, 650)) for x in (a.original, a.redrawn)]
+    ims = [ImageOps.contain(read_figure(x), (900, 650)) for x in (a.original, a.redrawn)]
     w = sum(i.width for i in ims) + 60
     h = max(i.height for i in ims) + 50
     sh = Image.new("RGB", (w, h), "white")
