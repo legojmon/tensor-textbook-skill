@@ -125,7 +125,7 @@ def style(soup, W):
     def warn(kind, where, msg):
         W.append(f"[{kind}] {where}: {msg}")
     # 코드와 빠른 정답·해설 장은 문체 검사에서 뺀다
-    for t in soup.select("pre.code, section.topic[data-no='해설']"):
+    for t in soup.select("pre.code, section.topic[data-no='해설'], .fm-legend"):   # 앞부분 범례 견본도 뺀다
         t.decompose()
     for t in soup.select("code.c"):
         t.replace_with("CODE")

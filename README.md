@@ -24,7 +24,9 @@ $tensor 첨부한 강의록과 원서로 TENSOR 교재를 만들어줘. 견본 �
 
 ![표지와 책등](docs/cover.png)
 
-[공동 서문·저자 소개·전체 차례가 있는 회로이론 견본](examples/opening/book.pdf) · [뒷표지 소개 글](examples/opening/back.pdf) · [두 저자가 작성할 원고](tensor/assets/authors/author-workbook.md)
+[앞부분(커리큘럼·로드맵·소개·서문·저자 소개·Part 차례·가이드라인·Method I)이 있는 회로이론 견본](examples/opening/book.pdf) · [뒷표지 소개 글](examples/opening/back.pdf) · [저자 정보와 채울 항목](author/)
+
+![앞부분 견본](docs/opening.png)
 
 ## 어떻게 같은 모양이 나오나
 
