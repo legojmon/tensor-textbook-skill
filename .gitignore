@@ -1,0 +1,6 @@
+tensor/.build/
+node_modules/
+__pycache__/
+.*.resolved.html
+*.pyc
+.DS_Store

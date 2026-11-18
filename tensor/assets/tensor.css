@@ -1,0 +1,219 @@
+/* Tensor textbook stylesheet — 색은 :root 변수만 바꾸면 전체가 바뀝니다 */
+
+@page { size: A4; margin: 0; }
+:root{
+  --p:#6B3FD4; --p2:#8B67E6; --pl:#F1ECFC; --pm:#CDBDF3; --pd:#3E2390;
+  --g:#55565E; --gl:#F2F2F4; --gm:#D9D9DE; --ink:#1d1d1f; --muted:#7a7a85;
+  --serif:"Noto Serif CJK KR","Noto Serif KR",serif;
+  --sans:"Pretendard","Noto Sans CJK KR",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#888}
+body{font-family:var(--serif);color:var(--ink);font-size:9.4pt;line-height:1.78;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;background:#fff;margin:0 auto 6mm;page-break-after:always;padding:20mm 21mm 20mm 21mm}
+@media print{html,body{background:#fff}.page{margin:0}}
+.katex{font-size:1.06em}
+.katex-display{margin:.5em 0}
+p{margin:0 0 .85em;text-align:justify;word-break:keep-all}
+b,strong{font-family:var(--sans);font-weight:700}
+.sans{font-family:var(--sans)}
+.pc{color:var(--p)}
+
+/* ---- running elements ---- */
+.topline{position:absolute;top:13mm;left:21mm;right:21mm;height:1px;background:linear-gradient(90deg,var(--pm),transparent)}
+.foot{position:absolute;bottom:12mm;font-family:var(--sans);font-size:7.6pt;color:var(--g);display:flex;align-items:stretch;gap:3mm}
+.foot .num{font-size:9pt;color:var(--ink)}
+.foot .bar{width:.6pt;background:var(--ink);height:11mm;margin-top:-1mm}
+.foot .ttl .t{color:var(--p)}
+.even .foot{left:15mm}
+.odd .foot{right:15mm;flex-direction:row-reverse;text-align:right}
+.tab-part{position:absolute;right:0;top:15mm;background:var(--g);color:#fff;font-family:var(--sans);font-size:8pt;font-weight:600;padding:2.2mm 4mm 2.2mm 5mm;border-radius:6mm 0 0 6mm}
+.tab-topic{position:absolute;right:0;top:27mm;background:var(--p);color:#fff;font-family:var(--sans);font-size:6.2pt;line-height:1.05;text-align:center;padding:1.6mm 2.4mm 1.4mm 3.6mm;border-radius:5mm 0 0 5mm}
+.tab-topic b{font-size:10pt;display:block}
+.side-method{position:absolute;left:0;top:150mm;width:11mm;font-family:var(--sans)}
+.side-method .lab{background:var(--p);color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 1mm;text-align:center;line-height:1.2}
+.side-method .v{writing-mode:vertical-rl;font-size:9pt;font-weight:700;margin:3mm auto 0;letter-spacing:.5mm}
+
+/* ---- topic head ---- */
+.topic-band{position:absolute;top:0;left:21mm;right:21mm;height:21mm;background:var(--p);border-radius:0 0 3mm 3mm;color:#fff;font-family:var(--sans);font-size:7.6pt;padding:13.5mm 5mm 0}
+.topic-title{margin:7mm 0 0;font-family:var(--sans);font-size:21pt;font-weight:800;letter-spacing:-.3pt;padding-bottom:4mm;border-bottom:1px solid var(--pm)}
+.topic-title .no{color:var(--p);font-weight:700;margin-right:4mm}
+.topic-title .no i{font-style:normal;color:var(--pm)}
+h3{font-family:var(--sans);color:var(--p);font-size:11.5pt;font-weight:800;margin:6mm 0 4mm}
+h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
+
+/* ---- EX ---- */
+.ex{display:grid;grid-template-columns:22mm 1fr;column-gap:3mm;margin:5mm 0 4mm}
+.ex .badge{display:inline-flex;align-items:center;gap:1mm;font-family:var(--sans);font-weight:800;color:#fff;background:var(--p);border-radius:6mm;padding:.6mm 1mm .6mm 2.6mm;font-size:8pt;height:8.5mm}
+.ex .badge span{background:#fff;color:var(--p);border:1.4pt solid var(--p);border-radius:50%;width:8.5mm;height:8.5mm;display:inline-flex;align-items:center;justify-content:center;font-size:12.5pt;margin-right:-1.4mm}
+.ex .src{font-family:var(--sans);font-size:6.8pt;color:var(--p);margin-top:1.5mm;line-height:1.35}
+.ex .q{font-size:9.4pt}
+.ex .q .pt{font-family:var(--sans);font-size:8.4pt}
+.withfig{display:flex;gap:4mm;align-items:flex-start}
+.withfig > .txt{flex:1}
+.fig{text-align:center}
+.fig img{display:block;margin:0 auto}
+.cap{font-family:var(--sans);font-size:7pt;color:var(--muted);text-align:center;margin-top:1mm}
+
+/* ---- solution boxes ---- */
+.sol{margin:4mm 0 5mm}
+.sol .lab{display:inline-flex;font-family:var(--sans);font-size:7.6pt;font-weight:700;border:1px solid var(--g)}
+.sol .lab span{padding:.5mm 1.6mm}
+.sol .lab .a{background:var(--g);color:#fff;font-weight:500}
+.sol .lab .b{background:#fff;color:var(--ink)}
+.sol.exam .lab{border-color:var(--p)}
+.sol.exam .lab .a{background:var(--p)}
+.sol .box{background:var(--gl);padding:3.5mm 4.5mm;margin-top:.8mm}
+.sol.exam .box{background:var(--pl)}
+.sol .box p:last-child{margin-bottom:0}
+.step{display:grid;grid-template-columns:5mm 1fr;margin-bottom:1.6mm}
+.step .n{font-family:var(--sans);font-weight:700;color:var(--p)}
+.res{font-family:var(--sans);font-weight:700}
+.hl{color:var(--p);font-weight:700;font-family:var(--sans)}
+
+/* ---- bubble ---- */
+.bubble{display:flex;justify-content:center;align-items:center;margin:5mm 0}
+.bubble .dots{color:var(--p);font-size:9pt;margin-right:1mm;transform:translateY(3mm);font-family:var(--sans)}
+.bubble .b{border:1px solid var(--pm);background:#fff;border-radius:4mm;padding:2.6mm 7mm;font-family:var(--sans);font-size:8.6pt;box-shadow:0 0 0 2.5mm var(--pl)}
+
+/* ---- concept box ---- */
+.concept{margin:6mm 0 5mm}
+.concept .hd{display:flex;align-items:flex-end;justify-content:space-between}
+.concept .ttl{display:flex;align-items:flex-end;gap:2mm;font-family:var(--sans);font-weight:800;font-size:9.6pt}
+.concept .ico{background:var(--p);color:#fff;font-size:6.2pt;line-height:1.1;font-weight:700;padding:1.3mm 1.6mm 4mm;border-radius:1.2mm 1.2mm 0 0;position:relative;text-align:center}
+.concept .ico:after{content:"";position:absolute;left:1.2mm;bottom:.6mm;width:2.4mm;height:2.4mm;border:1.1pt solid #fff;border-radius:50%}
+.concept .tabs{display:flex;gap:7mm;font-family:var(--sans);font-size:7.4pt;color:var(--pm);background:linear-gradient(transparent,var(--pl));padding:1mm 4mm;border-radius:2mm 2mm 0 0}
+.concept .tabs .on{color:var(--p);font-weight:800}
+.concept .body{border:1.1pt solid var(--p2);border-radius:0 3mm 3mm 3mm;padding:4mm 5mm}
+.concept .body p:last-child{margin-bottom:0}
+.concept table{width:100%;border-collapse:collapse;font-size:8.6pt;margin:2mm 0 2.5mm}
+.concept th{font-family:var(--sans);font-weight:700;background:var(--pl);color:var(--pd);padding:1.3mm 2mm;border-bottom:1px solid var(--pm)}
+.concept td{padding:1.3mm 2mm;border-bottom:1px solid #ece8f7;vertical-align:middle}
+.concept td:first-child{text-align:center;font-family:var(--sans);font-weight:700;color:var(--p);width:16mm}
+
+/* ---- tags inline ---- */
+.tg{display:inline-block;font-family:var(--sans);font-size:7pt;border:1px solid var(--p);color:var(--p);padding:0 1.3mm;border-radius:.6mm;line-height:1.5;vertical-align:1px}
+.tg.ws{border-color:var(--g);color:var(--g)}
+.tg.full{background:var(--p);color:#fff}
+.tgk{display:inline-flex;vertical-align:1px}
+.tgk .tg:first-child{border-radius:.6mm 0 0 .6mm}
+.tgk .tg:last-child{border-radius:0 .6mm .6mm 0;background:var(--p);color:#fff}
+
+/* ---- core ---- */
+.core{margin:5mm 0}
+.core .lab{font-family:var(--sans);font-size:6pt;color:var(--p);border:1px solid var(--pm);border-bottom:none;display:inline-block;padding:0 1.5mm;letter-spacing:.3mm}
+.core .box{border:1px solid var(--pm);border-radius:0 2.5mm 2.5mm 2.5mm;padding:2mm 4mm;text-align:center;font-family:var(--sans);font-size:8.2pt;color:var(--pd)}
+
+/* ---- tip ---- */
+.tip{display:grid;grid-template-columns:20mm 1fr;margin:6mm 0}
+.tip .lab{background:var(--g);color:#fff;font-family:var(--sans);text-align:center;padding:1mm 0 1.4mm;height:12mm;position:relative}
+.tip .lab small{display:block;font-size:5.6pt;color:var(--pm);letter-spacing:.2mm}
+.tip .lab b{font-size:12pt;letter-spacing:1.6mm}
+.tip .lab:after{content:"";position:absolute;right:-3mm;top:0;border-left:3mm solid var(--g);border-bottom:12mm solid transparent}
+.tip .hd{font-family:var(--sans);font-weight:800;font-size:9.4pt;padding:2.6mm 0 0 6mm}
+.tip .body{grid-column:1/3;background:var(--gl);padding:3.5mm 5mm 3.5mm 7mm;margin-top:-.2mm;font-size:9pt}
+.tip .body p:last-child{margin-bottom:0}
+
+/* ---- grade box (Tensor 추가) ---- */
+.grade{margin:6mm 0;border:1.1pt solid var(--pd);border-radius:2.5mm;overflow:hidden}
+.grade .hd{background:var(--pd);color:#fff;font-family:var(--sans);font-size:8.6pt;font-weight:800;padding:1.8mm 4mm;display:flex;justify-content:space-between}
+.grade .hd small{font-weight:400;opacity:.75;font-size:7pt}
+.grade .body{padding:3.5mm 5mm;font-size:8.8pt}
+.grade ol{margin:1mm 0 0;padding-left:5mm}
+.grade li{margin-bottom:.6mm}
+
+/* ---- vs table ---- */
+.vs{margin:6mm 0 3mm;border:1px solid var(--g);padding:0 3mm 3mm;position:relative}
+.vs .lab{position:relative;top:-2.4mm;display:inline-block;background:#fff;font-family:var(--sans);font-weight:800;font-size:7.4pt;border:1px solid var(--g);border-radius:3mm;padding:0 3mm}
+.vs .lab .v{color:var(--p);font-size:10pt;font-style:italic}
+.vs table{width:100%;border-collapse:collapse;font-size:8pt;margin-top:-1mm}
+.vs th{background:var(--gl);font-family:var(--sans);font-weight:700;border:1px solid var(--gm);padding:1.2mm 2mm}
+.vs td{border:1px solid var(--gm);padding:1.2mm 2.5mm;line-height:1.5}
+.vs td:first-child{text-align:center;font-family:var(--sans);font-size:7.6pt;width:34mm}
+
+.fn{position:absolute;bottom:27mm;left:21mm;right:21mm;font-family:var(--sans);font-size:6.8pt;color:var(--muted);line-height:1.5}
+.fn .k{color:var(--p)}
+
+/* ---- flow chips ---- */
+.flow{display:flex;align-items:center;justify-content:center;gap:1.4mm;font-family:var(--sans);font-size:7.6pt;margin:4mm 0 1mm}
+.flow .c{border:1px solid var(--gm);border-radius:1.5mm;padding:1mm 2mm;background:#fff;text-align:center;line-height:1.3}
+.flow .c.end{border-color:var(--p);color:var(--p);font-weight:700}
+.flow .ar{color:var(--muted)}
+.rev{font-family:var(--sans);font-size:7.6pt;color:var(--p);text-align:center;margin-bottom:5mm}
+.rev .line{display:inline-block;width:120mm;border-top:1.2pt solid var(--p);position:relative;margin-bottom:1mm}
+.rev .line:before{content:"";position:absolute;left:-1mm;top:-1.6mm;border-right:2.4mm solid var(--p);border-top:1mm solid transparent;border-bottom:1mm solid transparent}
+
+/* ---- problem pages ---- */
+.qhead{display:flex;height:21mm;margin:-2mm 0 6mm}
+.qhead .big{width:50mm;border:1.2pt solid var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:15pt;font-weight:800;color:var(--p)}
+.qhead .desc{flex:1;background:var(--gm);padding:2.5mm 5mm;font-family:var(--sans);font-size:7.4pt;line-height:1.55}
+.qhead .desc b{font-size:8pt;display:block;margin-bottom:.6mm}
+.qcols{display:grid;grid-template-columns:1fr 1fr;column-gap:8mm;height:228mm}
+.qcol{display:flex;flex-direction:column}
+.qitem{flex:1}
+.qh{display:flex;align-items:flex-end;gap:2mm;margin-bottom:2.5mm}
+.qh .no{font-family:var(--sans);font-size:14pt;font-weight:800;color:var(--p);line-height:1;width:15mm}
+.qh .no i{font-style:normal;color:var(--pm)}
+.qh .meta{flex:1;font-family:var(--sans);font-size:5.6pt}
+.qh .r1{display:flex;justify-content:space-between;align-items:center}
+.lv{display:inline-flex;gap:.6mm}
+.lv i{width:3.4mm;height:3mm;background:var(--gm);display:inline-block}
+.lv i.on{background:var(--p)}
+.rec{color:var(--muted);margin-left:2mm}
+.rec span{display:inline-block;width:3mm;height:3mm;border:.6pt solid var(--muted);vertical-align:-.6mm;margin:0 1.2mm 0 .6mm}
+.srcR{color:var(--g);font-size:6.4pt}
+.qh .r2{display:flex;margin-top:.8mm;border:.7pt solid var(--p);height:3.4mm;align-items:stretch}
+.qh .r2 .k{background:var(--p);color:#fff;padding:0 1.6mm;display:flex;align-items:center}
+.qh .r2 .v{padding:0 2.5mm;color:var(--g);display:flex;align-items:center;min-width:10mm}
+.qitem .t{font-size:9.2pt;line-height:1.75}
+.qitem .fig{margin:3mm 0 2mm}
+
+/* ---- preview / review ---- */
+.pv-head{position:relative;margin:-6mm 0 0 -4mm}
+.pv-head .tag{display:inline-block;background:var(--pl);color:var(--p);font-family:var(--sans);font-weight:800;font-size:13pt;padding:2.5mm 120mm 2.5mm 6mm;border-radius:0 0 3mm 0}
+.pv-title{font-family:var(--sans);font-size:20pt;font-weight:800;margin:6mm 0 4mm 6mm}
+.pv-title .n{color:var(--p);margin-right:6mm}
+.pv-frame{border-left:1.2pt solid var(--g);border-top:1.2pt solid var(--g);margin-left:-4mm;padding-top:0}
+.pv-box{border:1px solid var(--g);border-radius:0 0 2mm 2mm;margin:0 0 0 2mm;padding:5mm 6mm 5mm 19mm;position:relative;font-size:8.9pt;line-height:1.72}
+.pv-ico{position:absolute;left:3.5mm;top:5mm;width:11mm;text-align:center;font-family:var(--sans);font-weight:900;color:var(--p);font-size:6.4pt;line-height:1}
+.pv-ico .fig8{font-size:24pt;line-height:.9;display:block;margin-bottom:1mm}
+.howto{display:grid;grid-template-columns:30mm 1fr;row-gap:3.5mm;margin-top:3mm}
+.howto .k{font-family:var(--sans);font-weight:800;font-size:8.8pt}
+.memo{margin-top:6mm;font-family:var(--sans);font-size:8pt;color:var(--g);display:flex;align-items:center;gap:2mm}
+.memo:after{content:"";flex:1;border-top:1px solid var(--g)}
+.newmark{font-family:var(--sans);font-size:6pt;background:var(--pd);color:#fff;border-radius:1mm;padding:.2mm 1.2mm;vertical-align:1.5px;margin-left:1mm;font-weight:600}
+
+/* ---- chapter cover / chapter toc ---- */
+/* chapter cover */
+.cover{background:var(--p);padding:0}
+.cover .arch{position:absolute;left:50%;transform:translateX(-50%);top:0;width:64mm;height:150mm;background:#4a4a52;border-radius:0 0 32mm 32mm}
+.cover .chap{position:absolute;top:84mm;width:100%;text-align:center;font-family:var(--sans);color:#b9a3f5;letter-spacing:5.5mm;font-size:13pt;padding-left:5.5mm}
+.cover .num{position:absolute;top:96mm;width:100%;text-align:center;font-family:var(--sans);font-weight:200;color:#b9a3f5;font-size:96pt;line-height:1;letter-spacing:-2mm}
+.cover .ttl{position:absolute;top:160mm;width:100%;text-align:center;color:#fff;font-family:var(--sans);font-weight:800;font-size:28pt;line-height:1.25}
+.cover .ttl small{display:block;font-weight:400;font-size:11pt;opacity:.8;margin-top:2mm;letter-spacing:.3mm}
+.cover .note{position:absolute;bottom:42mm;left:24mm;right:24mm;border-top:1px dashed rgba(255,255,255,.6);border-bottom:1px dashed rgba(255,255,255,.6);padding:4mm 0;color:#fff;font-family:var(--sans);font-size:8.4pt;line-height:1.75}
+.cover .note .tg{border-color:#fff;color:#fff}
+.cover .brand{position:absolute;right:16mm;top:14mm;font-family:var(--sans);color:#fff;font-weight:800;letter-spacing:1.2mm;font-size:9pt;opacity:.85}
+/* toc */
+.toc{background:var(--p);padding:12mm 0 0}
+.toc .panel{position:absolute;left:0;right:0;top:12mm;bottom:12mm;background:#fff}
+.toc .circle{position:absolute;left:14mm;top:178mm;width:17mm;height:17mm;border-radius:50%;background:var(--p);color:#fff;font-family:var(--sans);text-align:center;font-size:6.6pt;padding-top:2.6mm;line-height:1}
+.toc .circle b{display:block;font-size:15pt;margin-top:.6mm}
+.toc .list{position:absolute;left:35mm;right:16mm;top:183mm;font-family:var(--sans);font-size:7.8pt}
+.toc .hdr{color:var(--p);font-size:10pt;border-bottom:1px solid var(--pm);padding-bottom:1.5mm;margin-bottom:1.5mm}
+.toc .hdr small{font-size:6.6pt;color:var(--p2)}
+.toc table{width:100%;border-collapse:collapse}
+.toc td{padding:.45mm 0;line-height:1.35}
+.toc td.c1{width:40mm;font-weight:800;font-size:9pt;vertical-align:top}
+.toc td.pg{text-align:right}
+.toc tr.sep td{border-top:1px solid var(--g)}
+.toc .pc{color:var(--p2)}
+
+/* ---- review: 개념진단 ---- */
+.rv-cols{display:grid;grid-template-columns:1fr 1fr;column-gap:8mm;margin-top:4mm}
+.ox-title{font-family:var(--sans);font-weight:800;font-size:12pt;color:var(--p);margin:0 0 3mm}
+.ox{width:100%;border-collapse:collapse;font-size:7.8pt;line-height:1.5}
+.ox td{border-top:1px solid var(--gm);padding:1.6mm 1.5mm;vertical-align:top}
+.ox td.tp{font-family:var(--sans);width:24mm}
+.ox td.pg{font-family:var(--sans);width:8mm;color:#fff;background:var(--p);text-align:center;font-size:7pt;border-top-color:#fff}
+.ox ul{margin:0;padding-left:3.5mm}

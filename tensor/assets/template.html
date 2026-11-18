@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>{{과목}} Part2 Ch{{장}} — Tensor</title>
+<!-- tensor:// 경로는 scripts/render.py 가 실제 경로로 바꿔 준다 -->
+<link rel="stylesheet" href="tensor://katex/katex.min.css">
+<link rel="stylesheet" href="tensor://pretendard/pretendard.css">
+<link rel="stylesheet" href="tensor://css/tensor.css">
+<script src="tensor://katex/katex.min.js"></script>
+<script src="tensor://katex/contrib/auto-render.min.js"></script>
+</head><body>
+
+<!-- ===== Chapter 표지 ===== -->
+<section class="page cover">
+  <div class="brand">TENSOR</div>
+  <div class="arch"></div>
+  <div class="chap">CHAPTER</div>
+  <div class="num">{{장}}</div>
+  <div class="ttl">{{장 제목}}<small>{{원서 장 제목(영문)}}</small></div>
+  <div class="note"><b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class="tg">원서 개념</span>을 시험 문제에 맞게 다시 다듬는 단계입니다. 강의에서 다룬 문제와 원서 연습문제에 반복해서 등장하는 생각을 <span class="tg">시험 개념</span>으로 묶고, 그것이 왜 성립하는지 원서 개념으로 확인합니다.</div>
+</section>
+
+<!-- ===== Chapter 목차 ===== -->
+<section class="page toc">
+  <div class="panel"></div>
+  <div class="circle">Chapter<b>{{장}}</b></div>
+  <div class="list">
+    <div class="hdr">{{과목}} 시험 개념의 완성 &nbsp;<small>: Part1 정리 + 시험에 꼭 필요한 [시험 개념]</small></div>
+    <table>
+      <tr><td class="c1">{{장}}. {{장 제목}}</td><td class="pc">Preview</td><td class="pg">{{쪽}}</td></tr>
+      <tr><td></td><td>TOPIC 01. {{TOPIC 제목}}</td><td class="pg">{{쪽}}</td></tr>
+      <!-- TOPIC 행 반복 -->
+      <tr><td></td><td class="pc">A·01, B·01</td><td class="pg">{{쪽}}, {{쪽}}</td></tr>
+      <tr><td></td><td class="pc">Review</td><td class="pg">{{쪽}}</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== Preview (짝수쪽) ===== -->
+<section class="page even">
+  <div class="pv-head"><span class="tag">Preview</span></div>
+  <div class="pv-frame">
+    <div class="pv-title"><span class="n">{{장}}</span>{{장 제목}}</div>
+    <div class="pv-box">
+      <div class="pv-ico"><span class="fig8">∑</span>PRE–<br>VIEW</div>
+      <p>{{이 장에서 다루는 것 — 2~3문단}}</p>
+      <p class="sans" style="color:var(--p);font-weight:800;margin:5mm 0 1mm">〈학습 방법〉</p>
+      <div class="howto">
+        <div class="k">① 강의 선정 문제 :</div><div>강의에서 다룬 원서 예제·연습문제입니다. 출제 의도에 가장 가까운 문제이므로 먼저 <span class="tg ws">원서 개념</span>만으로 풀어 보고 본문으로 넘어갑니다.</div>
+        <div class="k">② 본문(TOPIC) :</div><div><span class="tg">시험 개념</span>을 하나씩 만들고, 원서 개념으로 왜 성립하는지 확인합니다.</div>
+        <div class="k">③ 적용문제 :</div><div>본문의 시험 개념을 바로 써 볼 수 있는 문항입니다.</div>
+        <div class="k">④ 연습문제 :</div><div>원서 장 끝 문제 중 주요 문항입니다. <span class="tg ws">원서적 해법</span>과 <span class="tg">시험적 해법</span>을 모두 완성하는 것이 목표입니다.</div>
+        <div class="k">⑤ 채점 포인트 :</div><div>서술형 답안에서 어떤 줄이 점수가 되는지 TOPIC마다 정리했습니다.</div>
+      </div>
+    </div>
+  </div>
+  <div class="memo">MEMO</div>
+  <div class="foot"><span class="num">{{쪽}}</span><span class="bar"></span><span class="ttl"><span class="t">{{장}}</span>&nbsp; {{장 제목}}</span></div>
+</section>
+
+<!-- ===== 강의 선정 문제 (홀수쪽, 2단 4문항) ===== -->
+<section class="page odd">
+  <div class="tab-part">Part2</div>
+  <div class="qhead"><div class="big">강의 선정 문제</div><div class="desc"><b>강의에서 다룬 원서 문제</b>먼저 [원서적 해법]으로 풀어 보자.<br>본문을 공부한 뒤 [시험적 해법]으로 다시 풀어 볼 것이다.</div></div>
+  <div class="qcols">
+    <div class="qcol">
+      <div class="qitem">
+        <div class="qh"><div class="no">L·<i>0</i>1</div><div class="meta"><div class="r1"><span><span class="lv"><i class="on"></i><i></i><i></i></span><span class="rec">1회<span></span>2회<span></span></span></span><span class="srcR">| 원서 {{번호}} · 강의 p.{{쪽}} |</span></div><div class="r2"><span class="k">PAGE</span><span class="v">{{쪽}}</span><span class="k">TOPIC</span><span class="v">{{nn}}</span></div></div></div>
+        <div class="t">{{지문}}</div>
+        <div class="fig"><img src="fig/l01.svg" style="width:62mm"></div>
+      </div>
+      <div class="qitem"><!-- L·03 --></div>
+    </div>
+    <div class="qcol">
+      <div class="qitem"><!-- L·02 --></div>
+      <div class="qitem"><!-- L·04 --></div>
+    </div>
+  </div>
+  <div class="foot"><span class="num">{{쪽}}</span><span class="bar"></span><span class="ttl">강의 선정 문제</span></div>
+</section>
+
+<!-- ===== TOPIC 첫 쪽 (짝수쪽) ===== -->
+<section class="page even">
+  <div class="topic-band">{{장}} &nbsp;{{장 제목}}</div>
+  <div class="topic-title"><span class="no">TOPIC <i>0</i>1</span>{{TOPIC 제목}}</div>
+  <h3>1. {{소절 제목}}</h3>
+  <p>{{도입 — 근거 번호 포함}}</p>
+  <div class="ex">
+    <div><span class="badge">EX<span>01</span></span><div class="src">[원서 {{번호}}<br>강의 p.{{쪽}}]</div></div>
+    <div class="withfig"><div class="txt q">{{지문}}</div><div class="fig"><img src="fig/ex01.svg" style="width:60mm"></div></div>
+  </div>
+  <div class="sol"><span class="lab"><span class="a">원서적</span><span class="b">해법</span></span>
+    <div class="box"><div class="step"><span class="n">①</span><span>{{풀이}}</span></div></div></div>
+  <div class="foot"><span class="num">{{쪽}}</span><span class="bar"></span><span class="ttl"><span class="t">{{장}}</span>&nbsp; {{장 제목}}</span></div>
+</section>
+
+<!-- ===== TOPIC 이어지는 쪽 (홀수쪽) ===== -->
+<section class="page odd">
+  <div class="tab-part">Part2</div><div class="tab-topic">TOPIC<b>01</b></div>
+  <div class="topline"></div>
+  <div class="bubble"><span class="dots">∘○</span><span class="b">{{학생 속마음 한 문장}}</span></div>
+  <div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span><div class="box">{{풀이}}</div></div>
+  <div class="concept">
+    <div class="hd"><div class="ttl"><span class="ico">시험<br>개념</span>{{개념 이름}}</div><div class="tabs"><span>원서 개념</span><span class="on">시험 개념</span><span>원서 간접 개념</span></div></div>
+    <div class="body">{{내용}}</div>
+  </div>
+  <div class="core"><span class="lab">CORE</span><div class="box">[{{조건}}] ⟹ [{{행동}}]</div></div>
+  <div class="grade"><div class="hd"><span>✎ 답안 · 채점 포인트</span><small>대학 시험 특화</small></div><div class="body"><ol><li>{{줄}}</li></ol></div></div>
+  <div class="foot"><span class="num">{{쪽}}</span><span class="bar"></span><span class="ttl"><span class="t">TOPIC 01</span>&nbsp; {{TOPIC 제목}}</span></div>
+</section>
+
+<!-- ===== Review: 개념진단 ===== -->
+<section class="page even">
+  <div class="pv-head"><span class="tag">Review: 개념진단</span></div>
+  <div class="pv-frame"><div class="pv-title"><span class="n">{{장}}</span>{{장 제목}}</div>
+    <div class="pv-box"><div class="pv-ico"><span class="fig8">∑</span>OVER–<br>VIEW</div><p>{{장 마무리 — TOPIC들이 어떻게 이어지는지}}</p></div></div>
+  <div style="margin-top:6mm"><div class="ox-title">✓ TOPIC 본문 O/X</div>
+    <table class="ox"><tr><td class="tp">TOPIC 01<br>{{제목}}</td><td class="pg">{{쪽}}p</td><td><ul><li>{{~를 설명할 수 있는가?}}</li></ul></td></tr></table></div>
+  <div class="foot"><span class="num">{{쪽}}</span><span class="bar"></span><span class="ttl"><span class="t">{{장}}</span>&nbsp; {{장 제목}}</span></div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false});
+  document.body.setAttribute("data-ready","1");
+});
+</script>
+</body></html>

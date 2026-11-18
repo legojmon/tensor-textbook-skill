@@ -1,0 +1,172 @@
+# Tensor 책 형식 (스켈레톤 · 페이지 · 부품)
+
+수능 개념서식 구성(교과서 개념 → 수능 개념 2단 구조, 기출 연결, 개념진단)을 대학 과목으로 옮긴 형식이다.
+CSS는 `assets/tensor.css`, 빈 틀은 `assets/template.html` 에 있다. 아래 HTML 조각을 복사해서 쓴다.
+
+---
+
+## 1. 책 구조
+
+과목 1개 = 상·하 2권.
+
+| 권 | Part | 입력 | 내용 |
+|---|---|---|---|
+| 상 | Part1 「원서 개념의 정리」 | 원서 본문 + 강의록 | 원서 개념·원서 간접 개념, 원서적 해법만 |
+| 하 | Part2 「시험 개념의 완성」 | 원서 예제·연습문제 + 강의록 예제 | 시험 개념, 원서적 → 시험적 해법 |
+
+사용자가 한 장만 원하면 그 장의 Part2(또는 요청한 Part)만 만든다. 원서 1장 = Chapter 1개, 장 번호는 원서 번호를 그대로 쓴다.
+
+---
+
+## 2. 페이지 순서 (Part2 한 장 기준)
+
+1. **Chapter 표지** `.page.cover` — 보라 배경, 회색 아치, CHAPTER + 장 번호, 장 제목, 하단 점선 안내문
+2. **Chapter 목차** `.page.toc` — Preview / TOPIC 목록 / A·01, B·01 / Review
+3. **Preview** (짝수쪽) — PRE-VIEW 박스: 인사 → 이 장에서 다룰 것 → 〈학습 방법〉 ①~⑤ → MEMO
+4. **강의 선정 문제** — 2단, `L·01…` (강의에서 다룬 원서 예제·연습문제)
+5. **TOPIC nn** × 6~12 — TOPIC당 보통 3~6쪽
+6. **TOPIC 적용문제 (A)** — 2단
+7. **연습문제 (B)** — 2단 (원서 장 끝 Problems 선별)
+8. **Review: 개념진단** — OVER-VIEW 글 + TOPIC별 O/X 체크표
+9. (책 끝) 개념 박스 색인, 빠른 정답, 해설
+
+쪽 번호: 짝수쪽은 왼쪽 아래(쪽번호 | 장 이름), 홀수쪽은 오른쪽 아래(TOPIC 이름 | 쪽번호).
+홀수쪽 오른쪽 위에 `Part2` 탭과 `TOPIC nn` 탭.
+
+---
+
+## 3. 페이지 틀
+
+```html
+<section class="page even"> … <div class="foot"><span class="num">20</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div></section>
+
+<section class="page odd">
+  <div class="tab-part">Part2</div><div class="tab-topic">TOPIC<b>01</b></div>
+  <div class="topline"></div>
+  …
+  <div class="foot"><span class="num">21</span><span class="bar"></span><span class="ttl"><span class="t">TOPIC 01</span>&nbsp; 응답식에서 회로 읽기</span></div>
+</section>
+```
+- 페이지는 고정 크기(A4)라 **자동으로 넘어가지 않는다.** 내용을 쪽 단위로 직접 나누고 `render.py`의 [넘침] 경고로 확인한다.
+- TOPIC 첫 쪽만 `.topic-band` + `.topic-title`, 이어지는 쪽은 `.topline`.
+
+---
+
+## 4. 부품 카탈로그
+
+### TOPIC 머리
+```html
+<div class="topic-band">14 &nbsp;라플라스 변환</div>
+<div class="topic-title"><span class="no">TOPIC <i>0</i>1</span>응답식에서 회로 읽기</div>
+<h3>1. 응답식의 세 숫자</h3>
+```
+
+### EX
+```html
+<div class="ex">
+  <div><span class="badge">EX<span>01</span></span><div class="src">[원서 Example 14.7-1<br>강의 p.12]</div></div>
+  <div class="withfig">
+    <div class="txt q">문제 지문 … $$v_o(t)=16-12e^{-0.6t}\ \text{V}$$ …</div>
+    <div class="fig"><img src="fig/ex01.svg" style="width:60mm"></div>
+  </div>
+</div>
+```
+
+### 해법 박스
+```html
+<div class="sol"><span class="lab"><span class="a">원서적</span><span class="b">해법</span></span>
+  <div class="box">
+    <div class="step"><span class="n">①</span><span>…</span></div>
+  </div></div>
+
+<div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
+  <div class="box"> … </div></div>
+```
+쪽을 넘어 이어지는 박스는 다음 쪽에서 `<div class="sol" style="margin-top:0"><div class="box" style="margin-top:0">` 로 라벨 없이 잇는다.
+
+### 생각 말풍선
+```html
+<div class="bubble"><span class="dots">∘○</span><span class="b">응답식을 다 줬는데… 이걸 또 s영역으로 풀어야 해?</span></div>
+```
+
+### 개념 박스 (3탭 중 하나만 `.on`)
+```html
+<div class="concept">
+  <div class="hd"><div class="ttl"><span class="ico">시험<br>개념</span>1차 응답식 해부</div>
+    <div class="tabs"><span>원서 개념</span><span class="on">시험 개념</span><span>원서 간접 개념</span></div></div>
+  <div class="body"> … (표 가능: <table><tr><th>…) </div>
+</div>
+```
+아이콘 글자: 원서 개념 → `원서<br>개념`, 원서 간접 개념 → `간접<br>개념`.
+
+### 본문 속 개념 태그
+```html
+<span class="tg ws">원서 개념</span>  <span class="tg">시험 개념</span>
+<span class="tgk"><span class="tg">시험 개념</span><span class="tg">1차 응답식 해부</span></span>
+```
+
+### CORE (한 줄 요약)
+```html
+<div class="core"><span class="lab">CORE</span><div class="box">[조건] ⟹ [행동]</div></div>
+```
+
+### 저자 TIP
+```html
+<div class="tip"><div class="lab"><small>저자의 특강</small><b>TIP</b></div><div class="hd">제목</div>
+  <div class="body"><p>…</p></div></div>
+```
+
+### 답안·채점 포인트 (대학 시험 특화)
+```html
+<div class="grade"><div class="hd"><span>✎ 답안 · 채점 포인트</span><small>대학 시험 특화</small></div>
+  <div class="body"><p>…</p><ol><li>…</li></ol></div></div>
+```
+
+### 강의 vs 연습문제 표
+```html
+<div class="vs"><span class="lab">강의 <span class="v">VS</span> 연습문제</span>
+  <table><tr><th>출처</th><th>출제 요소</th></tr><tr><td>…</td><td>…</td></tr></table></div>
+```
+
+### 각주 (본문에 없는 증명)
+```html
+<sup class="pc">ⓐ</sup>  …  <div class="fn"><span class="k">ⓐ</span> … 해설에 수록.</div>
+```
+
+### 흐름 칩
+```html
+<div class="flow"><span class="c">회로</span><span class="ar">→</span> … <span class="c end">응답식</span></div>
+<div class="rev"><span class="line"></span><br>시험은 이 순서를 거꾸로 묻는다</div>
+```
+
+### 문제 페이지 (강의 선정 문제 / A / B)
+```html
+<div class="qhead"><div class="big">TOPIC 적용문제</div><div class="desc"><b>TOPIC 적용문제</b>설명 두 줄</div></div>
+<div class="qcols">
+  <div class="qcol">
+    <div class="qitem">
+      <div class="qh"><div class="no">A·<i>0</i>1</div><div class="meta">
+        <div class="r1"><span><span class="lv"><i class="on"></i><i></i><i></i></span><span class="rec">1회<span></span>2회<span></span></span></span><span class="srcR">| 원서 P14.7-6 |</span></div>
+        <div class="r2"><span class="k">PAGE</span><span class="v">22</span><span class="k">TOPIC</span><span class="v">01</span></div></div></div>
+      <div class="t">지문 …</div>
+      <div class="fig"><img src="fig/a01.svg" style="width:62mm"></div>
+    </div>
+    <div class="qitem">…</div>
+  </div>
+  <div class="qcol">…</div>
+</div>
+```
+한 쪽에 4문항(열마다 2개). 난이도 `<i class="on">` 개수 = 1~3.
+
+### Preview
+`template.html` 의 Preview 쪽을 그대로 쓰고 문단만 바꾼다. 〈학습 방법〉 항목: ① 강의 선정 문제 ② 본문(TOPIC) ③ 적용문제 ④ 연습문제 ⑤ 채점 포인트.
+
+---
+
+## 5. 그림
+- 회로: `scripts/circuits.py` (schemdraw). 자주 쓰는 토폴로지 builder가 있다. 새 토폴로지는 `drawing()`, `out_terms()`, `save()` 로 직접.
+- 그래프: `plot_response()`.
+- 본문 그림 폭 52~62mm, 문제 페이지 그림 60~76mm. 시험적 해법용 "전원을 끈 회로"는 ACCENT 색으로 강조.
+
+## 6. 색 바꾸기
+`tensor.css` 맨 위 `:root` 의 `--p`(포인트), `--pl`(옅은 배경), `--pm`(중간), `--pd`(진한) 4개만 바꾸고, `circuits.py` 의 `ACCENT` 를 같은 값으로 바꾼다.
