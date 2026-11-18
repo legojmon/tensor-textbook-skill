@@ -16,6 +16,8 @@
   "logo": "snu",
   "cover_color": "#6B3FD4",
   "spine_color": "#6B3FD4",
+  "band": false,
+  "type": "serif",
   "pages": 220,
   "spine_mm": null,
   "symbol": "circuit",

@@ -3,13 +3,24 @@
 원본 설계: `textbook-cover-design/` (김준형·최재원). 이 스킬의 `scripts/cover.py` 는 그 설계를 인쇄용 PDF 생성기로 옮긴 것이다.
 
 ## cover.py 와 원본 설계의 차이
-- **로고는 표지색 위에 흰색**: 앞·뒤표지 하단에 표지색 띠(높이 120px)를 깔고 그 위에 로고(`filter: brightness(0) invert(1)`)·학교명·저자를 흰색으로 둔다. 책등도 같은 흰색 로고.
-- **바꿀 수 있는 색은 두 개뿐**: `cover_color`(도형 그라데이션·하단 띠·포인트), `spine_color`(책등). 그라데이션 톤은 표지색 하나에서 `color-mix` 로 자동 생성된다. 글자색·배경·배치는 고정.
+- **하단 띠는 기본으로 두지 않는다**(`"band": false`). 앞·뒤표지 아래 흰 바탕에 로고와 학교명을 표지색, 저자를 먹색으로 둔다. 도형이 띠에 가려 잘리는 일이 없다. 예전처럼 표지색 띠 위에 흰 로고·글자를 두려면 `"band": true`.
+- **로고는 한 가지 색으로 칠한다**: 투명 배경 PNG/SVG의 모양을 CSS mask로 써서 흰 바탕에서는 표지색, 띠·책등 위에서는 흰색으로 칠한다.
+- **글꼴 조합은 `type` 하나로 고른다**(내지 Pretendard와 별개). 자간을 넓게 벌린 얇은 고딕(예전 문구)은 화면·인쇄 모두 힘이 없어 보인다는 피드백이 있었다.
+
+  | type | 한글 제목 | 한글 문구·본문 | 영문 대형 브랜드 | 영문 학교명 |
+  |---|---|---|---|---|
+  | `serif` (기본) | Noto Serif KR Black | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
+  | `sans` | Pretendard ExtraBold | Pretendard Medium | Montserrat ExtraBold | Montserrat SemiBold |
+  | `mixed` | Pretendard Black | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
+
+  글꼴은 모두 `setup.py`가 npm(fontsource)으로 받아 PDF에 넣는다. 문구 자간은 0.2em 안팎으로 둔다.
+- **바꿀 수 있는 색은 두 개뿐**: `cover_color`(도형 그라데이션·로고·포인트, 띠를 켜면 띠), `spine_color`(책등). 그라데이션 톤은 표지색 하나에서 `color-mix` 로 자동 생성된다. 글자색·배경·배치는 고정.
 - 책등 두께 = 쪽수 ÷ 2 × 0.1mm + 1mm (80g 모조지 기준). 제본집 실측값이 있으면 `spine_mm` 으로 덮어쓴다.
 - 인쇄용 펼침면(`spread.pdf`) = 뒷표지 | 책등 | 앞표지, 사방 3mm 재단 여백. 앞표지 왼쪽 밖으로 잘린 도형은 책등 너비만큼 띄워 뒷표지 오른쪽에서 이어진다.
 
 ## 기호(symbol) 만들기
-- `circuit`: 오메가(Ω) + 커패시터(─┤├─). `blocks`: 큰 원 + 계단 막대(과목 무관 기본형).
+- `circuit`: 오메가(Ω) + 커패시터(─┤├─). `tree`: 이진 트리(굵은 간선 + 고리 노드, 자료구조·알고리즘). `blocks`: 큰 원 + 계단 막대(과목 무관 기본형).
+  - 오른쪽 위(과목명 자리)와 아래 줄(y 980 아래, 로고·저자 자리)은 비워 둔다.
 - 다른 과목은 SVG 조각 파일을 만들어 `"symbol": "my_symbol.svg"` 로 지정한다. 규칙:
   - 794×1123 좌표계, `fill="url(#fieldA)"`(왼쪽 도형)·`fill="url(#fieldB)"`(오른쪽 도형)만 쓴다. 구멍·틈은 `fill="#fff"` 도형을 덮어 만든다.
   - **굵은 직사각형·원 위주**. 곡선 많은 기호는 피한다(원본 피드백: "밤티").

@@ -15,6 +15,8 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
   "logo": "snu",                        "snu" = 내장 서울대 흰색 로고(assets/cover/snu_logo_white.svg). 다른 학교는 투명 배경 PNG/SVG 경로
   "cover_color": "#6B3FD4",             ← 바꿀 수 있는 색 1: 표지(도형 그라데이션·하단 띠·포인트)
   "spine_color": "#6B3FD4",             ← 바꿀 수 있는 색 2: 책등 (없으면 cover_color)
+  "band": false,                         true = 앞·뒤표지 아래 색 띠(로고·저자를 흰색으로 띠 위에). 기본 false = 띠 없이 흰 바탕, 로고는 표지색
+  "type": "serif",                       글꼴 조합: serif(명조 + Cormorant, 기본) | sans(Pretendard + Montserrat) | mixed(고딕 제목 + 명조 본문)
   "pages": 220,                          내지 쪽수 → 책등 두께 자동 계산
   "spine_mm": null,                      제본집이 알려준 두께가 있으면 이 값을 우선
   "symbol": "circuit",                   앞표지 기호: circuit | blocks | tree | <SVG 파일 경로>
@@ -52,11 +54,30 @@ def data_uri(path):
 BUILTIN_LOGO = {"snu": SKILL / "assets/cover/snu_logo_white.svg"}
 
 
-def logo_html(cfg, h):
+def _logo_ratio(path):
+    p = Path(path)
+    if p.suffix.lower() == ".svg":
+        import re
+        m = re.search(r'viewBox="[\d.\-]+ [\d.\-]+ ([\d.]+) ([\d.]+)"', p.read_text(encoding="utf-8")[:2000])
+        if m:
+            return float(m.group(1)) / float(m.group(2))
+    try:
+        from PIL import Image
+        w, h = Image.open(p).size
+        return w / h
+    except Exception:
+        return 1.0
+
+
+def logo_html(cfg, h, color="#fff"):
+    """로고를 한 가지 색으로 칠한다(투명 배경 PNG/SVG의 모양만 쓴다). 띠 위에서는 흰색, 흰 바탕에서는 표지색."""
     if cfg.get("logo") and Path(cfg["logo"]).exists():
-        return f'<img src="{data_uri(cfg["logo"])}" style="height:{h}px;width:auto;display:block;filter:brightness(0) invert(1)">'
-    return (f'<div style="height:{h}px;width:{h}px;border:1.5px dashed rgba(255,255,255,.85);display:flex;'
-            f'align-items:center;justify-content:center;font-size:9px;letter-spacing:.1em;color:#fff">LOGO</div>')
+        w = h * _logo_ratio(cfg["logo"])
+        u = data_uri(cfg["logo"])
+        return (f'<div style="height:{h}px;width:{w:.1f}px;background:{color};'
+                f'-webkit-mask:url({u}) center/contain no-repeat;mask:url({u}) center/contain no-repeat"></div>')
+    return (f'<div style="height:{h}px;width:{h}px;border:1.5px dashed {color};display:flex;'
+            f'align-items:center;justify-content:center;font-size:9px;letter-spacing:.1em;color:{color}">LOGO</div>')
 
 
 # ---------------------------------------------------------------- symbols
@@ -92,10 +113,10 @@ def symbol_svg(cfg, dx=0, suffix=""):
         def n(x, y, r, hole):
             return (f'<circle cx="{x+dx}" cy="{y}" r="{r}" fill="{A}"/>'
                     f'<circle cx="{x+dx}" cy="{y}" r="{hole}" fill="#fff"/>')
-        body = (e(560, 330, 330, 640) + e(560, 330, 760, 640) + e(330, 640, 190, 960) + e(330, 640, 450, 960)
-                + e(760, 640, 680, 960) + e(560, -40, 560, 330)
-                + n(560, 330, 118, 46) + n(330, 640, 104, 40) + n(760, 640, 104, 40)
-                + n(190, 960, 90, 34) + n(450, 960, 90, 34) + n(680, 960, 90, 34))
+        body = (e(580, 300, 380, 590) + e(580, 300, 780, 590)
+                + e(380, 590, 270, 870) + e(380, 590, 490, 870) + e(780, 590, 700, 870)
+                + n(580, 300, 112, 44) + n(380, 590, 98, 38) + n(780, 590, 98, 38)
+                + n(270, 870, 84, 32) + n(490, 870, 84, 32) + n(700, 870, 84, 32))
     elif kind == "blocks":  # 과목 무관 기본형: 큰 원 + 계단 막대
         body = f"""
 <circle cx="{110+dx}" cy="560" r="230" fill="{A}"/>
@@ -110,56 +131,59 @@ def symbol_svg(cfg, dx=0, suffix=""):
 
 
 # ---------------------------------------------------------------- panels
+def _foot(cfg, side):
+    """아래 줄: 로고 + 학교(왼쪽), 저자(오른쪽). 띠가 있으면 흰색, 없으면 표지색·먹색."""
+    band = cfg.get("band", False)
+    school = "<br>".join(cfg.get("school", ["Seoul National", "University"]))
+    c_logo = "#fff" if band else "var(--cover)"
+    c_school = "#fff" if band else "var(--cover)"
+    c_auth = "#fff" if band else INK
+    x = 48 if side == "front" else 56
+    bar = '<div class="band" style="height:120px"></div>' if band else ""
+    return f"""{bar}
+  <div class="abs" style="left:{x}px;bottom:36px;display:flex;align-items:center;gap:14px">
+    {logo_html(cfg, 50, c_logo)}
+    <span class="en-text" style="font-size:16px;line-height:1.15;color:{c_school}">{school}</span>
+  </div>
+  <div class="abs ko-text" style="right:{x}px;bottom:48px;display:flex;align-items:baseline;gap:10px;font-size:14px;color:{c_auth}">
+    <span style="font-weight:600;letter-spacing:.16em">{cfg.get("authors","")}</span><span style="opacity:.75">지음</span>
+  </div>"""
+
+
 def front(cfg):
     tag = "".join(f"<span>{t}</span>" for t in cfg.get("tagline", []))
     offs = [0, 46, 6, 52, 10, 48, 4, 40]
     title = "".join(f'<span style="margin-left:{offs[i % len(offs)]}px">{ch}</span>' for i, ch in enumerate(cfg["brand"]))
-    school = "<br>".join(cfg.get("school", ["Seoul National", "University"]))
     return f"""
 <div class="panel" style="width:{W}px;height:{H}px">
   <svg width="{W}" height="{H}" viewBox="0 0 {W} {H}" class="abs">{symbol_svg(cfg, 0, "F")}</svg>
-  <div class="abs tag" style="left:48px;top:56px">{tag}</div>
-  <div class="abs" style="right:48px;top:52px;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
-    <span style="font-size:30px;font-weight:900;letter-spacing:.3em;margin-right:-.3em;color:{INK}">{cfg["subject"]}</span>
-    <span style="font-size:13px;letter-spacing:.3em;margin-right:-.3em;color:{SUB}">{cfg.get("subtitle","")}</span>
+  <div class="abs tag ko-text" style="left:50px;top:58px">{tag}</div>
+  <div class="abs" style="right:48px;top:50px;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+    <span class="ko-head" style="font-size:32px;letter-spacing:.16em;margin-right:-.16em;color:{INK}">{cfg["subject"]}</span>
+    <span class="ko-text" style="font-size:14px;letter-spacing:.2em;margin-right:-.2em;color:{SUB}">{cfg.get("subtitle","")}</span>
   </div>
   <div class="abs brand" style="left:26px;top:257px">{title}</div>
-  <div class="band" style="height:120px"></div>
-  <div class="abs" style="left:48px;bottom:34px;display:flex;align-items:center;gap:12px">
-    {logo_html(cfg, 52)}
-    <span style="font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1.3;color:#fff">{school}</span>
-  </div>
-  <div class="abs" style="right:48px;bottom:46px;display:flex;align-items:baseline;gap:10px;font-size:13px;color:#fff">
-    <span style="font-weight:500;letter-spacing:.18em">{cfg.get("authors","")}</span><span style="font-weight:300;opacity:.85">지음</span>
-  </div>
+  {_foot(cfg, "front")}
 </div>"""
 
 
 def back(cfg, spine_px):
-    paras = "".join(f'<p style="margin:0;font-size:15px;line-height:1.8;color:{SUB}">{p}</p>' for p in cfg.get("back_paras", []))
+    paras = "".join(f'<p class="ko-text" style="margin:0;font-size:15px;line-height:1.85;color:{SUB}">{p}</p>' for p in cfg.get("back_paras", []))
     bt = "<br>".join(cfg.get("back_title", [cfg["subject"], cfg.get("subtitle", "")]))
-    school = "<br>".join(cfg.get("school", ["Seoul National", "University"]))
     # 앞표지 왼쪽 밖으로 잘린 도형이 책등을 건너 뒷표지 오른쪽 가장자리로 이어진다
     return f"""
 <div class="panel" style="width:{W}px;height:{H}px">
   <svg width="{W}" height="{H}" viewBox="0 0 {W} {H}" class="abs">{symbol_svg(cfg, W + spine_px, "B")}</svg>
   <div class="abs" style="left:56px;top:56px;display:flex;flex-direction:column;gap:12px">
-    <span style="font-size:22px;font-weight:900;letter-spacing:.38em;color:var(--cover)">{cfg["brand"]}</span>
-    <span style="font-size:13px;letter-spacing:.3em;color:{SUB}">{cfg.get("subject_full", cfg["subject"])}</span>
+    <span class="en-brand" style="font-size:22px;letter-spacing:.34em;color:var(--cover)">{cfg["brand"]}</span>
+    <span class="ko-text" style="font-size:13px;letter-spacing:.24em;color:{SUB}">{cfg.get("subject_full", cfg["subject"])}</span>
   </div>
   <div class="abs" style="left:56px;top:330px;width:540px;display:flex;flex-direction:column;gap:28px">
-    <h2 style="margin:0;font-size:36px;font-weight:900;line-height:1.3;letter-spacing:-.01em;color:{INK}">{bt}</h2>
+    <h2 class="ko-head" style="margin:0;font-size:36px;line-height:1.35;letter-spacing:-.005em;color:{INK}">{bt}</h2>
     <div style="width:56px;height:4px;background:var(--cover)"></div>
     {paras}
   </div>
-  <div class="band" style="height:120px"></div>
-  <div class="abs" style="left:56px;bottom:34px;display:flex;align-items:center;gap:12px">
-    {logo_html(cfg, 52)}
-    <span style="font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1.3;color:#fff">{school}</span>
-  </div>
-  <div class="abs" style="right:56px;bottom:46px;display:flex;align-items:baseline;gap:10px;font-size:13px;color:#fff">
-    <span style="font-weight:500;letter-spacing:.18em">{cfg.get("authors","")}</span><span style="font-weight:300;opacity:.85">지음</span>
-  </div>
+  {_foot(cfg, "back")}
 </div>"""
 
 
@@ -169,13 +193,13 @@ def spine(cfg, spine_px):
     return f"""
 <div class="panel spine" style="width:{spine_px:.2f}px;height:{H}px">
   <div style="writing-mode:vertical-rl;display:flex;align-items:center;gap:22px">
-    <span style="font-size:{fs_brand}px;font-weight:900;letter-spacing:.32em">{cfg["brand"]}</span>
+    <span class="en-brand" style="font-size:{fs_brand}px;letter-spacing:.32em">{cfg["brand"]}</span>
     <span style="width:1.5px;height:28px;background:rgba(255,255,255,.6)"></span>
-    <span style="font-size:{fs_subj}px;font-weight:900;letter-spacing:.12em">{cfg["subject"]}</span>
-    {'' if narrow else f'<span style="font-size:13px;letter-spacing:.18em;opacity:.9">{cfg.get("subtitle","")}</span>'}
+    <span class="ko-head" style="font-size:{fs_subj}px;letter-spacing:.12em">{cfg["subject"]}</span>
+    {'' if narrow else f'<span class="ko-text" style="font-size:13px;letter-spacing:.18em;opacity:.9">{cfg.get("subtitle","")}</span>'}
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:20px">
-    <span style="writing-mode:vertical-rl;font-size:12px;font-weight:500;letter-spacing:.2em;opacity:.9">{cfg.get("authors","")}</span>
+    <span class="ko-text" style="writing-mode:vertical-rl;font-size:12px;font-weight:600;letter-spacing:.2em;opacity:.9">{cfg.get("authors","")}</span>
     {logo_html(cfg, min(38, int(spine_px * 0.66)))}
   </div>
 </div>"""
@@ -199,20 +223,44 @@ body{{font-family:'Pretendard',sans-serif;color:#33333b;-webkit-print-color-adju
 .sheet{{width:{w}mm;height:{h}mm;position:relative;overflow:hidden;background:#fff;page-break-after:always}}
 .panel{{position:absolute;top:0;overflow:hidden;background:#fff}}
 .abs{{position:absolute}}
-.tag{{display:flex;flex-direction:column;gap:14px;font-size:15px;letter-spacing:.42em;color:#44444c}}
-.brand{{display:flex;flex-direction:column;font-size:108px;font-weight:900;line-height:.98;color:#3A3A42}}
+.tag{{display:flex;flex-direction:column;gap:12px;font-size:17px;letter-spacing:.22em;color:#3A3A42}}
+.brand{{display:flex;flex-direction:column;font-size:104px;line-height:1.0;color:#3A3A42;font-family:{en_brand};font-weight:{en_brand_w}}}
+.ko-head{{font-family:{ko_head};font-weight:{ko_head_w}}}
+.ko-text{{font-family:{ko_text};font-weight:{ko_text_w}}}
+.en-brand{{font-family:{en_brand};font-weight:{en_brand_w}}}
+.en-text{{font-family:{en_text};font-weight:{en_text_w};letter-spacing:.03em}}
 .band{{position:absolute;left:0;right:0;bottom:0;background:var(--cover)}}
 .spine{{box-sizing:border-box;padding:44px 0 36px;background:linear-gradient(180deg,var(--spine) 0%,color-mix(in srgb,var(--spine) 80%,#2a3fd0) 100%);
   color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between}}
 """
 
 
+PRET = "'Pretendard',sans-serif"
+SERIF = "'Noto Serif KR',serif"
+MONT = "'Montserrat','Pretendard',sans-serif"
+CORM = "'Cormorant Garamond','Noto Serif KR',serif"
+TYPES = {   # 글꼴 조합: 한글 제목 / 한글 본문 / 영문 대형 브랜드 / 영문 본문(학교명)
+    "serif": dict(ko_head=SERIF, ko_head_w=900, ko_text=SERIF, ko_text_w=600,
+                  en_brand=MONT, en_brand_w=800, en_text=CORM, en_text_w=700),
+    "sans":  dict(ko_head=PRET, ko_head_w=800, ko_text=PRET, ko_text_w=500,
+                  en_brand=MONT, en_brand_w=800, en_text=MONT, en_text_w=600),
+    "mixed": dict(ko_head=PRET, ko_head_w=900, ko_text=SERIF, ko_text_w=600,
+                  en_brand=MONT, en_brand_w=800, en_text=CORM, en_text_w=700),
+}
+FONT_CSS = ["pretendard/dist/web/static/pretendard.css",
+            *(f"@fontsource/noto-serif-kr/{w}.css" for w in (500, 600, 700, 900)),
+            *(f"@fontsource/montserrat/{w}.css" for w in (600, 800)),
+            *(f"@fontsource/cormorant-garamond/{w}.css" for w in (600, 700))]
+
+
 def sheet(inner_html, w_mm, h_mm, cfg, offset_px=0):
     css = CSS.format(w=w_mm, h=h_mm, cover=cfg.get("cover_color", "#6B3FD4"),
-                     spine=cfg.get("spine_color") or cfg.get("cover_color", "#6B3FD4"))
-    pret = (BUILD / "node_modules/pretendard/dist/web/static/pretendard.css").as_uri()
+                     spine=cfg.get("spine_color") or cfg.get("cover_color", "#6B3FD4"),
+                     **TYPES.get(cfg.get("type", "serif"), TYPES["serif"]))
+    links = "".join(f'<link rel="stylesheet" href="{(BUILD / "node_modules" / f).as_uri()}">'
+                    for f in FONT_CSS if (BUILD / "node_modules" / f).is_file())
     return f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
-<link rel="stylesheet" href="{pret}"><style>{css}</style></head>
+{links}<style>{css}</style></head>
 <body><div class="sheet">{inner_html}</div></body></html>"""
 
 
