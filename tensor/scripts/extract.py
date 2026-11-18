@@ -17,6 +17,11 @@
 
 스캔본(텍스트 없음)이면 경고를 내고 이미지만 만든다 — 이때는 이미지를 직접 보고 목록을 만든다.
 """
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 import argparse, csv, re, sys
 from pathlib import Path
 

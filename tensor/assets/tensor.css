@@ -248,3 +248,14 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .tg.ind{border-style:dashed}
 
 .katex .hangul_fallback,.katex .cjk_fallback{font-family:var(--serif)}
+
+/* ---- build.py 가 만드는 고정 부품 ---- */
+.sol .box > .cond{border-top:none;margin:0 0 1.5mm;padding-top:0}
+.howto-title{color:var(--p);font-weight:800;margin:5mm 0 1mm}
+.toc td.pg.muted{color:#bbb}
+.cover .note .note-extra{opacity:.75}
+.ox-wrap{margin-top:6mm}
+.code{font-family:"Consolas","D2Coding","Menlo",monospace;font-size:8.2pt;line-height:1.5;background:var(--gl);border:1px solid var(--gm);padding:2.5mm 3.5mm;margin:2mm 0 2.5mm;white-space:pre-wrap;word-break:break-all;text-align:left}
+.tb{width:100%;border-collapse:collapse;font-size:8.6pt;margin:2mm 0 3mm}
+.tb th{font-family:var(--sans);font-weight:700;background:var(--pl);color:var(--pd);padding:1.3mm 2mm;border-bottom:1px solid var(--pm)}
+.tb td{padding:1.3mm 2mm;border-bottom:1px solid var(--gm);vertical-align:middle}

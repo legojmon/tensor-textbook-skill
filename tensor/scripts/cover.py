@@ -23,6 +23,11 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
 }
 색은 cover_color, spine_color 두 개만 바꾼다. 나머지(글자색·배경·레이아웃)는 고정이다.
 """
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 import argparse, base64, json, mimetypes, os, sys
 from pathlib import Path
 

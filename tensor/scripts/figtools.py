@@ -11,6 +11,11 @@
   # 원본을 그대로 쓰기로 한 경우(개인 인쇄용): 흑백·대비 보정
   python3 figtools.py mono in.png -o fig/a01.png
 """
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 import argparse
 from pathlib import Path
 

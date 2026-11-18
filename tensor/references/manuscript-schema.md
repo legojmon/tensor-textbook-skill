@@ -1,0 +1,133 @@
+# Tensor 원고 형식 (JSON) — build.py 입력
+
+원고는 **JSON 한 파일**(`work/book.json`)에 글만 쓴다. 표지·목차·Preview·문제 쪽·TOPIC 부품·Review·빠른 정답의 HTML 과 CSS 는 `scripts/build.py` 가 고정 부품으로 조립한다. HTML 을 직접 쓰거나 `<style>`·`style=` 을 넣는 길은 없다. 그래서 누가 만들어도 같은 모양이 나온다.
+
+```bash
+python <skill>/scripts/build.py work/book.json            # → work/book.json 옆에 book.html
+python <skill>/scripts/lint.py  work/book.html --inventory work/INVENTORY.md
+python <skill>/scripts/render.py work/book.html --strict --png work/preview/
+```
+
+build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모두 출력하고 파일을 쓰지 않는다.** 오류 메시지의 위치(`TOPIC 01 블록 7`)를 보고 JSON 을 고친다. `--lenient` 는 분량(개수) 규칙만 경고로 낮추며, 사용자가 명시적으로 허락했을 때만 쓴다.
+
+완성 견본: `references/example-manuscript.json` (회로이론 14장 TOPIC 01 시안, 배포본에서도 같은 경로). 쓰기 전에 한 번 읽고, 쓴 뒤 나란히 비교한다.
+
+---
+
+## 1. 글 쓰는 규칙 (모든 문자열 공통)
+
+- 문자열은 HTML 조각이다. 허용 태그는 **`<b> <i> <u> <sub> <sup> <span> <br> <small> <code>`** 뿐이다. `<div>`, `<p>`, `<table>`, `style=` 은 오류.
+- 교재 용어 태그: `<span class="tg ws">원서 개념</span>`, `<span class="tg">시험 개념</span>`, `<span class="tg ind">원서 간접 개념</span>`, 각주 표시 `<sup class="pc">ⓐ</sup>`.
+- 수식은 KaTeX `$…$`(인라인), `$$…$$`(별행). JSON 안이므로 백슬래시는 두 번 쓴다: `"$$v_o(t)=20-12.5e^{-0.25t}\\ \\text{V}$$"`, `"$\\tau=R_{\\mathrm{th}}C$"`. 수식 안의 `<`, `>` 는 그대로 써도 된다(빌더가 처리).
+- 문체는 `writing-style.md` 를 따른다(평서문, 말풍선만 구어체, 대시 없음).
+
+## 2. 최상위 구조
+
+```json
+{
+  "scope": "chapter",                      // chapter = 장 전체(기본) / draft = TOPIC 시안
+  "subject": "회로이론",
+  "chapter": {"no": "14", "title": "라플라스 변환", "title_en": "The Laplace Transform"},
+  "part": "Part2", "start_page": 16, "theme": "mono",          // theme: mono(기본) / color
+  "per_page": 2,                           // 문제 쪽당 2(기본) 또는 4
+  "sources": {                             // 출처 이름 선언 (필수). 출처 문자열은 이 이름 또는 "자체 제작"으로 시작한다
+    "원서": {"title": "Dorf, Introduction to Electric Circuits 9e", "chapters": [14]},
+    "보조": {"title": "Lafore, Data Structures & Algorithms in Java 2e", "chapters": [3, 14]},
+    "강의": {"title": "강의록"}
+  },
+  "cover_note": "",                        // 선택. 장 표지 안내문 뒤에 작게 붙는 한 줄
+  "plan": [{"no": "01", "title": "응답식에서 회로 읽기"}, …],   // 승인받은 TOPIC 구성안 전체 (시안이면 안 만든 TOPIC 도 적는다)
+  "preview": {"paragraphs": ["…", "…", "…"]},                 // 정확히 3문단 (writing-style §4-14)
+  "lecture_note": "", "lecture": [ 문제 … ],                   // 강의 선정 문제 L·01…
+  "topics": [ TOPIC … ],
+  "apply_note": "", "apply": [ 문제 … ],                       // 적용문제 A·01…
+  "exercises_note": "", "exercises": [ 문제 … ],               // 연습문제 B·01…
+  "review": {"paragraphs": ["…", "…"]},                        // OVERVIEW 2문단. O/X 문항은 TOPIC 의 ox 에서 모은다
+  "answers": [{"for": ["L·01", "01-EX01"], "text": "$C=2$ F"}, …]   // 모든 L·EX·A·B 의 답 (빠짐없이)
+}
+```
+
+`sources.chapters` 를 적으면 출처 문자열의 장 번호(`14.7-1`, `R-8.3`, `Listing 5.3` 의 앞 수)가 선언된 장과 다를 때 오류가 난다. 보조 교재의 장 번호를 원서 장 번호와 섞는 실수를 막는다.
+
+## 3. 문제 (lecture / apply / exercises 의 원소)
+
+```json
+{"lv": 2, "src": "원서 P14.7-6 · 강의 p.12", "topic": "01",
+ "hint": "분자 6은 독립 정보인가?",
+ "text": "그림의 회로에서 … 의 값을 구하시오.",
+ "fig": {"src": "fig/a01.svg", "width": "62mm"}}
+```
+
+- 번호(`L·01`, `A·01`, `B·01`)는 순서대로 자동. `lv` 1~3, `topic` 은 관련 TOPIC 번호(쪽 번호 칸에 쓰인다), `hint` 는 한 줄.
+- `fig` 는 객체 또는 객체 목록(`cap` 선택). 그림이 정말 필요 없는 문제만 `"nofig": "이유"` 를 쓴다. 둘 다 없으면 오류.
+- 문제 쪽 그림 폭 60~76mm. 파일은 `book.html` 이 놓일 폴더 기준 상대 경로이고, 없으면 오류.
+
+## 4. TOPIC
+
+```json
+{"no": "01", "title": "응답식에서 회로 읽기",
+ "ox": ["응답식 $A+Be^{-pt}$의 세 숫자가 각각 회로의 무엇인지 말할 수 있는가?", "…", "…"],   // Review O/X 3~5개
+ "blocks": [ 블록 … ]}
+```
+
+`blocks` 는 쪽을 신경 쓰지 않고 순서대로 쓴다(쪽 나눔은 자동). 블록은 문자열 또는 `{"type": …}` 객체다.
+
+| 블록 | 쓰는 법 | 비고 |
+|---|---|---|
+| 문단 | `"문장…"` 또는 `{"type":"p","text":"…","keep_next":true}` | `keep_next` 는 다음 부품과 같은 쪽에 둔다(연결 문단) |
+| 소절 제목 | `"## 1. 응답식의 세 숫자"` | TOPIC당 2~3개. `"### "` 는 h4 |
+| 흐름 칩 | `{"type":"flow","chips":["회로","KVL·KCL<br>미분방정식","…","응답식"],"rev":"시험은 이 순서를 거꾸로 묻는다"}` | 마지막 칩이 강조 |
+| **EX** | `{"type":"ex","src":["원서 Example 14.7-1","강의 p.12"],"text":"…구하시오.","fig":{"src":"fig/ex01.svg","width":"60mm"}}` | 번호 자동(EX 01…). `fig` 또는 `nofig` 필수 |
+| **원서적 해법** | `{"type":"sol","kind":"book","units":[ 단위 … ]}` | 첫 EX 바로 다음에 필수 |
+| **시험적 해법** | `{"type":"sol","kind":"exam","cond":"적용 조건 한 줄","units":[ … ]}` | `cond` 필수 |
+| **말풍선** | `{"type":"bubble","text":"응답식을 다 줬는데… 이걸 또 s영역으로 풀어야 해?"}` | 구어체 한 문장 |
+| 논증 단계 | `{"type":"steps","units":["<b>최종값 정리</b> : …","…"]}` | 번호 대신 `·` (원서 개념으로 논증할 때) |
+| 각주 | `{"type":"fn","key":"ⓐ","text":"…"}` | 참조한 블록 **바로 뒤**에 둔다 |
+| **개념 박스** | `{"type":"concept","kind":"exam","title":"1차 응답식 해부","units":[ … ],"cond":"적용 조건"}` | `kind`: exam(시험 개념, 기본)/book(원서 개념)/ind(원서 간접 개념). 3탭은 자동. exam 은 `cond` 필수 |
+| **CORE** | `{"type":"core","cond":"응답식이 주어진 역추적 문제","action":"상수 = 최종값 … 미지수와 맞춘다"}` | `[조건] ⟹ [행동]` 으로 조판 |
+| 저자 TIP | `{"type":"tip","title":"끝까지 풀지 않는 용기","text":"…"}` | TOPIC당 1개 이하, 장 전체 2~3개 |
+| **채점 포인트** | `{"type":"grade","intro":"이 유형이 어떻게 채점되는지 1~2문장","items":["…","…","…","…"]}` | 4~6줄 |
+| **강의 VS 연습문제** | `{"type":"vs","rows":[["강의 Ex 14.7-1","1차 회로, 응답식이 식으로 주어짐"],…],"after":"표 뒤 마무리 1~2문장"}` | 4~6행 |
+| 그림 | `{"type":"fig","src":"fig/x.svg","width":"62mm","cap":"설명"}` | 본문 그림 52~62mm |
+| 코드 | `{"type":"code","text":"for (…) {…}","cap":"Listing 5.3"}` | 프로그래밍 과목. HTML 없이 그대로 |
+| 표 | `{"type":"table","head":["…"],"rows":[["…","…"]]}` | |
+| 강제 쪽 넘김 | `{"type":"pagebreak"}` | 꼭 필요할 때만 |
+
+**단위(units)** — 해법·개념 박스 안에 들어가는 것. 문자열은 단계(①②③ 자동 번호)다.
+
+```json
+"units": [
+  "<b>$t<0$</b> : 정상상태이므로 …",                               // 단계, 번호 자동
+  {"n": "③", "step": "…"},                                        // 번호 지정
+  {"p": "응답식의 세 숫자를 … $$…$$"},                              // 문단
+  {"fig": {"src": "fig/ex01_dead.svg", "width": "78mm", "cap": "전원을 끈 회로"}},
+  {"withfig": {"units": ["…", "…"], "fig": {"src": "fig/ex01_s.svg", "width": "62mm"}}},   // 글 왼쪽·그림 오른쪽
+  {"table": {"head": ["숫자", "의미", "구하는 회로"], "rows": [["$A$", "최종값", "…"]]}},
+  {"code": "…"}
+]
+```
+
+### TOPIC 하나의 필수 순서 (빌더가 검사)
+
+```
+"## 1. …"  →  도입 문단(근거 번호)  →  EX 01  →  원서적 해법  →  관찰 문단  →  (연결 문단, keep_next)
+→  말풍선  →  시험적 해법(cond)  →  원서 개념으로 논증(steps·fn)  →  개념 박스(exam, cond)  →  CORE
+→  (TIP)  →  EX 02 …  →  채점 포인트  →  강의 VS 연습문제
+```
+
+- 빠지면 오류: EX, 원서적 해법, 말풍선, 시험적 해법, 시험 개념 박스, CORE, 채점 포인트, VS 표, 소절 제목, 도입 문단, 관찰 문단.
+- 순서가 어긋나면 오류: 첫 EX 다음은 원서적 해법 / EX → 원서적 → 말풍선 → 시험적 → 개념 박스 → CORE / 채점 포인트·VS 표는 개념 박스 뒤.
+- 분량(`--lenient` 로만 완화): EX 2~3개, 소절 2~3개, 채점 4~6줄, VS 4~6행, ox 3~5개, Preview 3문단, Review 2문단, 장 전체 TOPIC 6~12개, 강의 선정 문제 2개 이상, 연습문제 4개 이상, TOPIC마다 적용문제 1개 이상.
+
+## 5. scope 와 시안
+
+- `"scope": "draft"`: 한 TOPIC 시안. `plan` 에는 구성안 전체를 적고 `topics` 에는 만드는 TOPIC 만 넣는다. 목차에서 안 만든 TOPIC 은 `—` 로 표시된다. 연습문제(B)는 생략 가능, 적용문제는 2개 이상.
+- `"scope": "chapter"`: `plan` 의 모든 TOPIC 원고가 있어야 한다.
+
+## 6. 빠른 정답
+
+`answers[].for` 에는 문제 번호를 쓴다: `L·01`, `A·02`, `B·03`, EX 는 `"{TOPIC}-EX{번호}"` (예: `"01-EX02"`). 같은 문제가 L 과 EX 에 중복되면 한 항목에 둘 다 적는다. `label` 을 생략하면 `L·01 / EX 01` 처럼 자동으로 만든다. 모든 번호에 답이 있어야 빌드된다. 답은 sympy 등으로 검증한 값만 쓴다.
+
+## 7. 결과 쪽 순서
+
+장 표지 → 장 목차 → Preview → 강의 선정 문제(L) → TOPIC … → 적용문제(A) → 연습문제(B) → Review: 개념진단(O/X, 넘치면 자동으로 다음 쪽) → 빠른 정답. 책 전체의 앞부분(서문·전체 차례)은 `frontmatter.py` 가 `<!-- FRONTMATTER -->` 자리에 끼운다.

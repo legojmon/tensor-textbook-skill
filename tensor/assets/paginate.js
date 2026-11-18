@@ -100,7 +100,25 @@
     for (let i = 0; i < blocks.length; i++) {
       const b = blocks[i];
       if (b.classList.contains("pagebreak")) { content = newPage(topic, false, anchor); continue; }
-      if (b.classList.contains("fn")) { placeFootnote(content, b); continue; }
+      if (b.classList.contains("fn")) {
+        placeFootnote(content, b);
+        if (over(content)) {
+          // 각주가 본문 높이를 줄여 참조 블록이 잘리면, 참조 블록과 각주를 다음 쪽으로 옮긴다
+          b.remove();
+          content.style.height = CONTENT_H + "mm";
+          const carry = [];
+          let last = content.lastElementChild;
+          if (last) { carry.unshift(last); last = last.previousElementSibling; }
+          while (last && (/^H[34]$/.test(last.tagName) || last.classList.contains("keep-next"))) {
+            carry.unshift(last);
+            last = last.previousElementSibling;
+          }
+          content = newPage(topic, false, anchor);
+          carry.forEach((c) => content.appendChild(c));
+          placeFootnote(content, b);
+        }
+        continue;
+      }
       content.appendChild(b);
       if (!over(content)) continue;
 
