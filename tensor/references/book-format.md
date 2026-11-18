@@ -178,7 +178,7 @@ paginate.js 가 하는 일
 
 ## 6. 흑백 인쇄 (기본)
 - `template.html` 은 `tensor.css` 다음에 `theme-mono.css` 를 불러온다. 색 대신 **모양**으로 구분한다: 시험 개념 태그 = 검정 반전, 원서 개념 = 실선, 원서 간접 개념 = 점선(`.tg.ind`) / 개념 박스 = 이중선·실선·점선(`.concept`, `.concept.book`, `.concept.ind`) / 시험적 해법 = 굵은 왼쪽 막대, 원서적 해법 = 옅은 회색.
-- 장 표지·띠·탭은 칠하지 않고 선으로만(잉크 절약). 컬러로 뽑을 때만 `theme-mono.css` 링크를 지우고 `TENSOR_THEME=color` 로 그림을 다시 만든다.
+- 장·Part 표지의 보라색 면은 흑백에서 옅은 회색 바탕과 짙은 회색 표식으로 옮긴다. 장 번호·CHAPTER·Part 표기는 짙은 면에 흰 글씨, 제목·작은 안내문은 밝은 면에 짙은 글씨로 둔다. 본문 띠와 탭은 선으로 구분한다. 컬러로 뽑을 때만 `theme-mono.css` 링크를 지우고 `TENSOR_THEME=color`로 그림을 다시 만든다.
 
 ## 7. 색 바꾸기 (컬러 인쇄일 때)
 `tensor.css` 맨 위 `:root` 의 `--p`(포인트), `--pl`(옅은 배경), `--pm`(중간), `--pd`(진한) 4개만 바꾸고, `circuits.py` 의 `ACCENT` 를 같은 값으로 바꾼다.

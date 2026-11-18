@@ -1,6 +1,6 @@
 /* Tensor 흑백 인쇄 테마 (기본값)
  * - 색이 아니라 모양으로 구분한다: 테두리 종류(실선/점선/이중선), 반전(검정 바탕 흰 글자), 왼쪽 막대
- * - 전면 칠 금지: 장 표지·띠·탭은 선으로만. 면 칠은 옅은 회색(#F2F2F2) 소면적만
+ * - 장·Part 구분지는 밝은 지면과 어두운 표식으로 구별한다. 본문 띠와 탭은 선으로 표시한다.
  * 컬러로 뽑으려면 template.html 에서 이 파일 링크만 지운다.
  */
 :root{
@@ -86,16 +86,34 @@ h3{color:#111}
 .ox td.pg{background:#fff;color:#111;border:.8pt solid #111}
 .newmark{background:#111}
 
-/* ---------- 장 표지·목차: 전면 칠 없음 ---------- */
-.cover{background:#fff}
-.cover .arch{background:#fff;border:1.4pt solid #111;border-top:none}
-.cover .chap{color:#111}
-.cover .num{color:#111;font-weight:300}
+/* ---------- 장·Part 구분지 ---------- */
+.cover,.fm-part{
+  --divider-paper:#e3e3e3;
+  --divider-mark:#484848;
+  background:var(--divider-paper);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.cover .arch{background:var(--divider-mark)}
+.cover .chap{color:#fff;font-weight:600}
+.cover .num{color:#fff;font-weight:400}
 .cover .ttl{color:#111}
-.cover .ttl small{color:#444;opacity:1}
-.cover .note{color:#222;border-color:#999}
-.cover .note .tg{border-color:#111}
-.cover .brand{color:#111}
+.cover .ttl small{color:#333;opacity:1}
+.cover .note{color:#222;border-color:#777;font-size:9pt}
+.cover .brand{color:#222;opacity:1}
+.fm-part h1{
+  align-self:flex-start;
+  max-width:100%;
+  padding:4mm 10mm;
+  margin-bottom:8mm;
+  border:0;
+  border-radius:0 0 7mm 0;
+  background:var(--divider-mark);
+  color:#fff;
+}
+.fm-part h2{color:#111;font-size:22pt}
+
+/* ---------- 흑백 차례 ---------- */
 .toc{background:#fff}
 .toc .panel{background:#fff;border-top:1.4pt solid #111;border-bottom:1.4pt solid #111;left:12mm;right:12mm}
 .toc .circle{background:#fff;color:#111;border:1.2pt solid #111}
