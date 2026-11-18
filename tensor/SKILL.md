@@ -55,7 +55,7 @@ python <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf 
 **표지를 만들 때 확인**
 7. 교재명(기본 TENSOR), 부제(기본 "시험 개념의 완성"), 저자 표기
 8. 학교 로고: 서울대면 내장 흰색 로고(`"logo": "snu"`), 다른 학교면 투명 배경 PNG/SVG 첨부 요청
-9. 표지색·책등색(기본 #6B3FD4), 글꼴 조합(serif·sans·mixed), 예상 쪽수 또는 제본집이 알려준 책등 두께
+9. 표지색·책등색(기본 #6B3FD4), 글꼴 조합(serif·sans·classic), 예상 쪽수 또는 제본집이 알려준 책등 두께
 
 **자료 문제 — `INVENTORY.md` 의 "⚠ 확인 필요" 항목을 전부 사용자에게 보여주고 처리 방법을 묻는다**
 
@@ -161,7 +161,7 @@ python <skill>/scripts/cover.py work/cover.json -o work/cover/
 - `back_paras` 는 지어내지 말고 내지 Preview·표지 안내문 문장을 다듬어 쓴다.
 - 기호(`symbol`)는 과목을 상징하는 **굵은 직사각형·원 위주의 단순한 블록**. 회로는 `circuit`, 자료구조·알고리즘은 `tree`, 그 외는 `blocks` 또는 `references/cover-design.md` 규칙대로 SVG 조각을 만든다.
 - 책등 두께는 내지 쪽수로 계산된다. 실제 쪽수가 나오면 다시 돌린다.
-- 하단 띠는 기본으로 없다(`band`), 글꼴 조합은 `type`(serif 기본 / sans / mixed). 표지를 처음 보여 줄 때 세 조합의 앞표지를 나란히 렌더링해 고르게 할 수 있다.
+- 하단 띠는 기본으로 없다(`band`), 글꼴 조합은 `type`(serif 기본 / sans / classic, 역할별은 `fonts`). 표지를 처음 보여 줄 때 세 조합의 앞표지를 나란히 렌더링해 고르게 할 수 있다.
 
 ## 9단계. 전달
 PDF들(내지, 표지 펼침면, 앞·뒤·책등)을 보내고 짧게: 범위, TOPIC 목록, 검증한 답 개수, 쓴 기본값, 빌더·lint·render 결과(오류 0), 다음 단계. 마지막 한 줄: "원서·강의 자료를 바탕으로 만들었으니 개인 학습용으로만 쓰세요."

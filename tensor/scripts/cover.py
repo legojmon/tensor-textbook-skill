@@ -16,7 +16,7 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
   "cover_color": "#6B3FD4",             ← 바꿀 수 있는 색 1: 표지(도형 그라데이션·하단 띠·포인트)
   "spine_color": "#6B3FD4",             ← 바꿀 수 있는 색 2: 책등 (없으면 cover_color)
   "band": false,                         true = 앞·뒤표지 아래 색 띠(로고·저자를 흰색으로 띠 위에). 기본 false = 띠 없이 흰 바탕, 로고는 표지색
-  "type": "serif",                       글꼴 조합: serif(명조 + Cormorant, 기본) | sans(Pretendard + Montserrat) | mixed(고딕 제목 + 명조 본문)
+  "type": "serif",                       글꼴 조합: serif(고딕 과목명 + 명조 문구 + Cormorant, 기본) | sans(전부 고딕) | classic(명조 과목명). "fonts" 로 역할별 덮어쓰기
   "pages": 220,                          내지 쪽수 → 책등 두께 자동 계산
   "spine_mm": null,                      제본집이 알려준 두께가 있으면 이 값을 우선
   "symbol": "circuit",                   앞표지 기호: circuit | blocks | tree | <SVG 파일 경로>
@@ -164,7 +164,7 @@ def front(cfg):
   <svg width="{W}" height="{H}" viewBox="0 0 {W} {H}" class="abs">{symbol_svg(cfg, 0, "F")}</svg>
   <div class="abs tag ko-text" style="left:50px;top:58px">{tag}</div>
   <div class="abs" style="right:48px;top:50px;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
-    <span class="ko-head" style="font-size:32px;letter-spacing:.16em;margin-right:-.16em;color:{INK}">{cfg["subject"]}</span>
+    <span class="ko-title" style="font-size:32px;color:{INK}">{cfg["subject"]}</span>
     <span class="ko-text" style="font-size:14px;letter-spacing:.2em;margin-right:-.2em;color:{SUB}">{cfg.get("subtitle","")}</span>
   </div>
   <div class="abs brand" style="left:26px;top:257px">{title}</div>
@@ -184,7 +184,7 @@ def back(cfg, spine_px):
     <span class="ko-text" style="font-size:13px;letter-spacing:.24em;color:{SUB}">{cfg.get("subject_full", cfg["subject"])}</span>
   </div>
   <div class="abs" style="left:56px;top:330px;width:540px;display:flex;flex-direction:column;gap:28px">
-    <h2 class="ko-head" style="margin:0;font-size:36px;line-height:1.35;letter-spacing:-.005em;color:{INK}">{bt}</h2>
+    <h2 class="ko-title" style="margin:0;font-size:36px;line-height:1.35;color:{INK}">{bt}</h2>
     <div style="width:56px;height:4px;background:var(--cover)"></div>
     {paras}
   </div>
@@ -231,6 +231,8 @@ body{{font-family:'Pretendard',sans-serif;color:#33333b;-webkit-print-color-adju
 .tag{{display:flex;flex-direction:column;gap:12px;font-size:17px;letter-spacing:.22em;color:#3A3A42}}
 .brand{{display:flex;flex-direction:column;font-size:104px;line-height:1.0;color:#3A3A42;font-family:{en_brand};font-weight:{en_brand_w}}}
 .ko-head{{font-family:{ko_head};font-weight:{ko_head_w}}}
+.ko-title{{font-family:{ko_head};font-weight:{ko_head_w};letter-spacing:{title_track};margin-right:calc(-1 * {title_track})}}
+h2.ko-title{{letter-spacing:calc({title_track} / 3);margin-right:0}}
 .ko-text{{font-family:{ko_text};font-weight:{ko_text_w}}}
 .en-brand{{font-family:{en_brand};font-weight:{en_brand_w}}}
 .en-text{{font-family:{en_text};font-weight:{en_text_w};letter-spacing:.03em}}
@@ -244,13 +246,13 @@ PRET = "'Pretendard',sans-serif"
 SERIF = "'Noto Serif KR',serif"
 MONT = "'Montserrat','Pretendard',sans-serif"
 CORM = "'Cormorant Garamond','Noto Serif KR',serif"
-TYPES = {   # 글꼴 조합: 한글 제목 / 한글 본문 / 영문 대형 브랜드 / 영문 본문(학교명)
-    "serif": dict(ko_head=SERIF, ko_head_w=900, ko_text=SERIF, ko_text_w=600,
+TYPES = {   # 글꼴 조합: 한글 제목(과목명·책등) / 한글 문구·본문 / 영문 대형 브랜드 / 영문 본문(학교명)
+    "serif": dict(ko_head=PRET, ko_head_w=700, title_track=".06em", ko_text=SERIF, ko_text_w=600,
                   en_brand=MONT, en_brand_w=800, en_text=CORM, en_text_w=700),
-    "sans":  dict(ko_head=PRET, ko_head_w=800, ko_text=PRET, ko_text_w=500,
+    "sans":  dict(ko_head=PRET, ko_head_w=700, title_track=".06em", ko_text=PRET, ko_text_w=500,
                   en_brand=MONT, en_brand_w=800, en_text=MONT, en_text_w=600),
-    "mixed": dict(ko_head=PRET, ko_head_w=900, ko_text=SERIF, ko_text_w=600,
-                  en_brand=MONT, en_brand_w=800, en_text=CORM, en_text_w=700),
+    "classic": dict(ko_head=SERIF, ko_head_w=700, title_track=".02em", ko_text=SERIF, ko_text_w=600,
+                    en_brand=MONT, en_brand_w=800, en_text=CORM, en_text_w=700),
 }
 FONT_CSS = ["pretendard/dist/web/static/pretendard.css",
             *(f"@fontsource/noto-serif-kr/{w}.css" for w in (500, 600, 700, 900)),
@@ -261,7 +263,7 @@ FONT_CSS = ["pretendard/dist/web/static/pretendard.css",
 def sheet(inner_html, w_mm, h_mm, cfg, offset_px=0):
     css = CSS.format(w=w_mm, h=h_mm, cover=cfg.get("cover_color", "#6B3FD4"),
                      spine=cfg.get("spine_color") or cfg.get("cover_color", "#6B3FD4"),
-                     **TYPES.get(cfg.get("type", "serif"), TYPES["serif"]))
+                     **{**TYPES.get(cfg.get("type", "serif"), TYPES["serif"]), **(cfg.get("fonts") or {})})
     links = "".join(f'<link rel="stylesheet" href="{(BUILD / "node_modules" / f).as_uri()}">'
                     for f in FONT_CSS if (BUILD / "node_modules" / f).is_file())
     return f"""<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">

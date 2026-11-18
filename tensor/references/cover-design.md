@@ -7,12 +7,13 @@
 - **로고는 한 가지 색으로 칠한다**: 투명 배경 PNG/SVG의 모양을 CSS mask로 써서 흰 바탕에서는 표지색, 띠·책등 위에서는 흰색으로 칠한다.
 - **글꼴 조합은 `type` 하나로 고른다**(내지 Pretendard와 별개). 자간을 넓게 벌린 얇은 고딕(예전 문구)은 화면·인쇄 모두 힘이 없어 보인다는 피드백이 있었다.
 
-  | type | 한글 제목 | 한글 문구·본문 | 영문 대형 브랜드 | 영문 학교명 |
+  | type | 한글 제목(과목명·책등) | 한글 문구·본문 | 영문 대형 브랜드 | 영문 학교명 |
   |---|---|---|---|---|
-  | `serif` (기본) | Noto Serif KR Black | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
-  | `sans` | Pretendard ExtraBold | Pretendard Medium | Montserrat ExtraBold | Montserrat SemiBold |
-  | `mixed` | Pretendard Black | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
+  | `serif` (기본) | Pretendard Bold, 자간 0.06em | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
+  | `sans` | Pretendard Bold, 자간 0.06em | Pretendard Medium | Montserrat ExtraBold | Montserrat SemiBold |
+  | `classic` | Noto Serif KR Bold, 자간 0.02em | Noto Serif KR SemiBold | Montserrat ExtraBold | Cormorant Garamond Bold |
 
+  과목명에 명조 Black이나 넓은 자간을 쓰면 지나치게 경직돼 보인다는 피드백이 있었다. 역할별로 바꾸려면 `"fonts": {"ko_head": "'Pretendard',sans-serif", "ko_head_w": 800, "title_track": ".14em"}` 처럼 덮어쓴다(키: ko_head·ko_head_w·title_track·ko_text·ko_text_w·en_brand·en_brand_w·en_text·en_text_w).
   글꼴은 모두 `setup.py`가 npm(fontsource)으로 받아 PDF에 넣는다. 문구 자간은 0.2em 안팎으로 둔다.
 - **바꿀 수 있는 색은 두 개뿐**: `cover_color`(도형 그라데이션·로고·포인트, 띠를 켜면 띠), `spine_color`(책등). 그라데이션 톤은 표지색 하나에서 `color-mix` 로 자동 생성된다. 글자색·배경·배치는 고정.
 - 책등 두께 = 쪽수 ÷ 2 × 0.1mm + 1mm (80g 모조지 기준). 제본집 실측값이 있으면 `spine_mm` 으로 덮어쓴다.

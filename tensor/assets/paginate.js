@@ -249,7 +249,7 @@
     }
     let sheet = host, table = host.querySelector("table.btoc");
     const nums = [];
-    const limit = () => sheet.getBoundingClientRect().bottom - 18 * MM;
+    const limit = () => sheet.getBoundingClientRect().bottom - 25 * MM;   // print.cjs 넘침 검사(24mm)보다 안쪽
     groups.forEach((g) => {
       g.rows.forEach(([label, cls, target], i) => {
         const tr = el("tr", (i === 0 ? "first " : "") + cls);
