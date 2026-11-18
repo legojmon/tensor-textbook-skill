@@ -24,9 +24,9 @@ description: 강의록·원서 PDF로 TENSOR 교재를 제작한다. Codex에서
 
 ## 원고와 조판 (Codex 에서 반드시 지킨다)
 
-- 원고는 `work/book.json` 에 글만 쓴다. 형식은 `tensor/references/manuscript-schema.md`, 견본은 `tensor/references/example-manuscript.json`. **HTML·CSS 를 직접 쓰거나 고치지 않는다.** `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·강의 선정 문제·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·Review·빠른 정답을 고정 부품으로 조립한다.
+- 원고는 `work/book.json` 에 글만 쓴다. 형식은 `tensor/references/manuscript-schema.md`, 견본은 `tensor/references/example-manuscript.json`. **HTML·CSS 를 직접 쓰거나 고치지 않는다.** `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·워밍업 문제·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·실전 문제·Review·빠른 정답·해설을 고정 부품으로 조립한다. 컬러판은 `--color`.
 - 전달 전 세 명령이 모두 깨끗해야 한다: `build.py` 오류 0 → `lint.py` 경고 0 (시안은 `--draft`) → `render.py --strict` 검수 0. 하나라도 남으면 JSON 을 고치고 다시 돌린다. `--lenient` 는 사용자가 허락한 경우에만 쓰고 전달 때 밝힌다.
-- 문제 번호는 L(강의 선정 문제)·A(적용문제)·B(연습문제)와 TOPIC 안의 EX 뿐이다. 다른 글자를 만들지 않는다. 모든 문제의 답을 `answers` 에 넣고 검증한다.
+- 문제 번호는 W(워밍업, [준비] 칸 필수)·A(적용문제)·B(연습문제)·X(실전 문제)와 TOPIC 안의 EX 뿐이다. 다른 글자를 만들지 않는다. 모든 문제의 답을 `answers` 에 넣고 검증한다(빠른 정답·해설 장이 된다).
 - EX 와 문제마다 그림을 준비한다. 그림이 필요 없는 문제만 `nofig` 에 이유를 쓴다.
 - 보조 교재가 있으면 `sources` 에 책마다 이름과 장 번호를 선언하고, 출처는 그 이름으로 시작한다. 빌더가 장 번호 불일치를 잡는다.
 - 시안(한 TOPIC)은 `"scope": "draft"`, 승인된 구성안 전체를 `plan` 에 둔다. 장 전체는 `"scope": "chapter"` 로 `plan` 의 모든 TOPIC 을 쓴다.

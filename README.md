@@ -29,7 +29,7 @@ $tensor 첨부한 강의록과 원서로 TENSOR 교재를 만들어줘. 견본 �
 ## 어떻게 같은 모양이 나오나
 
 1. 모델은 `work/book.json` 에 글만 쓴다 (형식: [manuscript-schema.md](tensor/references/manuscript-schema.md)).
-2. `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·강의 선정 문제·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, TIP, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·Review·빠른 정답을 고정 HTML/CSS 로 조립한다. 필수 부품·순서·분량·그림·출처·정답이 빠지면 파일을 쓰지 않는다.
+2. `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·워밍업 문제(준비 칸)·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, TIP, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·실전 문제·Review·빠른 정답·해설을 고정 HTML/CSS 로 조립한다. `--color` 로 화면용 컬러판도 같은 원고에서 나온다. 필수 부품·순서·분량·그림·출처·정답이 빠지면 파일을 쓰지 않는다.
 3. `lint.py` 가 문체·번호·구조를, `render.py --strict` 가 넘침·수식·그림 오류를 잡는다. 셋 다 0 이어야 전달한다.
 
 <details>

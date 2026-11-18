@@ -1,9 +1,10 @@
 # Tensor 원고 형식 (JSON) — build.py 입력
 
-원고는 **JSON 한 파일**(`work/book.json`)에 글만 쓴다. 표지·목차·Preview·문제 쪽·TOPIC 부품·Review·빠른 정답의 HTML 과 CSS 는 `scripts/build.py` 가 고정 부품으로 조립한다. HTML 을 직접 쓰거나 `<style>`·`style=` 을 넣는 길은 없다. 그래서 누가 만들어도 같은 모양이 나온다.
+원고는 **JSON 한 파일**(`work/book.json`)에 글만 쓴다. 표지·목차·Preview·워밍업 문제·TOPIC 부품·적용문제·연습문제·실전 문제·Review·빠른 정답·해설의 HTML 과 CSS 는 `scripts/build.py` 가 고정 부품으로 조립한다. HTML 을 직접 쓰거나 `<style>`·`style=` 을 넣는 길은 없다. 그래서 누가 만들어도 같은 모양이 나온다.
 
 ```bash
-python <skill>/scripts/build.py work/book.json            # → work/book.json 옆에 book.html
+python <skill>/scripts/build.py work/book.json            # → work/book.json 옆에 book.html (흑백, 인쇄용)
+python <skill>/scripts/build.py work/book.json -o work/book_color.html --color   # 컬러판(화면용): theme-mono 제거, fig/ → figc/
 python <skill>/scripts/lint.py  work/book.html --inventory work/INVENTORY.md
 python <skill>/scripts/render.py work/book.html --strict --png work/preview/
 ```
@@ -38,28 +39,31 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
   "cover_note": "",                        // 선택. 장 표지 안내문 뒤에 작게 붙는 한 줄
   "plan": [{"no": "01", "title": "응답식에서 회로 읽기"}, …],   // 승인받은 TOPIC 구성안 전체 (시안이면 안 만든 TOPIC 도 적는다)
   "preview": {"paragraphs": ["…", "…", "…"]},                 // 정확히 3문단 (writing-style §4-14)
-  "lecture_note": "", "lecture": [ 문제 … ],                   // 강의 선정 문제 L·01…
+  "warmup_note": "", "warmup": [ 문제 … ],                     // 워밍업 문제 W·01… (문제마다 pre = [준비] 칸)
   "topics": [ TOPIC … ],
   "apply_note": "", "apply": [ 문제 … ],                       // 적용문제 A·01…
   "exercises_note": "", "exercises": [ 문제 … ],               // 연습문제 B·01…
+  "exam_note": "", "exam": [ 문제 … ],                         // 실전 문제 X·01… (장마다 5개, 1-B 의 시험 형식 그대로)
   "review": {"paragraphs": ["…", "…"]},                        // OVERVIEW 2문단. O/X 문항은 TOPIC 의 ox 에서 모은다
-  "answers": [{"for": ["L·01", "01-EX01"], "text": "$C=2$ F"}, …]   // 모든 L·EX·A·B 의 답 (빠짐없이)
+  "answers": [{"for": ["W·01", "01-EX01"], "text": "$C=2$ F"}, …]   // 모든 W·EX·A·B·X 의 답 (빠짐없이) → 빠른 정답·해설 장
 }
 ```
 
 `sources.chapters` 를 적으면 출처 문자열의 장 번호(`14.7-1`, `R-8.3`, `Listing 5.3` 의 앞 수)가 선언된 장과 다를 때 오류가 난다. 보조 교재의 장 번호를 원서 장 번호와 섞는 실수를 막는다.
 
-## 3. 문제 (lecture / apply / exercises 의 원소)
+## 3. 문제 (warmup / apply / exercises / exam 의 원소)
 
 ```json
 {"lv": 2, "src": "원서 P14.7-6 · 강의 p.12", "topic": "01",
+ "pre": "정상상태에서 커패시터는 개방이다. 1차 응답의 시정수는 $\\tau=R_{th}C$ 이다.",   // warmup 만. 정의·규칙 한두 줄, 답은 쓰지 않는다
  "hint": "분자 6은 독립 정보인가?",
  "text": "그림의 회로에서 … 의 값을 구하시오.",
  "fig": {"src": "fig/a01.svg", "width": "62mm"}}
 ```
 
-- 번호(`L·01`, `A·01`, `B·01`)는 순서대로 자동. `lv` 1~3, `topic` 은 관련 TOPIC 번호(쪽 번호 칸에 쓰인다), `hint` 는 한 줄.
+- 번호(`W·01`, `A·01`, `B·01`, `X·01`)는 순서대로 자동. 다른 글자는 없다. `lv` 1~3, `topic` 은 관련 TOPIC 번호(쪽 번호 칸에 쓰인다), `hint` 는 한 줄.
 - `fig` 는 객체 또는 객체 목록(`cap` 선택). 그림이 정말 필요 없는 문제만 `"nofig": "이유"` 를 쓴다. 둘 다 없으면 오류.
+- 실전 문제(X)의 출처는 `실전 · 근거`(강의 랩 함정, 시험 복기 유형 등)로 쓴다. 시험 형식이 T/F·단답이면 지문 끝을 `(T/F)` 또는 질문으로 끝내도 된다.
 - 문제 쪽 그림 폭 60~76mm. 파일은 `book.html` 이 놓일 폴더 기준 상대 경로이고, 없으면 오류.
 
 ## 4. TOPIC
@@ -89,7 +93,9 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
 | **채점 포인트** | `{"type":"grade","intro":"이 유형이 어떻게 채점되는지 1~2문장","items":["…","…","…","…"]}` | 4~6줄 |
 | **강의 VS 연습문제** | `{"type":"vs","rows":[["강의 Ex 14.7-1","1차 회로, 응답식이 식으로 주어짐"],…],"after":"표 뒤 마무리 1~2문장"}` | 4~6행 |
 | 그림 | `{"type":"fig","src":"fig/x.svg","width":"62mm","cap":"설명"}` | 본문 그림 52~62mm |
-| 코드 | `{"type":"code","text":"for (…) {…}","cap":"Listing 5.3"}` | 프로그래밍 과목. HTML 없이 그대로 |
+| 코드 | `{"type":"code","text":"for (…) {…}","cap":"Listing 5.3"}` | 프로그래밍 과목. HTML 없이 그대로, 강조 줄은 `[[b]]…[[/b]]` |
+| 배열 한 줄 | 문자열 안 매크로 `[[arr 5 2 _ 9 \| idx=0 \| hl=1 \| dark=3 \| dim=0-1 \| bar=2 \| mark=0:L,3:R \| lab=pass 1 \| cap=교환 1회]]` | 자료구조. `_` 빈칸, `~` 공백, hl 굵은 테두리, dark 강조 칸, dim 확정 영역, bar 칸막이 |
+| 강의 랩 노트 | `{"type":"concept","kind":"ind","title":"강의 랩 노트 : …","units":["…","…"]}` | 랩·실습 자료가 있을 때 첫 CORE 뒤. 측정 수치, 흔한 구현 실수, 슬라이드 정정 |
 | 표 | `{"type":"table","head":["…"],"rows":[["…","…"]]}` | |
 | 강제 쪽 넘김 | `{"type":"pagebreak"}` | 꼭 필요할 때만 |
 
@@ -117,17 +123,19 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
 
 - 빠지면 오류: EX, 원서적 해법, 말풍선, 시험적 해법, 시험 개념 박스, CORE, 채점 포인트, VS 표, 소절 제목, 도입 문단, 관찰 문단.
 - 순서가 어긋나면 오류: 첫 EX 다음은 원서적 해법 / EX → 원서적 → 말풍선 → 시험적 → 개념 박스 → CORE / 채점 포인트·VS 표는 개념 박스 뒤.
-- 분량(`--lenient` 로만 완화): EX 2~3개, 소절 2~3개, 채점 4~6줄, VS 4~6행, ox 3~5개, Preview 3문단, Review 2문단, 장 전체 TOPIC 6~12개, 강의 선정 문제 2개 이상, 연습문제 4개 이상, TOPIC마다 적용문제 1개 이상.
+- 분량(`--lenient` 로만 완화): EX 2~3개, 소절 2~3개, 채점 4~6줄, VS 4~6행, ox 3~5개, Preview 3문단, Review 2문단, 장 전체 TOPIC 6~12개, 워밍업 2개 이상, 연습문제 4개 이상, 실전 문제 5개, TOPIC마다 적용문제 1개 이상.
+
+본문 속 코드 조각은 `<code class="c">…</code>`, 트리·그래프 그림은 `scripts/dsfig.py` 로 SVG 를 만들어 `fig` 로 넣는다.
 
 ## 5. scope 와 시안
 
-- `"scope": "draft"`: 한 TOPIC 시안. `plan` 에는 구성안 전체를 적고 `topics` 에는 만드는 TOPIC 만 넣는다. 목차에서 안 만든 TOPIC 은 `—` 로 표시된다. 연습문제(B)는 생략 가능, 적용문제는 2개 이상.
+- `"scope": "draft"`: 한 TOPIC 시안. `plan` 에는 구성안 전체를 적고 `topics` 에는 만드는 TOPIC 만 넣는다. 목차에서 안 만든 TOPIC 은 `—` 로 표시된다. 연습문제(B)·실전 문제(X)는 생략 가능, 적용문제는 2개 이상.
 - `"scope": "chapter"`: `plan` 의 모든 TOPIC 원고가 있어야 한다.
 
-## 6. 빠른 정답
+## 6. 빠른 정답·해설
 
-`answers[].for` 에는 문제 번호를 쓴다: `L·01`, `A·02`, `B·03`, EX 는 `"{TOPIC}-EX{번호}"` (예: `"01-EX02"`). 같은 문제가 L 과 EX 에 중복되면 한 항목에 둘 다 적는다. `label` 을 생략하면 `L·01 / EX 01` 처럼 자동으로 만든다. 모든 번호에 답이 있어야 빌드된다. 답은 sympy 등으로 검증한 값만 쓴다.
+`answers[].for` 에는 문제 번호를 쓴다: `W·01`, `A·02`, `B·03`, `X·01`, EX 는 `"{TOPIC}-EX{번호}"` (예: `"01-EX02"`). 같은 문제가 W 와 EX 에 중복되면 한 항목에 둘 다 적는다. `label` 을 생략하면 `W·01 / EX 01` 처럼 자동으로 만든다. `text` 는 답과 핵심 근거 한 줄, 코드 답은 `"code"` 에 따로 쓴다. 빌더가 워밍업 → 적용 → 연습 → 실전 순서의 **빠른 정답·해설** 장(Review 뒤, 자동 쪽 나눔)으로 만든다. 모든 번호에 답이 있어야 빌드된다. 답은 sympy·시뮬레이션 등으로 검증한 값만 쓰고, 원서 정답이 틀렸으면 "원서 정답 정정" 이라고 적는다.
 
 ## 7. 결과 쪽 순서
 
-장 표지 → 장 목차 → Preview → 강의 선정 문제(L) → TOPIC … → 적용문제(A) → 연습문제(B) → Review: 개념진단(O/X, 넘치면 자동으로 다음 쪽) → 빠른 정답. 책 전체의 앞부분(서문·전체 차례)은 `frontmatter.py` 가 `<!-- FRONTMATTER -->` 자리에 끼운다.
+장 표지 → 장 목차 → Preview → 워밍업 문제(W) → TOPIC … → 적용문제(A) → 연습문제(B) → 실전 문제(X) → Review: 개념진단(O/X, 넘치면 자동으로 다음 쪽) → 빠른 정답·해설. 책 전체의 앞부분(서문·전체 차례)은 `frontmatter.py` 가 `<!-- FRONTMATTER -->` 자리에 끼운다.

@@ -77,7 +77,7 @@ def render(authors, book, base):
         '<p><span class="tg">시험 개념</span> 문제에서 반복되는 관찰과 적용 조건을 확인한다.</p>',
         '<p><span class="tg ind">간접 개념</span> 풀이에 필요한 관련 개념을 짚는다.</p>',
         entry("예제와 해법", "원서적 해법에서 출발해 시험적 해법을 비교하고 채점 포인트를 확인한다."),
-        entry("문제와 Review", "강의 선정 문제와 적용문제를 풀고 Review에서 놓친 조건을 확인한다.")]))
+        entry("문제와 Review", "워밍업 문제로 시작해 적용문제·연습문제·실전 문제를 풀고 Review에서 놓친 조건을 확인한다.")]))
     pages.append(section("독자 수기", (entry(x["name"], x["text"]) for x in book.get("testimonials", [])
                                     if x.get("consent") is True and x.get("text") and x.get("name"))))
     pages.append(section("소통", (entry(k, v) for k, v in authors.get("contact", {}).items() if v)))

@@ -255,7 +255,34 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .toc td.pg.muted{color:#bbb}
 .cover .note .note-extra{opacity:.75}
 .ox-wrap{margin-top:6mm}
-.code{font-family:"Consolas","D2Coding","Menlo",monospace;font-size:8.2pt;line-height:1.5;background:var(--gl);border:1px solid var(--gm);padding:2.5mm 3.5mm;margin:2mm 0 2.5mm;white-space:pre-wrap;word-break:break-all;text-align:left}
 .tb{width:100%;border-collapse:collapse;font-size:8.6pt;margin:2mm 0 3mm}
 .tb th{font-family:var(--sans);font-weight:700;background:var(--pl);color:var(--pd);padding:1.3mm 2mm;border-bottom:1px solid var(--pm)}
 .tb td{padding:1.3mm 2mm;border-bottom:1px solid var(--gm);vertical-align:middle}
+.concept td:first-child,.vs td:first-child{white-space:nowrap}
+
+/* ---- 워밍업 문제의 [준비] 칸 ---- */
+div.pre{font-family:var(--sans);font-size:7.6pt;line-height:1.5;border:1px dashed var(--pm);border-radius:1.5mm;padding:1.4mm 2.4mm;margin:0 0 2mm;background:var(--pl)}
+div.pre b{color:var(--p);margin-right:1.5mm}
+
+/* ---- 코드·배열 (자료구조·알고리즘) ---- */
+pre.code{font-family:"DejaVu Sans Mono","Consolas","D2Coding",monospace;font-size:7.3pt;line-height:1.42;background:#f3f3f3;border-left:2.2px solid var(--p);padding:1.8mm 3mm;margin:2mm 0;white-space:pre;overflow:hidden;border-radius:0 1.5mm 1.5mm 0;text-align:left}
+pre.code b{font-family:inherit;background:#d0d0d0}
+.qitem pre.code{font-size:6.9pt;margin:1.2mm 0}
+code.c{font-family:"DejaVu Sans Mono","Consolas","D2Coding",monospace;font-size:.9em;background:#eee;padding:0 .6mm;border-radius:.6mm}
+.arrw{margin:1.6mm 0;display:flex;align-items:center;gap:2.5mm;justify-content:center}
+.arrw .al{font-family:var(--sans);font-size:7.4pt;font-weight:700;min-width:11mm;text-align:right;color:#333}
+table.arr{border-collapse:collapse;font-family:var(--sans);font-size:8.4pt;margin:0;width:auto}
+table.arr td{border:1px solid #111;min-width:6.2mm;height:5.8mm;text-align:center;padding:0 .6mm;line-height:1.1}
+table.arr td.hl{outline:2px solid #111;outline-offset:-2px;font-weight:800}
+table.arr td.dark{background:var(--p);color:#fff;font-weight:700}
+table.arr td.dim{background:#dedede}
+table.arr td.bar{border-right:3px solid #111}
+table.arr td.n{border:none}
+table.arr tr.ix td{border:none;font-size:6.2pt;color:#777;height:3.2mm}
+table.arr tr.mk td{border:none;font-size:6.6pt;font-weight:800;height:3.4mm}
+.arrw .ac{font-family:var(--sans);font-size:7pt;color:#555}
+.figrow{display:flex;gap:4mm;justify-content:center;align-items:flex-end;flex-wrap:wrap;margin:2mm 0}
+.figrow .fig{text-align:center}
+.labnote{font-size:8.6pt}
+table.trace{font-size:7.8pt}
+table.trace td,table.trace th{padding:.6mm 1.4mm}

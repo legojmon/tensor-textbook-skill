@@ -3,8 +3,8 @@
 
     python build.py work/book.json [-o work/book.html] [--lenient]
 
-원고 형식은 references/manuscript-schema.md 에 있다. 표지·목차·Preview·강의 선정 문제·TOPIC·
-적용문제·연습문제·Review·빠른 정답의 HTML 은 전부 이 스크립트가 만든다. 원고에는 글만 쓴다.
+원고 형식은 references/manuscript-schema.md 에 있다. 표지·목차·Preview·워밍업 문제·TOPIC·
+적용문제·연습문제·실전 문제·Review·빠른 정답·해설의 HTML 은 전부 이 스크립트가 만든다. 원고에는 글만 쓴다.
 필수 부품이 빠지거나 순서·분량 규칙에 어긋나면 오류를 모두 출력하고 파일을 쓰지 않는다.
 --lenient 는 분량(개수) 규칙만 경고로 낮춘다. 사용자가 명시적으로 허락했을 때만 쓴다.
 """
@@ -19,6 +19,9 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import prep  # noqa: E402  배열 매크로·컬러판 그림
+
 ALLOWED_TAGS = {"b", "i", "u", "em", "strong", "sub", "sup", "span", "br", "small", "code", "s"}
 MATH = re.compile(r"\$\$.*?\$\$|\$[^$\n]*?\$", re.S)
 TAG = re.compile(r"<(/?)([A-Za-z][\w-]*)([^<>]*)>")
@@ -29,17 +32,19 @@ COVER_NOTE = ("<b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리�
               "다시 다듬는 단계다. 강의 문제와 원서 연습문제에 반복되는 생각을 <span class=\"tg\">시험 개념</span>으로 묶고, "
               "그것이 왜 성립하는지 원서 개념으로 확인한다.")
 HOWTO = [
-    ("① 강의 선정 문제 :", "강의에서 다룬 원서 예제·연습문제다. 출제 의도에 가장 가까우므로 먼저 <span class=\"tg ws\">원서 개념</span>만으로 풀어 보고 본문으로 넘어간다."),
-    ("② 본문(TOPIC) :", "<span class=\"tg\">시험 개념</span>을 하나씩 만들고, 원서 개념으로 왜 성립하는지 확인한다."),
+    ("① 워밍업 문제 :", "문제 안 [준비] 칸에 풀이에 필요한 정의를 넣었다. 처음 보더라도 먼저 풀어 보고 본문으로 넘어간다."),
+    ("② 본문(TOPIC) :", "<span class=\"tg\">시험 개념</span>을 하나씩 만들고, 원서 개념으로 왜 성립하는지 확인한다. 각 TOPIC의 EX 01이 워밍업 문제를 해부한다."),
     ("③ 적용문제 :", "본문의 시험 개념을 바로 써 보는 문항이다. 막히면 문제 아래 힌트를 본다."),
     ("④ 연습문제 :", "원서 장 끝 문제 중 주요 문항이다. <span class=\"tg ws\">원서적 해법</span>과 <span class=\"tg\">시험적 해법</span>을 모두 완성하는 것이 목표다."),
-    ("⑤ 채점 포인트 :", "대학 시험은 서술형 부분점수로 채점된다. 어떤 줄이 점수가 되는지 TOPIC마다 정리했다."),
+    ("⑤ 실전 문제 :", "시험 형식 그대로다. 시간을 재고 풀고, 답은 장 끝 빠른 정답·해설에서 확인한다."),
 ]
 PROBLEM_SETS = {
-    "lecture": ("L", "lecture", "강의 선정 문제", "강의에서 다룬 원서 문제다. 먼저 [원서적 해법]으로 풀어 보고,<br>본문을 공부한 뒤 [시험적 해법]으로 다시 풀어 보자."),
+    "warmup": ("W", "warmup", "워밍업 문제", "처음 보는 사람도 풀 수 있도록 필요한 정의를 문제 안 [준비] 칸에 넣었다.<br>본문 TOPIC의 EX 01이 이 문제들을 해부한다."),
     "apply": ("A", "a01", "TOPIC 적용문제", "TOPIC에서 만든 [시험 개념]을 바로 써 보는 문항이다.<br>원서 연습문제와 자체 제작 문항으로 구성한다."),
     "exercises": ("B", "b01", "연습문제", "원서 장 끝 문제 중 주요 문항이다.<br>가능한 모든 문제에서 [원서적 해법]과 [시험적 해법]을 완성하자."),
+    "exam": ("X", "exam", "실전 문제", "시험 형식 그대로다.<br>강의 랩·실습에서 강조한 함정을 넣었다. 시간을 재고 풀어 보자."),
 }
+ANSWER_GROUPS = [("W", "워밍업 문제"), ("A", "TOPIC 적용문제"), ("B", "연습문제"), ("X", "실전 문제")]
 CONCEPT = {"exam": ("", "시험<br>개념", 1), "book": (" book", "원서<br>개념", 0), "ind": (" ind", "간접<br>개념", 2)}
 ORDER = ["ex", "sol.book", "bubble", "sol.exam", "concept", "core"]
 ORDER_NAME = {"ex": "EX", "sol.book": "원서적 해법", "bubble": "말풍선", "sol.exam": "시험적 해법",
@@ -52,7 +57,7 @@ class Builder:
         self.out_dir = out_dir
         self.lenient = lenient
         self.errors, self.warnings = [], []
-        self.labels = []          # 정답이 필요한 번호: L·01, 01-EX01, A·01 …
+        self.labels = []          # 정답이 필요한 번호: W·01, 01-EX01, A·01, B·01, X·01 …
         self.sources = data.get("sources") or {}
 
     # ---------- 진단 ----------
@@ -190,7 +195,8 @@ class Builder:
     def code(self, it, where):
         txt = it["code"] if isinstance(it.get("code"), str) else self.need(it, "text", where)
         cap = f'<div class="cap">{self.inline(it["cap"], where)}</div>' if it.get("cap") else ""
-        return f'<pre class="code">{html.escape(txt)}</pre>{cap}'
+        body = html.escape(txt).replace("[[b]]", "<b>").replace("[[/b]]", "</b>")
+        return f'<pre class="code">{body}</pre>{cap}'
 
     # ---------- TOPIC 블록 ----------
     def block(self, b, t, where):
@@ -377,10 +383,10 @@ class Builder:
 
     # ---------- 출처 ----------
     def check_src(self, src, where):
-        if not self.sources:
+        if not self.sources or src.strip().startswith("실전"):   # 실전 문제: '실전 · 근거'
             return
         for p in [p.strip() for p in re.split(r"\s[·/]\s|,", src) if p.strip()]:
-            if p.startswith("자체 제작") or p.startswith("= "):
+            if p.startswith(("자체 제작", "실전", "= ")):
                 continue
             key = next((k for k in self.sources if p.startswith(k)), None)
             if not key:
@@ -419,6 +425,9 @@ class Builder:
             hint = self.need(q, "hint", where)
             figh = self.figure_or_reason(q, where, "62mm")
             txt = self.inline(self.need(q, "text", where), where)
+            if key == "warmup":
+                pre = self.need(q, "pre", where)
+                txt = f'<div class="pre"><b>준비</b>{self.inline(pre, where + " 준비")}</div>{txt}'
             out.append(f'<div class="qitem" data-no="{label}" data-lv="{lv}" data-src="{html.escape(src, quote=True)}" '
                        f'data-topic="{html.escape(topic, quote=True)}" data-hint="{html.escape(hint, quote=True)}">'
                        f'<div class="t">{txt}</div>{figh}</div>')
@@ -471,38 +480,37 @@ class Builder:
                            f'<div class="ox-wrap"><div class="ox-title">✓ TOPIC 본문 O/X (계속)</div>{table}</div></section>')
         return "\n".join(out)
 
-    def answer_pages(self, answers):
+    def answer_section(self, answers):
+        """빠른 정답·해설: Review 뒤에 자동 쪽 나눔되는 장. W(+EX) → A → B → X 순서."""
         where = "answers"
         if not isinstance(answers, list):
-            self.err(where, "answers 는 목록이어야 한다 (모든 L·EX·A·B 의 답)")
+            self.err(where, "answers 는 목록이어야 한다 (모든 W·EX·A·B·X 의 답)")
             answers = []
-        covered, rows = set(), []
+        covered, groups = set(), {g: [] for g, _ in ANSWER_GROUPS}
         for i, a in enumerate(answers):
             w = f"{where} {i + 1}"
             keys = a.get("for")
             if isinstance(keys, str):
                 keys = [keys]
             if not keys:
-                self.err(w, "'for' 없음 (예: [\"L·01\", \"01-EX01\"])")
+                self.err(w, "'for' 없음 (예: [W·01, 01-EX01])")
                 keys = []
             for k in keys:
                 if k not in self.labels:
                     self.err(w, f"'{k}' 은 이 원고의 문제 번호가 아님 (예: {', '.join(self.labels[:5])})")
                 covered.add(k)
             label = a.get("label") or " / ".join(re.sub(r"^(\d+)-EX(\d+)$", r"EX \2", k) for k in keys)
-            rows.append(f'<tr><td class="tp">{self.inline(label, w)}</td><td><ul><li>{self.inline(self.need(a, "text", w), w)}</li></ul></td></tr>')
+            body = self.inline(self.need(a, "text", w), w)
+            if a.get("code"):
+                body += self.code({"code": a["code"]}, w)
+            group = next((k[0] for k in keys if k[0] in groups), "W")
+            groups[group].append(f'<p><b>{self.inline(label, w)}</b> {body}</p>')
         missing = [k for k in self.labels if k not in covered]
         if missing:
             self.err(where, f"빠른 정답이 없는 문제: {', '.join(missing)}")
-        per = self.d.get("answers_per_page", 28)
-        out = []
-        for i in range(0, max(len(rows), 1), per):
-            table = f'<table class="ox">{"".join(rows[i:i + per])}</table>'
-            attrs = ' data-id="answers"' if i == 0 else ""
-            ttl = "✓ 빠른 정답" if i == 0 else "✓ 빠른 정답 (계속)"
-            out.append(f'<section class="page"{attrs} data-run="빠른 정답">{self.page_head("빠른 정답")}'
-                       f'<div class="ox-wrap"><div class="ox-title">{ttl}</div>{table}</div></section>')
-        return "\n".join(out)
+        parts = [f"<h3>{name}</h3>" + "".join(groups[g]) for g, name in ANSWER_GROUPS if groups[g]]
+        return ('<article class="manuscript">\n<section class="topic" data-no="해설" data-title="빠른 정답·해설">\n'
+                + "\n".join(parts) + "\n</section>\n</article>")
 
     # ---------- 전체 ----------
     def build(self):
@@ -523,6 +531,9 @@ class Builder:
         plan = d.get("plan") or [{"no": t.get("no"), "title": t.get("title")} for t in topics]
         built = {str(t.get("no")): t for t in topics}
         plan_nos = [str(p.get("no")) for p in plan]
+        for no in plan_nos:
+            if not no.isdigit():
+                self.err("plan", f"TOPIC 번호 '{no}' 는 숫자(01, 02 …)여야 한다")
         for no in built:
             if no not in plan_nos:
                 self.err(f"TOPIC {no}", "plan(TOPIC 구성안)에 없는 TOPIC")
@@ -552,12 +563,16 @@ class Builder:
             no, ttl = str(p.get("no")), self.inline(str(p.get("title", "")), "plan")
             pg = f'<td class="pg" data-ref="topic-{no}"></td>' if no in built else '<td class="pg muted">—</td>'
             rows.append(f'<tr><td></td><td>TOPIC {no}. {ttl}</td>{pg}</tr>')
+        if d.get("warmup"):
+            rows.insert(1, '<tr><td></td><td class="pc">W·01 워밍업 문제</td><td class="pg" data-ref="warmup"></td></tr>')
         if d.get("apply"):
             rows.append('<tr><td></td><td class="pc">A·01</td><td class="pg" data-ref="a01"></td></tr>')
         if d.get("exercises"):
             rows.append('<tr><td></td><td class="pc">B·01</td><td class="pg" data-ref="b01"></td></tr>')
+        if d.get("exam"):
+            rows.append('<tr><td></td><td class="pc">X·01 실전 문제</td><td class="pg" data-ref="exam"></td></tr>')
         rows.append('<tr><td></td><td class="pc">Review</td><td class="pg" data-ref="review"></td></tr>')
-        rows.append('<tr><td></td><td class="pc">빠른 정답</td><td class="pg" data-ref="answers"></td></tr>')
+        rows.append('<tr><td></td><td class="pc">빠른 정답·해설</td><td class="pg" data-ref="topic-해설"></td></tr>')
         toc = (f'<section class="page toc"><div class="panel"></div><div class="circle">Chapter<b>{chapter}</b></div><div class="list">'
                f'<div class="hdr">{subject} 시험 개념의 완성 &nbsp;<small>: Part1 정리 + 시험에 꼭 필요한 [시험 개념]</small></div>'
                f'<table>{"".join(rows)}</table></div></section>')
@@ -572,28 +587,31 @@ class Builder:
                    + "".join(f"<p>{self.inline(p, 'preview')}</p>" for p in paras)
                    + f'<p class="sans howto-title">〈학습 방법〉</p><div class="howto">{howto}</div></div></div>'
                    '<div class="memo">MEMO</div></section>')
-        lecture = self.problems("lecture", d.get("lecture") or [], built, scope)
+        warmup = self.problems("warmup", d.get("warmup") or [], built, scope)
         body = "\n".join(self.topic(t, i) for i, t in enumerate(topics))
         apply_ = self.problems("apply", d.get("apply") or [], built, scope)
         exercises = self.problems("exercises", d.get("exercises") or [], built, scope)
+        exam = self.problems("exam", d.get("exam") or [], built, scope)
         self.check_problem_counts(d, built, scope)
         plan_built = [dict(p, ox=built[str(p.get("no"))].get("ox")) for p in plan if str(p.get("no")) in built]
         review = self.review_pages(d.get("review") or {}, plan_built, chapter, chtitle)
-        answers = self.answer_pages(d.get("answers"))
-        return "\n\n".join(x for x in [head + cover, toc, preview, lecture, f'<article class="manuscript">\n{body}\n</article>',
-                                       apply_, exercises, review, answers, "</body></html>\n"] if x)
+        answers = self.answer_section(d.get("answers"))
+        return "\n\n".join(x for x in [head + cover, toc, preview, warmup, f'<article class="manuscript">\n{body}\n</article>',
+                                       apply_, exercises, exam, review, answers, "</body></html>\n"] if x)
 
     def check_problem_counts(self, d, built, scope):
-        L, A, B = (len(d.get(k) or []) for k in ("lecture", "apply", "exercises"))
-        if L < 1:
-            self.err("lecture", "강의 선정 문제(L)가 없음. 강의에서 다룬 원서 예제·문제를 넣는다")
+        W, A, B, X = (len(d.get(k) or []) for k in ("warmup", "apply", "exercises", "exam"))
+        if W < 1:
+            self.err("warmup", "워밍업 문제(W)가 없음. 강의에서 다룬 원서 예제·문제를 [준비] 칸과 함께 넣는다")
         if A < 1:
             self.err("apply", "적용문제(A)가 없음")
         if scope == "chapter":
-            if L < 2:
-                self.count("lecture", f"강의 선정 문제는 2개 이상 ({L}개)")
+            if W < 2:
+                self.count("warmup", f"워밍업 문제는 2개 이상 ({W}개)")
             if B < 4:
                 self.count("exercises", f"연습문제(B)는 장 전체에서 4개 이상 ({B}개)")
+            if X < 5:
+                self.count("exam", f"실전 문제(X)는 장마다 5개 ({X}개): 시험 형식 그대로(T/F·단답 → 손추적 → 손코딩 등)")
             covered = {str(q.get("topic")) for q in (d.get("apply") or [])}
             for no in built:
                 if no not in covered:
@@ -607,6 +625,8 @@ def main():
     ap.add_argument("json", type=Path)
     ap.add_argument("-o", "--output", type=Path, help="기본: 원고와 같은 폴더의 book.html")
     ap.add_argument("--lenient", action="store_true", help="분량 규칙을 경고로 낮춘다 (사용자가 허락한 경우만)")
+    ap.add_argument("--color", action="store_true", help="컬러판(화면용): theme-mono 제거, fig/ → figc/ 강조색 그림")
+    ap.add_argument("--accent", default="#6B3FD4", help="컬러판 그림 강조색")
     a = ap.parse_args()
     try:
         data = json.loads(a.json.read_text(encoding="utf-8"))
@@ -615,6 +635,12 @@ def main():
     out = a.output or a.json.with_name("book.html")
     b = Builder(data, out.parent.resolve(), a.lenient)
     page = b.build()
+    page = prep.expand_arrays(page)
+    if a.color:
+        page = re.sub(r'<link rel="stylesheet" href="[^"]*theme-mono\.css">\n?', "", page)
+        page = page.replace('src="fig/', 'src="figc/')
+        if (out.parent / "fig").is_dir():
+            prep.colorize_figs(out.parent / "fig", out.parent / "figc", a.accent)
     for line in b.warnings + b.errors:
         print(line)
     if b.errors:

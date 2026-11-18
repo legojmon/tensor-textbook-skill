@@ -55,8 +55,9 @@
     if (first) {
       pg.appendChild(el("div", "topic-band", `${pg.dataset.chapter} &nbsp;${pg.dataset.chtitle}`));
       const no = topic.dataset.no;
-      content.appendChild(el("div", "topic-title",
-        `<span class="no">TOPIC <i>${no[0]}</i>${no.slice(1)}</span>${topic.dataset.title}`));
+      // 숫자가 아닌 번호(예: "해설" = 빠른 정답·해설 장)는 TOPIC 번호 없이 제목만
+      const noHtml = /^\d/.test(no) ? `<span class="no">TOPIC <i>${no[0]}</i>${no.slice(1)}</span>` : "";
+      content.appendChild(el("div", "topic-title", noHtml + topic.dataset.title));
     } else {
       pg.appendChild(el("div", "topline"));
     }
@@ -218,8 +219,8 @@
         const key = [pg.dataset.chapter, pg.dataset.topic].join("/");
         if (seen.has(key)) continue;
         seen.add(key);
-        label = "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle;
-      } else if (pg.dataset.id) label = pg.dataset.run || pg.dataset.id;
+        label = /^\d/.test(pg.dataset.topic) ? "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle : pg.dataset.topictitle;
+      } else if (pg.dataset.id) label = pg.dataset.run || (pg.dataset.id === "preview" ? "Preview" : pg.dataset.id);
       if (label) entries.push([pg, label]);
     }
     let sheet = host;
@@ -274,12 +275,14 @@
       if (pg.classList.contains("cover") || pg.classList.contains("toc") || pg.classList.contains("nofoot")) return;
       const topic = pg.dataset.topic;
       if (odd && !pg.querySelector(".tab-part")) pg.appendChild(el("div", "tab-part", PART));
-      if (odd && topic && !pg.querySelector(".tab-topic")) pg.appendChild(el("div", "tab-topic", `TOPIC<b>${topic}</b>`));
+      const numbered = topic && /^\d/.test(topic);
+      if (odd && numbered && !pg.querySelector(".tab-topic")) pg.appendChild(el("div", "tab-topic", `TOPIC<b>${topic}</b>`));
       let foot = pg.querySelector(".foot");
       if (!foot) { foot = el("div", "foot"); pg.appendChild(foot); }
       let ttl;
       if (pg.dataset.run) ttl = pg.dataset.run;
-      else if (odd && topic) ttl = `<span class="t">TOPIC ${topic}</span>&nbsp; ${pg.dataset.topictitle}`;
+      else if (odd && numbered) ttl = `<span class="t">TOPIC ${topic}</span>&nbsp; ${pg.dataset.topictitle}`;
+      else if (topic && !numbered) ttl = `<span class="t">${pg.dataset.chapter}</span>&nbsp; ${pg.dataset.topictitle}`;
       else ttl = `<span class="t">${pg.dataset.chapter}</span>&nbsp; ${pg.dataset.chtitle}`;
       foot.innerHTML = `<span class="num">${n}</span><span class="bar"></span><span class="ttl">${ttl}</span>`;
     });

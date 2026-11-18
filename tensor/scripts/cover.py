@@ -17,7 +17,7 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
   "spine_color": "#6B3FD4",             ← 바꿀 수 있는 색 2: 책등 (없으면 cover_color)
   "pages": 220,                          내지 쪽수 → 책등 두께 자동 계산
   "spine_mm": null,                      제본집이 알려준 두께가 있으면 이 값을 우선
-  "symbol": "circuit",                   앞표지 기호: circuit | blocks | <SVG 파일 경로>
+  "symbol": "circuit",                   앞표지 기호: circuit | blocks | tree | <SVG 파일 경로>
   "back_title": ["회로이론 및 실습", "시험 개념의 완성"],
   "back_paras": ["…", "…"]               뒷표지 소개 2문단 (내지 문장을 다듬어 쓴다)
 }
@@ -91,6 +91,16 @@ def symbol_svg(cfg, dx=0, suffix=""):
 <rect x="{84+dx}" y="640" width="52" height="200" fill="#fff"/>
 <rect x="{-20+dx}" y="752" width="104" height="58" fill="{A}"/>
 <rect x="{136+dx}" y="752" width="196" height="58" fill="{A}"/>"""
+    elif kind == "tree":    # 자료구조: 이진 트리(굵은 간선 + 고리 노드)
+        def e(x1, y1, x2, y2):
+            return f'<line x1="{x1+dx}" y1="{y1}" x2="{x2+dx}" y2="{y2}" stroke="{B}" stroke-width="46" stroke-linecap="round"/>'
+        def n(x, y, r, hole):
+            return (f'<circle cx="{x+dx}" cy="{y}" r="{r}" fill="{A}"/>'
+                    f'<circle cx="{x+dx}" cy="{y}" r="{hole}" fill="#fff"/>')
+        body = (e(560, 330, 330, 640) + e(560, 330, 760, 640) + e(330, 640, 190, 960) + e(330, 640, 450, 960)
+                + e(760, 640, 680, 960) + e(560, -40, 560, 330)
+                + n(560, 330, 118, 46) + n(330, 640, 104, 40) + n(760, 640, 104, 40)
+                + n(190, 960, 90, 34) + n(450, 960, 90, 34) + n(680, 960, 90, 34))
     elif kind == "blocks":  # 과목 무관 기본형: 큰 원 + 계단 막대
         body = f"""
 <circle cx="{110+dx}" cy="560" r="230" fill="{A}"/>
@@ -250,7 +260,7 @@ def main():
         cfg["logo"] = str(BUILTIN_LOGO[cfg["logo"]])
     elif cfg.get("logo") and not Path(cfg["logo"]).is_absolute():
         cfg["logo"] = str(base / cfg["logo"])
-    if cfg.get("symbol") not in (None, "circuit", "blocks") and not Path(cfg["symbol"]).is_absolute():
+    if cfg.get("symbol") not in (None, "circuit", "blocks", "tree") and not Path(cfg["symbol"]).is_absolute():
         cfg["symbol"] = str(base / cfg["symbol"])
     if not cfg.get("logo") or not Path(cfg["logo"]).exists():
         print("[안내] 로고 파일이 없어 점선 자리만 표시했습니다. 투명 배경 PNG/SVG 로고를 받아 \"logo\"에 넣으세요.")

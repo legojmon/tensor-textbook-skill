@@ -28,7 +28,7 @@ ID = re.compile(r"(?:Example|Exercise|Problem|Listing|Figure|Practice|Ex|P|R|C)[
 PARTS = [(".sol:not(.exam)", "원서적 해법"), (".sol.exam", "시험적 해법"), (".bubble", "말풍선"), (".concept", "시험 개념 박스"),
          (".core", "CORE"), (".grade", "채점 포인트"), (".vs", "강의 VS 연습문제 표"), (".ex", "EX"), ("h3", "소절 제목")]
 PAGES = [("section.page.cover", "장 표지"), ("section.page.toc", "장 목차"), ("[data-id=preview]", "Preview"),
-         ("[data-id=review]", "Review: 개념진단"), ("[data-id=answers]", "빠른 정답")]
+         ("[data-id=review]", "Review: 개념진단"), ("section.topic[data-no='해설']", "빠른 정답·해설")]
 
 
 def text_of(el):
@@ -52,7 +52,7 @@ def structure(soup, W, draft):
         if "cover" in cls or "toc" in cls or pg.get("data-id") or pg.get("data-run") or pg.get("data-front"):
             continue
         warn("쪽", f"정체불명의 고정 쪽: {text_of(pg)[:30]}")
-    topics = soup.select("section.topic")
+    topics = [t for t in soup.select("section.topic") if t.get("data-no", "").isdigit()]
     if not topics:
         warn("본문", "TOPIC(section.topic)이 하나도 없음 — 원고가 비었다")
     elif not draft and len(topics) < 6:
@@ -89,10 +89,10 @@ def structure(soup, W, draft):
             if s_.select_one(".lab") and not s_.select(".cond"):
                 warn(f"TOPIC {no}", "시험적 해법에 적용 조건(.cond) 없음")
     sections = {s.get("data-id"): s for s in soup.select("section.problems")}
-    for pid, prefix, name in [("lecture", "L", "강의 선정 문제"), ("a01", "A", "TOPIC 적용문제"), ("b01", "B", "연습문제")]:
+    for pid, prefix, name in [("warmup", "W", "워밍업 문제"), ("a01", "A", "TOPIC 적용문제"), ("b01", "B", "연습문제"), ("exam", "X", "실전 문제")]:
         sec = sections.get(pid)
         if sec is None:
-            if pid != "b01" or not draft:
+            if pid not in ("b01", "exam") or not draft:
                 warn("문제", f"{name}({prefix}) 쪽 없음")
             continue
         items = sec.select(":scope > .qitem")
@@ -110,18 +110,25 @@ def structure(soup, W, draft):
                 warn(label or f"{prefix} {i}", "관련 TOPIC(data-topic) 없음")
             if not q.select_one(".t") or len(text_of(q.select_one(".t"))) < 10:
                 warn(label, "지문 없음")
-    ans = soup.select_one("[data-id=answers]")
+            if pid == "warmup" and not q.select_one(".t > .pre"):
+                warn(label, "워밍업 문제의 [준비] 칸(pre) 없음")
+    ans = soup.select_one("section.topic[data-no='해설']")
     if ans is not None:
-        labels = [q.get("data-no", "") for q in soup.select(".qitem")]
-        got = " ".join(text_of(td) for td in soup.select("[data-run='빠른 정답'] td.tp"))
-        for lb in labels:
+        got = text_of(ans)
+        for q in soup.select(".qitem"):
+            lb = q.get("data-no", "")
             if lb and lb not in got:
-                warn("빠른 정답", f"{lb} 의 답이 없음")
+                warn("빠른 정답·해설", f"{lb} 의 답이 없음")
 
 
 def style(soup, W):
     def warn(kind, where, msg):
         W.append(f"[{kind}] {where}: {msg}")
+    # 코드와 빠른 정답·해설 장은 문체 검사에서 뺀다
+    for t in soup.select("pre.code, section.topic[data-no='해설']"):
+        t.decompose()
+    for t in soup.select("code.c"):
+        t.replace_with("CODE")
     prose = soup.select("p, .step, .box, .body, .tip .body, .grade .body, .pv-box, .note, .t, li, .hint, .cond, .core .box, h3")
     for el in prose:
         tx = text_of(el)
@@ -150,7 +157,7 @@ def style(soup, W):
             warn("일반화", sec.get("data-title"), "TOPIC 제목의 절대 표현")
     for q in soup.select(".qitem .t, .ex .txt.q"):
         tx = text_of(q)
-        if not re.search(r"(하시오|구하시오|쓰시오|보이시오|설명하시오|답하시오|정하시오|밝히시오)[.\s)]*$", tx):
+        if not re.search(r"(하시오|구하시오|쓰시오|보이시오|설명하시오|답하시오|정하시오|밝히시오|T/F|참/거짓|\?)[.\s)]*$", tx):
             warn("문체", tx[:28] + "…", "문제 지문은 '~하시오/~구하시오'로 끝낸다")
 
 
