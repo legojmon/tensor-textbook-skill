@@ -12,7 +12,8 @@ import sys
 
 from render import BUILD
 
-PACKAGES = ("playwright-core@1.65.0", "katex@0.16.22", "pretendard@1.3.9", "@fontsource/noto-serif-kr@5.3.1")
+PACKAGES = ("playwright-core@1.65.0", "katex@0.16.22", "pretendard@1.3.9", "@fontsource/noto-serif-kr@5.3.1",
+            "@fontsource/montserrat@5.3.0", "@fontsource/cormorant-garamond@5.3.0")
 
 
 def main():
