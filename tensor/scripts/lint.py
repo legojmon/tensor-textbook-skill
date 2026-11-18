@@ -30,7 +30,8 @@ def main():
     for t in soup(["script", "style"]):
         t.decompose()
     # 코드(pre.code, code.c)와 빠른 정답·해설 장은 문체 검사에서 뺀다
-    for t in soup.select("pre.code, section.topic[data-no='해설']"):
+    # 앞부분의 범례(모양 견본)도 뺀다
+    for t in soup.select("pre.code, section.topic[data-no='해설'], .fm-legend"):
         t.decompose()
     for t in soup.select("code.c"):
         t.replace_with("CODE")

@@ -14,7 +14,7 @@ description: 임의의 대학 과목 강의록 PDF와 원서 PDF로 수능 개�
 3. `references/book-format.md` — 책 구조, 페이지 순서, HTML 부품, 자동 쪽 나눔·문제 쪽 배치
 4. `references/example-manuscript.html` — **완성 원고 견본.** 밀도·순서·말투를 이것에 맞춘다
 5. `references/cover-design.md` — 표지·책등 규칙
-6. 책 전체를 만들 때 `references/frontmatter.md` — 저자 원고·서문·전체 차례와 Part 가이드
+6. 책 전체를 만들 때 `references/frontmatter.md` — CH 앞의 11개 쪽(커리큘럼~Method I) 구성과 분량 기준
 
 ---
 
@@ -114,7 +114,14 @@ python <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf 
 - 강의 랩 자료가 있으면 관련 TOPIC의 첫 CORE 뒤에 "강의 랩 노트" 박스(`concept ind`)를 넣는다.
 - 배열 매크로·코드 블록을 썼으면 렌더링 전에 `python <skill>/scripts/prep.py work/src.html work/book.html` 로 펼친다(컬러판은 `--color`).
 
-책 전체나 저자 글을 요청하면 `assets/authors/author-workbook.md`의 시작 질문 세 개를 보여준다. 저자별 경험과 독자에게 할 말은 각자 받고, 공동 서문과 표기 순서는 함께 확인한다. 메모로 답해도 된다. 편집자가 제안한 서문은 초안으로 표시하고 저자의 개인 경험과 인용은 직접 받은 내용만 쓴다. `references/frontmatter.md`에 따라 앞부분을 넣고 차례의 시작 쪽을 PDF에서 대조한다.
+### 5-B. 앞부분 (CH 시작 전까지: 책 전체를 만들 때는 반드시)
+- 원고를 다 쓴 뒤 `references/frontmatter.md` 를 읽고 그대로 만든다. 한완수처럼 **커리큘럼 → 학기 로드맵 → (수기) → 소개 → 서문 → 저자 소개 → 이 책의 구성 → Part 표지 → Part 전체 차례 → Part 가이드라인 → Method I** 순서이며, 쪽마다 분량 기준이 있다.
+```bash
+python <skill>/scripts/frontmatter.py --authors <repo>/author/authors.json --book work/book.json --into work/book.html
+```
+- 저자 정보는 레포 `author/authors.json`(최재원·김준형)을 기본으로 쓴다. 비어 있는 칸(괄호로 시작)은 `author/README.md` 표를 보여 주고 요청한다. 저자의 경험·인용은 직접 받은 내용만 쓴다.
+- Method I 는 첫 TOPIC 의 EX 01(원서적 해법 + 시험 개념 박스 + 시험적 해법)을 자동으로 인용한다. 그래서 첫 TOPIC 의 EX 01 은 네 부품을 모두 갖춘다.
+- 렌더 후 앞부분 쪽을 PNG로 열어 반쪽도 안 찬 쪽이 없는지, Part 전체 차례의 쪽 번호가 맞는지 확인한다.
 
 ## 6단계. 검증
 - 모든 답을 **sympy(또는 해당 과목에 맞는 계산)** 로 확인하고(자료구조·알고리즘은 강의 코드 규칙 그대로 Python으로 시뮬레이션: partition 멈춤 규칙, 삭제 시 전임자/후임자, 높이 규약까지 맞춘다) 원서 Answer·해설집과 대조. 다르면 원인을 찾기 전까지 싣지 않는다.

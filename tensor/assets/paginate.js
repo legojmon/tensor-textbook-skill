@@ -188,61 +188,126 @@
     });
   }
 
-  function makeBookContents() {
-    const host = B.querySelector(".book-toc");
-    if (!host) return;
-    const seen = new Set();
-    const entries = [];
-    for (const pg of B.querySelectorAll(".page:not([data-front])")) {
-      let label;
-      if (pg.classList.contains("cover")) label = [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". ");
-      else if (pg.dataset.topic) {
-        const key = [pg.dataset.chapter, pg.dataset.topic].join("/");
-        if (seen.has(key)) continue;
-        seen.add(key);
-        label = /^\d/.test(pg.dataset.topic) ? "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle : pg.dataset.topictitle;
-      } else if (pg.dataset.id) label = pg.dataset.run || (pg.dataset.id === "preview" ? "Preview" : pg.dataset.id);
-      if (label) entries.push([pg, label]);
+  // ---- Part 전체 차례 (한완수식: 장 | 항목 | 쪽) ----
+  function tocLabel(pg) {
+    const id = pg.dataset.id || "";
+    if (pg.dataset.topic) {
+      if (/^\d/.test(pg.dataset.topic)) return ["TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle, ""];
+      return [pg.dataset.topictitle, "sub"];
     }
-    let sheet = host;
-    const rows = [];
-    entries.forEach(([target, label], i) => {
-      if (i && i % 21 === 0) {
-        const next = host.cloneNode(true);
-        next.querySelector(".fm-toc").replaceChildren();
-        sheet.after(next);
-        sheet = next;
+    if (id === "preview") return ["Preview", "sub"];
+    if (id === "review") return ["Review", "sub"];
+    if (id) return [pg.dataset.run || id, "sub"];
+    return null;
+  }
+
+  function makeBookContents() {
+    const host = B.querySelector("[data-toc-host]");
+    if (!host) return;
+    const groups = [];
+    let cur = null;
+    const seen = new Set();
+    for (const pg of B.querySelectorAll(".page:not([data-front])")) {
+      if (pg.classList.contains("cover")) {
+        cur = { name: [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". "), rows: [] };
+        groups.push(cur);
+        continue;
       }
-      const row = el("div", "fm-toc-row" + (target.classList.contains("cover") ? " chapter" : ""));
-      const text = el("span"), number = el("span");
-      text.textContent = label;
-      row.append(text, number);
-      sheet.querySelector(".fm-toc").appendChild(row);
-      rows.push([number, target]);
+      const lab = tocLabel(pg);
+      if (!lab) continue;
+      const key = (pg.dataset.chapter || "") + "/" + (pg.dataset.topic || pg.dataset.id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (!cur) { cur = { name: "", rows: [] }; groups.push(cur); }
+      cur.rows.push([lab[0], lab[1], pg]);
+    }
+    const guide = Array.from(B.querySelectorAll(".page[data-toc]"));
+    if (guide.length) {
+      const g = { name: "가이드라인", rows: [] };
+      const done = new Set();
+      guide.forEach((pg) => { if (!done.has(pg.dataset.toc)) { done.add(pg.dataset.toc); g.rows.push([pg.dataset.toc, "", pg]); } });
+      groups.unshift(g);
+    }
+    let sheet = host, table = host.querySelector("table.btoc");
+    const nums = [];
+    const limit = () => sheet.getBoundingClientRect().bottom - 18 * MM;
+    groups.forEach((g) => {
+      g.rows.forEach(([label, cls, target], i) => {
+        const tr = el("tr", (i === 0 ? "first " : "") + cls);
+        const c1 = el("td", "c1", i === 0 ? g.name : "");
+        const c2 = el("td", "it"); c2.textContent = label;
+        const c3 = el("td", "pg");
+        tr.append(c1, c2, c3);
+        table.appendChild(tr);
+        if (tr.getBoundingClientRect().bottom > limit() && table.rows.length > 1) {
+          tr.remove();
+          const next = host.cloneNode(true);
+          next.removeAttribute("data-toc-host");
+          next.querySelector(".btoc-head").remove();
+          table = next.querySelector("table.btoc");
+          table.replaceChildren();
+          sheet.after(next);
+          sheet = next;
+          if (i > 0) { c1.textContent = g.name; tr.classList.add("first"); }
+          table.appendChild(tr);
+        }
+        nums.push([c3, target]);
+      });
     });
     const pages = Array.from(B.querySelectorAll(".page"));
     const start = Number(B.dataset.start || 1);
-    rows.forEach(([number, target]) => { number.textContent = start + pages.indexOf(target); });
+    nums.forEach(([c, t]) => { c.textContent = start + pages.indexOf(t); });
   }
 
+  // ---- 앞부분: 묶음별로 넘치면 다음 쪽에 이어 붙인다 (첫 쪽에만 머리) ----
   function paginateFrontMatter() {
-    for (const first of B.querySelectorAll(".fm:not(.book-toc):not(.fm-part)")) {
-      let page = first;
-      let body = page.querySelector(".fm-body");
+    for (const first of Array.from(B.querySelectorAll(".page.fmflow"))) {
+      const body = first.querySelector(".fm-body");
       const items = Array.from(body.children);
       body.replaceChildren();
+      let page = first, cur = body;
+      const bottom = () => page.getBoundingClientRect().bottom - (page.classList.contains("nofoot") ? 20 : 26) * MM;
       for (const item of items) {
-        body.appendChild(item);
-        const limit = page.getBoundingClientRect().bottom - 24 * MM;
-        if (item.getBoundingClientRect().bottom <= limit || body.children.length === 1) continue;
+        cur.appendChild(item);
+        if (item.getBoundingClientRect().bottom <= bottom() || cur.children.length === 1) continue;
+        // 해법 박스는 단계 단위로 나눈다
+        if (item.classList.contains("sol")) {
+          const box = item.querySelector(":scope > .box");
+          const moved = [];
+          while (box && box.children.length > 1 && item.getBoundingClientRect().bottom > bottom()) {
+            moved.unshift(box.lastElementChild); box.lastElementChild.remove();
+          }
+          if (moved.length && item.getBoundingClientRect().bottom <= bottom()) {
+            const cont = el("div", item.className); cont.style.marginTop = "0";
+            const cb = el("div", "box"); moved.forEach((m) => cb.appendChild(m)); cont.appendChild(cb);
+            ({ page, cur } = nextFront(first, page));
+            cur.appendChild(cont);
+            continue;
+          }
+          moved.forEach((m) => box.appendChild(m));
+        }
         item.remove();
-        const next = first.cloneNode(true);
-        body = next.querySelector(".fm-body");
-        body.replaceChildren(item);
-        page.after(next);
-        page = next;
+        // 제목은 다음 블록과 함께 넘긴다
+        const carry = [];
+        let last = cur.lastElementChild;
+        while (last && (/^H[34]$/.test(last.tagName) || last.classList.contains("keep-next") || last.classList.contains("fm-method"))) {
+          carry.unshift(last); last = last.previousElementSibling;
+        }
+        ({ page, cur } = nextFront(first, page));
+        carry.forEach((c) => cur.appendChild(c));
+        cur.appendChild(item);
       }
     }
+  }
+
+  function nextFront(first, after) {
+    const pg = first.cloneNode(false);
+    pg.classList.add("cont");
+    if (first.querySelector(".fm-head.guide")) pg.appendChild(el("div", "topline"));
+    const body = el("div", "fm-body");
+    pg.appendChild(body);
+    after.after(pg);
+    return { page: pg, cur: body };
   }
 
   function decorate() {

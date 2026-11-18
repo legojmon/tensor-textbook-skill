@@ -23,7 +23,12 @@ def main():
                     "--save-exact", *PACKAGES], cwd=BUILD, check=True)
     requirements = Path(__file__).with_name("requirements.txt")
     subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(requirements)], check=True)
-    subprocess.run(["node", str(BUILD / "node_modules/playwright-core/cli.js"), "install", "chromium"], check=True)
+    from render import find_chrome
+    got = subprocess.run(["node", str(BUILD / "node_modules/playwright-core/cli.js"), "install", "chromium"])
+    if got.returncode != 0:
+        if not find_chrome():
+            raise SystemExit("Chromium 내려받기에 실패했고 설치된 Chrome도 찾지 못했습니다. Chrome을 설치하거나 TENSOR_CHROME 에 경로를 지정하세요.")
+        print("Chromium 내려받기에 실패해 설치된 Chrome을 씁니다:", find_chrome())
     print(f"TENSOR 실행 환경 준비 완료 · {BUILD}")
 
 

@@ -27,7 +27,7 @@ def main():
         source = (DEMO / "demo.html").read_text(encoding="utf-8")
         manuscript.write_text(source.replace('data-start="16"', 'data-start="1"', 1), encoding="utf-8")
         shutil.copytree(DEMO / "fig", work / "fig")
-        run("frontmatter.py", "--authors", HERE / "authors.json", "--book", HERE / "book.json", "--into", manuscript)
+        run("frontmatter.py", "--authors", ROOT / "author/authors.json", "--book", HERE / "book.json", "--into", manuscript)
         run("render.py", manuscript, "-o", work / "book.pdf", "--strict")
         cover = json.loads((HERE / "cover.json").read_text(encoding="utf-8"))
         with pymupdf.open(work / "book.pdf") as document:
