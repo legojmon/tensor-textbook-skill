@@ -262,7 +262,7 @@ def main():
     if not cfg.get("logo") or not Path(cfg["logo"]).exists():
         print("[안내] 로고 파일이 없어 점선 자리만 표시했습니다. 투명 배경 PNG/SVG 로고를 받아 \"logo\"에 넣으세요.")
     docs, sp = build(cfg)
-    asyncio.run(render_all(docs, Path(a.out)))
+    asyncio.run(render_all(docs, Path(a.out).resolve()))
     print(f"책등 두께 {sp}mm ({'지정값' if cfg.get('spine_mm') else str(cfg.get('pages', 200)) + '쪽 기준 자동 계산 — 제본집 실측값으로 바꾸세요'})")
     print("생성:", ", ".join(f"{n}.pdf" for n in docs), "→", a.out)
 

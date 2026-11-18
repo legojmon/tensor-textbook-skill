@@ -23,10 +23,10 @@ CSS는 `assets/tensor.css`, 빈 틀은 `assets/template.html` 에 있다. 아래
 1. **Chapter 표지** `.page.cover` — 보라 배경, 회색 아치, CHAPTER + 장 번호, 장 제목, 하단 점선 안내문
 2. **Chapter 목차** `.page.toc` — Preview / TOPIC 목록 / A·01, B·01 / Review
 3. **Preview** (짝수쪽) — PRE-VIEW 박스: 인사 → 이 장에서 다룰 것 → 〈학습 방법〉 ①~⑤ → MEMO
-4. **강의 선정 문제** — 2단, `L·01…` (강의에서 다룬 원서 예제·연습문제)
+4. **강의 선정 문제** — 쪽당 2문제, `L·01…` (강의에서 다룬 원서 예제·연습문제)
 5. **TOPIC nn** × 6~12 — TOPIC당 보통 3~6쪽
-6. **TOPIC 적용문제 (A)** — 2단
-7. **연습문제 (B)** — 2단 (원서 장 끝 Problems 선별)
+6. **TOPIC 적용문제 (A)** — 쪽당 2문제
+7. **연습문제 (B)** — 쪽당 2문제 (원서 장 끝 Problems 선별)
 8. **Review: 개념진단** — OVER-VIEW 글 + TOPIC별 O/X 체크표
 9. (책 끝) 개념 박스 색인, 빠른 정답, 해설
 
@@ -149,24 +149,21 @@ paginate.js 가 하는 일
 <div class="rev"><span class="line"></span><br>시험은 이 순서를 거꾸로 묻는다</div>
 ```
 
-### 문제 페이지 (강의 선정 문제 / A / B)
+### 문제 페이지 (강의 선정 문제 / A / B) — 자동 배치
 ```html
-<div class="qhead"><div class="big">TOPIC 적용문제</div><div class="desc"><b>TOPIC 적용문제</b>설명 두 줄</div></div>
-<div class="qcols">
-  <div class="qcol">
-    <div class="qitem">
-      <div class="qh"><div class="no">A·<i>0</i>1</div><div class="meta">
-        <div class="r1"><span><span class="lv"><i class="on"></i><i></i><i></i></span><span class="rec">1회<span></span>2회<span></span></span></span><span class="srcR">| 원서 P14.7-6 |</span></div>
-        <div class="r2"><span class="k">PAGE</span><span class="v">22</span><span class="k">TOPIC</span><span class="v">01</span></div></div></div>
-      <div class="t">지문 …</div>
-      <div class="fig"><img src="fig/a01.svg" style="width:62mm"></div>
-    </div>
-    <div class="qitem">…</div>
+<section class="problems" data-id="a01" data-title="TOPIC 적용문제"
+         data-desc="TOPIC에서 만든 [시험 개념]을 바로 써 보는 문항이다.<br>원서 연습문제와 자체 제작 문항으로 구성한다." data-per="2">
+  <div class="qitem" data-no="A·01" data-lv="1" data-src="원서 P14.7-6" data-topic="01">
+    <div class="t">지문 … $$…$$ … 구하시오.</div>
+    <div class="fig"><img src="fig/a01.svg" style="width:62mm"></div>
   </div>
-  <div class="qcol">…</div>
-</div>
+  …
+</section>
 ```
-한 쪽에 4문항(열마다 2개). 난이도 `<i class="on">` 개수 = 1~3.
+- `data-per="2"`(기본): 한 쪽에 **위·아래 2문제**, 지문 왼쪽·그림 오른쪽, 나머지는 풀이 공간. 대학 문제는 대부분 이것.
+- `data-per="4"`: 짧은 계산 문제만 2×2.
+- 문제 머리(번호·난이도 3칸·풀이 기록칸·출처·PAGE·TOPIC)는 data 속성으로 자동 생성. PAGE는 `data-topic` TOPIC의 첫 쪽.
+- 첫 쪽에만 제목 박스(`qhead`)가 붙는다.
 
 ### Preview
 `template.html` 의 Preview 쪽을 그대로 쓰고 문단만 바꾼다. 〈학습 방법〉 항목: ① 강의 선정 문제 ② 본문(TOPIC) ③ 적용문제 ④ 연습문제 ⑤ 채점 포인트.
@@ -174,7 +171,8 @@ paginate.js 가 하는 일
 ---
 
 ## 5. 그림
-- 회로: `scripts/circuits.py` (schemdraw). 자주 쓰는 토폴로지 builder가 있다. 새 토폴로지는 `drawing()`, `out_terms()`, `save()` 로 직접.
+- 회로 과목: `scripts/circuits.py` (schemdraw). 자주 쓰는 토폴로지 builder가 있다. 새 토폴로지는 `drawing()`, `out_terms()`, `save()` 로 직접.
+- 그 외 과목: matplotlib(그래프·좌표·블록도) 또는 직접 쓴 SVG. 선 굵기 1.1pt, 글꼴 Noto Sans CJK KR 12pt, 강조는 `#6B3FD4` 하나.
 - 그래프: `plot_response()`.
 - 본문 그림 폭 52~62mm, 문제 페이지 그림 60~76mm. 시험적 해법용 "전원을 끈 회로"는 ACCENT 색으로 강조.
 

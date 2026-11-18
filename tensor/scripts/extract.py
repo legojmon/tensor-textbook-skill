@@ -219,6 +219,29 @@ def main():
         L.append("| " + " | ".join(str(x) for x in r) + " |")
     if not rows:
         L.append("(자동 대응 없음 — 강의 시트를 보고 원서 예제와 수치를 비교해 직접 대응시키세요)")
+    # ---------------- 확인 필요 (사용자에게 반드시 물을 것)
+    issues = []
+    if not a.solutions:
+        issues.append("해설집(Solutions Manual)이 없습니다 → 장 끝 문제 답 검증 방법을 사용자와 정해야 합니다 (원서 Answer만 / 직접 풀이 검증 / 해설집 첨부).")
+    unmatched = [r for r in rows if not r[4]]
+    if unmatched:
+        issues.append("강의에 나온 번호 중 원서에서 찾지 못한 것: " + ", ".join(f"{r[1]}(강의 p.{r[0]})" for r in unmatched)
+                      + " → 원서 판이 다르거나 강의 자체 예제일 수 있습니다.")
+    lec_secs = set(re.findall(rf"\b({ch}\.\d{{1,2}})\b", "".join(page_text(lec, i) for i in range(len(lec)))))
+    book_secs = {x[0] for x in sections}
+    extra = sorted(lec_secs - book_secs, key=lambda x: int(x.split(".")[1]))
+    if extra and book_secs:
+        issues.append("강의록에는 있는데 원서 해당 장에서 찾지 못한 절 번호: " + ", ".join(extra) + " → 원서 범위가 잘렸거나 다른 장 내용일 수 있습니다.")
+    if not a.pages:
+        issues.append(f"원서 장 범위(PDF p.{s + 1}–{e + 1})는 자동 추정입니다 → 맞는지 확인받으세요.")
+    if not rows:
+        issues.append("강의록에서 원서 예제 번호를 하나도 찾지 못했습니다 → 강의 예제를 원서와 수치로 대조해야 합니다.")
+    for n in notes:
+        issues.append(n)
+    if len(lec) < 5:
+        issues.append(f"강의록이 {len(lec)}쪽뿐입니다 → 장 전체 강의록인지 확인하세요.")
+    L.append("\n## ⚠ 확인 필요 — 제작 전에 사용자에게 반드시 묻는다")
+    L.extend(f"- {x}" for x in issues) if issues else L.append("- 자동 점검에서 발견된 문제 없음 (그래도 장 범위·시험 형식은 확인한다)")
     L.append("\n## 다음 할 일\n1. 강의 시트(lecture/sheet_*.png)를 전부 본다. 대응표에 없는 강의 예제는 수치·그림으로 원서 예제를 찾아 대응시킨다.\n"
              "2. 장 끝 문제 목록을 훑으며 '결정적 관찰'을 적고 시험 개념 후보를 묶는다 (references/content-rules.md §3).\n"
              "3. 강의 뒤쪽에 채점 기준(배점·감점)이 있으면 표시해 둔다 → 채점 포인트 근거.")
