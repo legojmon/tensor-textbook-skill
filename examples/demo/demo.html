@@ -6,7 +6,9 @@
 <link rel="stylesheet" href="tensor://css/tensor.css">
 <script src="tensor://katex/katex.min.js"></script>
 <script src="tensor://katex/contrib/auto-render.min.js"></script>
-</head><body>
+<script src="tensor://css/paginate.js"></script>
+</head>
+<body data-chapter="14" data-chtitle="라플라스 변환" data-part="Part2" data-start="16">
 <!-- 데모: 모든 문제·그림은 자체 제작이며 특정 원서·강의 자료를 옮기지 않았습니다. -->
 
 <!-- ============ Chapter 표지 ============ -->
@@ -26,26 +28,26 @@
   <div class="list">
     <div class="hdr">회로이론 시험 개념의 완성 &nbsp;<small>: Part1 정리 + 시험에 꼭 필요한 [시험 개념]</small></div>
     <table>
-      <tr><td class="c1">14. 라플라스 변환</td><td class="pc">Preview</td><td class="pg">18</td></tr>
-      <tr><td></td><td>TOPIC 01. 응답식에서 회로 읽기</td><td class="pg">20</td></tr>
-      <tr><td></td><td>TOPIC 02. 초기조건은 전원이다</td><td class="pg">26</td></tr>
-      <tr><td></td><td>TOPIC 03. 부분분수는 가리고 대입한다</td><td class="pg">32</td></tr>
-      <tr><td></td><td>TOPIC 04. 최종값 정리를 믿기 전에</td><td class="pg">38</td></tr>
-      <tr><td></td><td>TOPIC 05. 분모는 전원을 끄고 본다</td><td class="pg">42</td></tr>
+      <tr><td class="c1">14. 라플라스 변환</td><td class="pc">Preview</td><td class="pg" data-ref="preview"></td></tr>
+      <tr><td></td><td>TOPIC 01. 응답식에서 회로 읽기</td><td class="pg" data-ref="topic-01"></td></tr>
+      <tr><td></td><td>TOPIC 02. 초기조건은 전원이다</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 03. 부분분수는 가리고 대입한다</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 04. 최종값 정리를 믿기 전에</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 05. 분모는 전원을 끄고 본다</td><td class="pg" style="color:#bbb">—</td></tr>
       <tr><td></td><td>TOPIC 06. 2차 분모에서 ζ, ω<sub>n</sub> 바로 읽기</td><td class="pg">48</td></tr>
-      <tr><td></td><td>TOPIC 07. 입력이 바뀌면 곱하는 것만 바뀐다</td><td class="pg">54</td></tr>
-      <tr><td></td><td>TOPIC 08. 정상상태 항과 과도 항 나누기</td><td class="pg">60</td></tr>
-      <tr><td></td><td>TOPIC 09. 펄스 입력은 시간 이동으로</td><td class="pg">66</td></tr>
-      <tr><td></td><td>TOPIC 10. 종속전원이 극을 오른쪽으로 민다</td><td class="pg">70</td></tr>
-      <tr><td></td><td>TOPIC 11. 컨볼루션은 언제 꺼내나</td><td class="pg">74</td></tr>
-      <tr><td></td><td class="pc">A·01, B·01</td><td class="pg">78, 84</td></tr>
-      <tr><td></td><td class="pc">Review</td><td class="pg">94</td></tr>
+      <tr><td></td><td>TOPIC 07. 입력이 바뀌면 곱하는 것만 바뀐다</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 08. 정상상태 항과 과도 항 나누기</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 09. 펄스 입력은 시간 이동으로</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 10. 종속전원이 극을 오른쪽으로 민다</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 11. 컨볼루션은 언제 꺼내나</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td class="pc">A·01</td><td class="pg" data-ref="a01"></td></tr>
+      <tr><td></td><td class="pc">Review</td><td class="pg" data-ref="review"></td></tr>
     </table>
   </div>
 </section>
 
 <!-- ============ Preview ============ -->
-<section class="page even">
+<section class="page" data-id="preview">
   <div class="pv-head"><span class="tag">Preview</span></div>
   <div class="pv-frame">
     <div class="pv-title"><span class="n">14</span>라플라스 변환</div>
@@ -65,12 +67,10 @@
     </div>
   </div>
   <div class="memo">MEMO</div>
-  <div class="foot"><span class="num">18</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
 </section>
 
 <!-- ============ 강의 선정 문제 ============ -->
-<section class="page odd">
-  <div class="tab-part">Part2</div>
+<section class="page" data-id="lecture" data-run="강의 선정 문제">
   <div class="qhead"><div class="big">강의 선정 문제</div><div class="desc"><b>강의에서 다룬 원서 문제</b>먼저 [원서적 해법]으로 풀어 보자.<br>본문을 공부한 뒤 [시험적 해법]으로 다시 풀어 볼 것이다. (데모: 자체 제작 문항)</div></div>
   <div class="qcols">
     <div class="qcol">
@@ -104,14 +104,12 @@
       </div>
     </div>
   </div>
-  <div class="foot"><span class="num">19</span><span class="bar"></span><span class="ttl">강의 선정 문제</span></div>
 </section>
 
-<!-- ============ TOPIC 01 (1) ============ -->
-<section class="page even">
-  <div class="topic-band">14 &nbsp;라플라스 변환</div>
-  <div class="topic-title"><span class="no">TOPIC <i>0</i>1</span>응답식에서 회로 읽기</div>
-  <h3>1. 응답식의 세 숫자</h3>
+<!-- ============ 본문: 자동 쪽 나눔 ============ -->
+<article class="manuscript">
+<section class="topic" data-no="01" data-title="응답식에서 회로 읽기">
+<h3>1. 응답식의 세 숫자</h3>
   <p>14장에서 배운 회로 해석은 다음 순서를 따른다.</p>
   <div class="flow"><span class="c">회로</span><span class="ar">→</span><span class="c">KVL·KCL<br>미분방정식</span><span class="ar">→</span><span class="c">라플라스<br>변환</span><span class="ar">→</span><span class="c">대수식<br>풀이</span><span class="ar">→</span><span class="c">역변환</span><span class="ar">→</span><span class="c end">응답식<br>$v(t)$</span></div>
   <div class="rev"><span class="line"></span><br>시험은 이 순서를 자주 거꾸로 묻는다 : 응답식 → 소자 값</div>
@@ -137,23 +135,15 @@
       <div class="step"><span class="n">③</span><span>두 메시 방정식을 세운다.
       $$\text{(왼쪽)}\ \ 3I_1+6(I_1-I_2)=\frac{30}{s}\quad\Rightarrow\quad I_1=\frac{2}{3}I_2+\frac{10}{3s}$$
       $$\text{(오른쪽)}\ \ \frac{1}{Cs}I_2+\frac{7.5}{s}-6(I_1-I_2)=0\quad\Rightarrow\quad \left(\frac{1}{Cs}+2\right)I_2=\frac{12.5}{s}\quad\therefore\ I_2=\frac{6.25}{s+\frac{1}{2C}}$$</span></div>
-    </div>
-  </div>
-  <div class="foot"><span class="num">20</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
-</section>
-
-<!-- ============ TOPIC 01 (2) ============ -->
-<section class="page odd">
-  <div class="tab-part">Part2</div><div class="tab-topic">TOPIC<b>01</b></div>
-  <div class="topline"></div>
-  <div class="sol" style="margin-top:0"><div class="box" style="margin-top:0">
+    
+  
     <div class="step"><span class="n">④</span><span>출력 전압은 커패시터 가지의 전압이다.
     $$V_o(s)=\frac{1}{Cs}I_2+\frac{7.5}{s}=\frac{6.25}{Cs\left(s+\frac{1}{2C}\right)}+\frac{7.5}{s}=\frac{20}{s}-\frac{12.5}{s+\frac{1}{2C}}$$</span></div>
     <div class="step"><span class="n">⑤</span><span>주어진 응답을 변환하면 $\mathcal{L}[v_o(t)]=\dfrac{20}{s}-\dfrac{12.5}{s+0.25}$ 이다. 두 식을 비교하면
     $$\frac{1}{2C}=0.25\qquad\therefore\ C=2\ \text{F}$$</span></div>
   </div></div>
   <p>풀이에 틀린 곳은 없다. 그런데 ⑤에서 $C$를 결정한 것은 <b>지수의 0.25 하나뿐</b>이었다. 20과 −12.5는 ③, ④를 거쳐 다시 나왔을 뿐 새로운 정보를 주지 않았다. 답은 처음부터 응답식의 지수 안에 있었고, 우리는 그것을 꺼내려고 메시 방정식 두 개와 부분분수를 거친 셈이다.</p>
-  <p>핵심은 응답식이 <b>이미 주어져 있다</b>는 점이다. 문제를 읽는 순간 다음 의문을 가져야 한다.</p>
+  <p class="keep-next">핵심은 응답식이 <b>이미 주어져 있다</b>는 점이다. 문제를 읽는 순간 다음 의문을 가져야 한다.</p>
   <div class="bubble"><span class="dots">∘○</span><span class="b">응답식을 다 줬는데… 이걸 또 s영역으로 풀어야 해?</span></div>
   <p>이 의문에서 출발하면 응답식의 숫자 세 개가 각각 회로의 어디에서 왔는지를 거꾸로 읽어 낼 수 있다.</p>
   <div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
@@ -166,16 +156,11 @@
       <div class="step"><span class="n">②</span><span>(검산) <b>초기값</b> : $v_o(0^+)=v_o(0^-)=7.5$ V $=20-12.5$ ✓</span></div>
     </div>
   </div>
-  <p>메시 방정식도, 부분분수도 없다. 그렇다면 이것이 왜 성립하는지 <span class="tg ws">원서 개념</span>으로 확인해 두자. 원서적 해법 ④의 결과 $V_o(s)=\frac{20}{s}-\frac{12.5}{s+1/(2C)}$ 에서</p>
-  <div class="foot"><span class="num">21</span><span class="bar"></span><span class="ttl"><span class="t">TOPIC 01</span>&nbsp; 응답식에서 회로 읽기</span></div>
-</section>
-
-<!-- ============ TOPIC 01 (3) ============ -->
-<section class="page even">
-  <div class="topline"></div>
-  <div class="step" style="margin-top:-2mm"><span class="n">·</span><span><b>최종값 정리</b> : $\displaystyle\lim_{s\to0}sV_o(s)=20$ → 상수항은 최종값이다.</span></div>
+  <p class="keep-next">메시 방정식도, 부분분수도 없다. 그렇다면 이것이 왜 성립하는지 <span class="tg ws">원서 개념</span>으로 확인해 두자. 원서적 해법 ④의 결과 $V_o(s)=\frac{20}{s}-\frac{12.5}{s+1/(2C)}$ 에서</p>
+  <div class="step"><span class="n">·</span><span><b>최종값 정리</b> : $\displaystyle\lim_{s\to0}sV_o(s)=20$ → 상수항은 최종값이다.</span></div>
   <div class="step"><span class="n">·</span><span><b>초기값 정리</b> : $\displaystyle\lim_{s\to\infty}sV_o(s)=20-12.5=7.5$ → 상수항과 계수의 합은 초기값이다.</span></div>
   <div class="step"><span class="n">·</span><span><b>극</b> $s=-\frac{1}{2C}$ 은 ③에서 $I_2$ 앞의 계수 $\frac{1}{Cs}+2$를 0으로 만드는 $s$이다. 이 계수에는 $\frac{30}{s}$, $\frac{7.5}{s}$ 같은 전원 항이 없다. 즉 극은 <b>독립전원을 끈 회로</b>의 임피던스 $\frac{1}{Cs}+R_{th}=0$에서 정해지고, 그 값은 $s=-\frac{1}{R_{th}C}$이다.<sup class="pc">ⓐ</sup></span></div>
+  <div class="fn"><span class="k">ⓐ</span> 2차 이상의 회로에서도 극은 독립전원을 끈 회로의 특성방정식의 근이다. 증명은 해설에 수록한다. 본문에 없는 증명은 ⓐⓑⓒ…로 표시하니 먼저 스스로 시도해 본 뒤 해설에서 확인하자.</div>
   <p style="margin-top:3mm">정리하면 <b>극은 회로가 정하고, 계수는 전원과 초기조건이 정한다.</b> 응답식이 주어진 문제에서 할 일은 이 대응을 거꾸로 따라가는 것뿐이다.</p>
   <div class="concept">
     <div class="hd"><div class="ttl"><span class="ico">시험<br>개념</span>1차 응답식 해부</div><div class="tabs"><span>원서 개념</span><span class="on">시험 개념</span><span>원서 간접 개념</span></div></div>
@@ -195,7 +180,7 @@
     <div class="lab"><small>저자의 특강</small><b>TIP</b></div><div class="hd">끝까지 풀지 않는 용기</div>
     <div class="body"><p>응답식이 주어진 문제를 받으면 손이 먼저 s영역 회로를 그리려 한다. 하지만 이 유형에 메시 방정식을 세우면 시험적 해법보다 몇 배의 시간이 든다. 반대로 <span class="tg ws">원서적 해법</span>을 한 번도 끝까지 해 보지 않은 사람은 <span class="tg">시험적 해법</span>이 왜 맞는지 설명하지 못하고, 2차 회로처럼 조금만 바뀌어도 무너진다. EX 01은 반드시 두 방법으로 모두 풀어 보자.</p></div>
   </div>
-  <p style="margin-top:5mm">EX 02에서 다시 연습해 보자. 이번에는 미지수가 세 개다.</p>
+  <p class="keep-next" style="margin-top:5mm">EX 02에서 다시 연습해 보자. 이번에는 미지수가 세 개다.</p>
   <div class="ex">
     <div><span class="badge">EX<span>02</span></span><div class="src">[자체 제작<br>= L·02]</div></div>
     <div class="withfig">
@@ -203,16 +188,8 @@
       <div class="fig"><img src="fig/ex02.svg" style="width:56mm"></div>
     </div>
   </div>
-  <div class="fn"><span class="k">ⓐ</span> 2차 이상의 회로에서도 극은 독립전원을 끈 회로의 특성방정식의 근이다. 증명은 해설에 수록한다. 본문에 없는 증명은 ⓐⓑⓒ…로 표시하니 먼저 스스로 시도해 본 뒤 해설에서 확인하자.</div>
-  <div class="foot"><span class="num">22</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
-</section>
-
-<!-- ============ TOPIC 01 (4) ============ -->
-<section class="page odd">
-  <div class="tab-part">Part2</div><div class="tab-topic">TOPIC<b>01</b></div>
-  <div class="topline"></div>
-  <p style="margin-top:-1mm">미지수가 세 개($L$, $R_1$, $R_2$), 응답식의 숫자도 세 개(18, 12, 2)다. 하나씩 짝지으면 된다.</p>
-  <div class="sol exam" style="margin-top:2mm"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
+  <p class="keep-next">미지수가 세 개($L$, $R_1$, $R_2$), 응답식의 숫자도 세 개(18, 12, 2)다. 하나씩 짝지으면 된다.</p>
+  <div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
     <div class="box">
       <div class="step"><span class="n">①</span><span><b>최종값 18</b> : 스위치가 닫히면 $R_1$이 단락되고, 정상상태에서 $L$도 단락이다.
       $$v_o(\infty)=36\times\frac{9}{R_2+9}=18\qquad\therefore\ \underline{R_2=9\ \Omega}$$</span></div>
@@ -242,13 +219,7 @@
     </div>
   </div>
   <p>$H(s)$에는 숫자가 세 개(분자 6, 분모의 5와 6) 보이지만, 이 회로 구조에서는 분자와 분모의 상수항이 둘 다 $\frac{1}{LC}$로 같을 수밖에 없다. 분자의 6은 새 정보가 아니라 <b>'이 회로가 맞다'는 것을 확인해 주는 숫자</b>다. 보이는 숫자가 아니라 <b>독립인 숫자의 개수</b>를 세야 한다.</p>
-  <div class="foot"><span class="num">23</span><span class="bar"></span><span class="ttl"><span class="t">TOPIC 01</span>&nbsp; 응답식에서 회로 읽기</span></div>
-</section>
-
-<!-- ============ TOPIC 01 (5) ============ -->
-<section class="page even">
-  <div class="topline"></div>
-  <div class="concept" style="margin-top:0">
+  <div class="concept">
     <div class="hd"><div class="ttl"><span class="ico">시험<br>개념</span>독립 정보 세기</div><div class="tabs"><span>원서 개념</span><span class="on">시험 개념</span><span>원서 간접 개념</span></div></div>
     <div class="body">
       <div class="step"><span class="n">①</span><span>응답식(또는 $H(s)$)에 나오는 숫자를 모두 적는다.</span></div>
@@ -287,11 +258,12 @@
     </table>
   </div>
   <p>실제 자료를 넣으면 이 표의 왼쪽 칸에 강의 예제 번호와 원서 연습문제 번호가 들어간다. 응답식의 숫자를 회로로 읽는 기준만 잡혀 있으면 어떤 변형이 와도 출발점은 같다.</p>
-  <div class="foot"><span class="num">24</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
 </section>
+<!-- TOPIC 02 … 는 같은 방식으로 <section class="topic" data-no="02" …> 를 이어 쓴다 -->
+</article>
 
 <!-- ============ 적용문제 ============ -->
-<section class="page even">
+<section class="page" data-id="a01" data-run="TOPIC 적용문제">
   <div class="qhead"><div class="big">TOPIC 적용문제</div><div class="desc"><b>TOPIC 적용문제</b>TOPIC에서 만든 [시험 개념]을 바로 써 보는 문항이다.<br>원서 연습문제와 자체 제작 문항으로 구성한다. (데모: 전부 자체 제작)</div></div>
   <div class="qcols">
     <div class="qcol">
@@ -326,11 +298,10 @@
       </div>
     </div>
   </div>
-  <div class="foot"><span class="num">78</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
 </section>
 
 <!-- ============ 빠른 정답 (데모) + Review ============ -->
-<section class="page even">
+<section class="page" data-id="review" data-run="Review: 개념진단">
   <div class="pv-head"><span class="tag">Review: 개념진단</span></div>
   <div class="pv-frame"><div class="pv-title"><span class="n">14</span>라플라스 변환</div>
     <div class="pv-box"><div class="pv-ico"><span class="fig8">∑</span>OVER–<br>VIEW</div>
@@ -338,7 +309,7 @@
       <p>미지수가 정보보다 많을 때 "해가 유일하지 않음"을 쓰는 것은 틀린 답이 아니라 정답의 일부다. 설계형 문제에서 특히 자주 요구된다.</p></div></div>
   <div style="margin-top:6mm"><div class="ox-title">✓ TOPIC 본문 O/X</div>
     <table class="ox">
-      <tr><td class="tp">TOPIC 01<br>응답식에서 회로 읽기</td><td class="pg">20p</td><td><ul>
+      <tr><td class="tp">TOPIC 01<br>응답식에서 회로 읽기</td><td class="pg" data-ref="topic-01"></td><td><ul>
         <li>응답식 $A+Be^{-pt}$의 세 숫자가 각각 회로의 무엇인지 말할 수 있는가?</li>
         <li>극이 독립전원과 무관한 이유를 s영역 방정식으로 설명할 수 있는가?</li>
         <li>초기값을 옮길 때 $v_C$, $i_L$을 거쳐야 하는 이유를 아는가?</li>
@@ -356,13 +327,7 @@
       <tr><td class="tp">A·04</td><td><ul><li>$k=4$, $\{R_1/L,\ 1/(R_2C)\}=\{1000,\ 2000\}$ — 예: $R_1=100\ \Omega,\ L=0.1$ H, $R_2=5$ kΩ, $C=0.1\ \mu$F</li></ul></td></tr>
     </table>
   </div>
-  <div class="foot"><span class="num">94</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div>
 </section>
 
-<script>
-document.addEventListener("DOMContentLoaded",function(){
-  renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false});
-  document.body.setAttribute("data-ready","1");
-});
-</script>
+
 </body></html>

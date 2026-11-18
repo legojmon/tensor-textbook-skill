@@ -217,3 +217,9 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .ox td.tp{font-family:var(--sans);width:24mm}
 .ox td.pg{font-family:var(--sans);width:8mm;color:#fff;background:var(--p);text-align:center;font-size:7pt;border-top-color:#fff}
 .ox ul{margin:0;padding-left:3.5mm}
+
+/* ---- auto pagination (paginate.js) ---- */
+article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
+.page .content{overflow:hidden;position:relative}
+.page .content > :first-child{margin-top:0}
+.page .content > .topic-title:first-child{margin-top:7mm}

@@ -1,6 +1,6 @@
 # Tensor — 강의록 + 원서로 만드는 시험 특화 교재 스킬
 
-강의록 PDF와 원서 PDF를 Claude에게 넣으면, **수능 개념서처럼 짜인 대학 과목 시험 대비 교재**를 A4 인쇄용 PDF로 만들어 주는 Claude 스킬입니다.
+**강의록 PDF + 원서 PDF, 딱 두 개만 넣으면** 수능 개념서처럼 짜인 대학 과목 시험 대비 교재를 **A4 인쇄용 PDF**로 만들어 주는 Claude 스킬입니다.
 
 ![데모 미리보기](docs/preview.png)
 
@@ -46,26 +46,36 @@ bash ~/.claude/skills/tensor/scripts/setup.sh
 
 ## 사용 — 프롬프트 복붙
 
-강의록 PDF와 원서 PDF를 첨부하고 아래를 붙여넣은 뒤 `[ ]`만 바꾸세요.
+**강의록 PDF와 원서 PDF를 첨부**하고 아래를 그대로 붙여넣으세요. 장 번호는 강의록에서 자동으로 찾습니다.
 
 ```text
-Tensor 스킬로 교재 만들어줘.
-- 과목: [회로이론및실습]
-- 장: [14] ([라플라스 변환])
-- 범위: [TOPIC 01 시안]   ← 장 전체면 "장 전체"
-- 첨부: 강의록 PDF, 원서 PDF (원서 해설집이 있으면 같이 첨부)
+Tensor 스킬로 첨부한 강의록이랑 원서로 교재 만들어줘.
 ```
 
-다른 요청 예시 (한 줄씩 덧붙이면 됩니다)
+범위나 옵션을 정하고 싶으면 한 줄씩 덧붙이면 됩니다.
 
 ```text
-- 장 전체로 만들되, TOPIC 목록부터 먼저 보여줘
-- Part1(원서 개념 정리)도 같이 만들어줘
-- 포인트색은 #0E7C66 으로 바꿔줘
-- 강의록 뒤에 채점 기준이 있으니 채점 포인트 박스는 그걸 근거로 써줘
+Tensor 스킬로 첨부한 강의록이랑 원서로 교재 만들어줘.
+- 범위: TOPIC 01 시안만          (기본: 장 전체 — TOPIC 목록을 먼저 보여줌)
+- 해설집도 첨부했어              (있으면 답 대조에 씀)
+- 강의록 뒤에 채점 기준이 있어   (채점 포인트 박스의 근거로 씀)
+- 포인트색은 #0E7C66
 ```
 
-결과로 **A4 PDF**(바로 제본 가능)와 원본 HTML이 나옵니다. 브라우저 엔진이 없는 환경이면 HTML을 열어 **A4로 PDF 저장**하면 됩니다.
+### 스킬이 하는 일
+
+```
+① extract.py   원서에서 해당 장 찾기 · 예제/연습/장끝문제 목록 · 강의 예제 ↔ 원서 번호 자동 대응 · 쪽 이미지
+② TOPIC 설계   장 끝 문제에서 반복되는 '결정적 관찰'을 시험 개념으로 묶기
+③ 그림         원서 그림을 보고 회로도를 다시 그림 (잘라 붙이지 않음)
+④ 원고         TOPIC 본문은 블록만 순서대로 — paginate.js 가 A4 쪽 나눔 · 해법 박스 이어붙이기 · 쪽번호 · 탭 · 목차까지 자동
+⑤ 검증         모든 답 sympy 계산 + 원서 답·해설집 대조
+⑥ 렌더링       render.py → PDF + 쪽 넘침 검사 + 미리보기로 체크리스트 검수
+```
+
+> 강의록 예제는 대부분 원서 예제·연습문제를 그대로 옮긴 것이라, ①에서 원서 번호와 짝지어 `[원서 Example 14.7-1 · 강의 p.12]` 처럼 표기합니다. 족보가 없어도 됩니다.
+
+결과로 **A4 PDF**(바로 제본 가능)와 원본 HTML이 나옵니다. 브라우저 엔진이 없는 환경이면 HTML을 Chrome에서 열어 **A4·여백 없음·배경 그래픽 켜기**로 PDF 저장하면 똑같이 나옵니다.
 
 ---
 
@@ -87,17 +97,20 @@ Chapter 표지 → 목차 → Preview → 강의 선정 문제(L)
 
 ```
 tensor/                    ← 스킬 본체 (이 폴더만 설치하면 됨)
-├── SKILL.md               ← 작업 순서
+├── SKILL.md                     ← 파이프라인 + 품질 체크리스트
 ├── references/
-│   ├── content-rules.md   ← 개념 분류·시험 개념 추출·문제 출처·문체·검증
-│   └── book-format.md     ← 페이지 순서·HTML 부품 카탈로그
+│   ├── content-rules.md         ← 개념 분류·시험 개념 추출·문제 출처·문체·검증
+│   ├── book-format.md           ← 페이지 순서·HTML 부품 카탈로그·자동 쪽 나눔 규칙
+│   └── example-manuscript.html  ← 완성 원고 예시 (품질 기준)
 ├── assets/
-│   ├── tensor.css         ← 디자인 (색은 :root 변수 4개만 바꾸면 끝)
-│   └── template.html      ← 빈 틀
+│   ├── tensor.css               ← 디자인 (색은 :root 변수 4개만 바꾸면 끝)
+│   ├── paginate.js              ← 자동 쪽 나눔·쪽번호·탭·꼬리말·목차 쪽번호
+│   └── template.html            ← 빈 틀
 └── scripts/
-    ├── setup.sh           ← KaTeX, Pretendard, schemdraw, playwright 설치
-    ├── render.py          ← HTML → PDF + 쪽 넘침 검사 + 미리보기 PNG
-    └── circuits.py        ← 회로도·응답 그래프 헬퍼
+    ├── setup.sh                 ← KaTeX, Pretendard, schemdraw, playwright 설치
+    ├── extract.py               ← 강의록·원서(·해설집) 분석 → work/INVENTORY.md
+    ├── render.py                ← HTML → PDF + 쪽 넘침 검사 + 미리보기 PNG
+    └── circuits.py              ← 회로도·응답 그래프 헬퍼
 examples/demo/             ← 자체 제작 문제로 만든 데모 (demo.html, figs.py, demo.pdf)
 dist/tensor.zip            ← claude.ai 업로드용
 ```
@@ -108,6 +121,9 @@ dist/tensor.zip            ← claude.ai 업로드용
 bash tensor/scripts/setup.sh
 python3 examples/demo/figs.py
 python3 tensor/scripts/render.py examples/demo/demo.html --png preview/
+
+# 내 자료로 분석만 먼저 해보기
+python3 tensor/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf --out work/
 ```
 
 ---

@@ -35,22 +35,32 @@ CSS는 `assets/tensor.css`, 빈 틀은 `assets/template.html` 에 있다. 아래
 
 ---
 
-## 3. 페이지 틀
+## 3. 원고 구조와 자동 쪽 나눔 (paginate.js)
 
 ```html
-<section class="page even"> … <div class="foot"><span class="num">20</span><span class="bar"></span><span class="ttl"><span class="t">14</span>&nbsp; 라플라스 변환</span></div></section>
-
-<section class="page odd">
-  <div class="tab-part">Part2</div><div class="tab-topic">TOPIC<b>01</b></div>
-  <div class="topline"></div>
-  …
-  <div class="foot"><span class="num">21</span><span class="bar"></span><span class="ttl"><span class="t">TOPIC 01</span>&nbsp; 응답식에서 회로 읽기</span></div>
-</section>
+<body data-chapter="14" data-chtitle="라플라스 변환" data-part="Part2" data-start="16">
+  <section class="page cover">…</section>                       <!-- 고정 쪽 -->
+  <section class="page toc">… <td class="pg" data-ref="topic-01"></td> …</section>
+  <section class="page" data-id="preview">…</section>
+  <section class="page" data-id="lecture" data-run="강의 선정 문제">…</section>
+  <article class="manuscript">                                   <!-- 본문: 자동 쪽 나눔 -->
+    <section class="topic" data-no="01" data-title="응답식에서 회로 읽기"> 블록… </section>
+    <section class="topic" data-no="02" data-title="…"> 블록… </section>
+  </article>
+  <section class="page" data-id="a01" data-run="TOPIC 적용문제">…</section>
+  <section class="page" data-id="review" data-run="Review: 개념진단">…</section>
+</body>
 ```
-- 페이지는 고정 크기(A4)라 **자동으로 넘어가지 않는다.** 내용을 쪽 단위로 직접 나누고 `render.py`의 [넘침] 경고로 확인한다.
-- TOPIC 첫 쪽만 `.topic-band` + `.topic-title`, 이어지는 쪽은 `.topline`.
 
----
+paginate.js 가 하는 일
+- TOPIC마다 첫 쪽에 `topic-band` + `topic-title`, 이어지는 쪽에 `topline`.
+- 블록이 넘치면 다음 쪽으로. **`.sol` 해법 박스는 단계 단위로 쪼개** 다음 쪽에 라벨 없이 이어 붙인다.
+- `h3`, `h4`, `.keep-next` 는 다음 블록과 같은 쪽으로 따라간다(제목·연결 문단이 쪽 끝에 홀로 남지 않게).
+- `.fn` 각주는 그 블록이 놓인 쪽 아래로 보내고 본문 높이를 줄인다. 참조(ⓐ)가 있는 블록 **바로 뒤에** 쓴다.
+- `<div class="pagebreak"></div>` = 강제 쪽 넘김.
+- 모든 쪽에 쪽 번호(`data-start` 부터), 짝/홀, 꼬리말, 홀수쪽 `Part2`·`TOPIC nn` 탭을 붙인다. 꼬리말 제목은 `data-run` > TOPIC 이름(홀수) > 장 이름(짝수).
+- 목차의 `data-ref="topic-01" | "preview" | "a01" | …` 칸에 실제 쪽 번호를 채운다.
+- 고정 쪽은 자동으로 넘기지 않는다 → 문제 쪽은 4문항, Preview·Review는 한 쪽 분량으로 쓴다. 넘치면 render.py 가 [넘침] 경고를 낸다.
 
 ## 4. 부품 카탈로그
 
