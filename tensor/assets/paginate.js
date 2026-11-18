@@ -200,8 +200,8 @@
         const key = [pg.dataset.chapter, pg.dataset.topic].join("/");
         if (seen.has(key)) continue;
         seen.add(key);
-        label = "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle;
-      } else if (pg.dataset.id) label = pg.dataset.run || pg.dataset.id;
+        label = /^\d/.test(pg.dataset.topic) ? "TOPIC " + pg.dataset.topic + ". " + pg.dataset.topictitle : pg.dataset.topictitle;
+      } else if (pg.dataset.id) label = pg.dataset.run || (pg.dataset.id === "preview" ? "Preview" : pg.dataset.id);
       if (label) entries.push([pg, label]);
     }
     let sheet = host;

@@ -29,6 +29,11 @@ def main():
     soup = BeautifulSoup(Path(a.html).read_text(encoding="utf-8"), "html.parser")
     for t in soup(["script", "style"]):
         t.decompose()
+    # 코드(pre.code, code.c)와 빠른 정답·해설 장은 문체 검사에서 뺀다
+    for t in soup.select("pre.code, section.topic[data-no='해설']"):
+        t.decompose()
+    for t in soup.select("code.c"):
+        t.replace_with("CODE")
     W = []
 
     def warn(kind, where, msg):

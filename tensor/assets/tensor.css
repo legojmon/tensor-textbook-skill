@@ -248,3 +248,7 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .tg.ind{border-style:dashed}
 
 .katex .hangul_fallback,.katex .cjk_fallback{font-family:var(--serif)}
+
+/* 워밍업 문제의 [준비] 칸 */
+div.pre{font-family:var(--sans);font-size:7.6pt;line-height:1.5;border:1px dashed var(--pm);border-radius:1.5mm;padding:1.4mm 2.4mm;margin:0 0 2mm;background:var(--pl)}
+div.pre b{color:var(--p);margin-right:1.5mm}
