@@ -24,4 +24,4 @@ https://github.com/legojmon/tensor-textbook-skill
 ![표지 데모](docs/cover.png)
 
 ---
-<sub>원서·강의 자료로 만든 교재는 개인 학습용으로만 쓰세요. · 표지 설계: 김준형 · 최재원 · MIT License</sub>
+<sub>원서·강의 자료로 만든 교재는 개인 학습용으로만 쓰세요. · 서울대학교 로고(`tensor/assets/cover/snu_logo_white.*`)는 서울대학교의 상징으로 학교 규정에 따라 사용하세요. · 표지 설계: 김준형 · 최재원 · 코드 MIT License</sub>

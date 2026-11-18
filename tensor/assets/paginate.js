@@ -18,6 +18,7 @@
  *   data-per="2" (기본): 한 쪽에 위·아래 2문제, 나머지는 풀이 공간
  *   data-per="4": 짧은 계산 문제용 2×2
  *   data-lv = 난이도 1~3, data-topic = 관련 TOPIC (PAGE 칸은 그 TOPIC 첫 쪽으로 자동)
+ *   data-hint = 힌트 한 줄 (문제 칸 맨 아래, 막혔을 때만 보게 작게)
  *
  * 하는 일
  *  1. KaTeX 렌더 → 글꼴·그림 로딩 대기
@@ -158,6 +159,8 @@
       const grid = el("div", "qgrid");
       items.slice(i, i + per).forEach((it) => {
         if (!it.querySelector(":scope > .qh")) it.insertBefore(qhead(it), it.firstChild);
+        if (it.dataset.hint && !it.querySelector(":scope > .hint"))
+          it.appendChild(el("div", "hint", `<b>힌트</b> ${it.dataset.hint}`));
         grid.appendChild(it);
       });
       content.appendChild(grid);

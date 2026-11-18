@@ -20,7 +20,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-ACCENT = "#6B3FD4"   # tensor.css 의 --p 와 맞출 것
+THEME = os.environ.get("TENSOR_THEME", "mono")   # mono(흑백 인쇄, 기본) | color
+ACCENT = "#111111" if THEME == "mono" else "#6B3FD4"   # 강조 소자: 흑백에서는 굵은 검정선으로 구분
+ACCENT_LW = 2.4 if THEME == "mono" else 1.1
 INK = "#1d1d1f"
 U = 2.4              # 소자 기본 길이
 
@@ -79,7 +81,7 @@ def switched_divider_rc(path, src="24 V", r_sw="18 Ω", r_sh="4 Ω", r_ret=None,
         if sw_closed_after:
             d += (r := elm.Line().right().label("단락(스위치 닫힘)", loc="top", fontsize=9, color="#888"))
         else:
-            d += (r := elm.Resistor().right().label(r_sw, loc="bot").color(ACCENT))
+            d += (r := elm.Resistor().right().label(r_sw, loc="bot").color(ACCENT).linewidth(ACCENT_LW))
     else:
         d += (r := elm.Resistor().right().label(r_sw, loc="bot" if switch else "top"))
         if switch:
@@ -87,7 +89,7 @@ def switched_divider_rc(path, src="24 V", r_sw="18 Ω", r_sh="4 Ω", r_ret=None,
     B = r.end
     d += elm.Dot().at(B)
     col = ACCENT if dead else INK
-    d += (rs := elm.Resistor().at(B).down().label(r_sh, loc="bot").color(col))
+    d += (rs := elm.Resistor().at(B).down().label(r_sh, loc="bot").color(col).linewidth(ACCENT_LW if dead else 1.1))
     D = rs.end
     d += elm.Dot().at(D)
     d += elm.Line().at(B).right(U * 0.9)
@@ -97,7 +99,7 @@ def switched_divider_rc(path, src="24 V", r_sw="18 Ω", r_sh="4 Ω", r_ret=None,
     F = cc.end
     d += elm.Dot().at(F)
     if r_ret:
-        d += (rr := elm.Resistor().at(s.start).right().label(r_ret, loc="bot").color(col))
+        d += (rr := elm.Resistor().at(s.start).right().label(r_ret, loc="bot").color(col).linewidth(ACCENT_LW if dead else 1.1))
         d += elm.Line().at(rr.end).to(F)
     else:
         d += elm.Line().at(s.start).to(F)
@@ -217,9 +219,9 @@ def plot_response(path, f, tmax, ylim, yticks, xticks, pre=None, marks=(), ylabe
     """응답 그래프. f(t) 는 t>=0 구간, pre 는 t<0 의 일정값."""
     fig, ax = plt.subplots(figsize=size, dpi=200)
     t = np.linspace(0, tmax, 400)
-    ax.plot(t, f(t), color=ACCENT, lw=1.6)
+    ax.plot(t, f(t), color=ACCENT, lw=1.8 if THEME == "mono" else 1.6)
     if pre is not None:
-        ax.plot([-tmax * 0.12, 0], [pre, pre], color=ACCENT, lw=1.6)
+        ax.plot([-tmax * 0.12, 0], [pre, pre], color=ACCENT, lw=1.8 if THEME == "mono" else 1.6)
     for (x, y, lab) in marks:
         ax.plot([x], [y], "o", ms=3, color=INK)
         ax.annotate(lab, (x, y), textcoords="offset points", xytext=(4, -10), fontsize=7)

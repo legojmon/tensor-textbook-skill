@@ -176,5 +176,9 @@ paginate.js 가 하는 일
 - 그래프: `plot_response()`.
 - 본문 그림 폭 52~62mm, 문제 페이지 그림 60~76mm. 시험적 해법용 "전원을 끈 회로"는 ACCENT 색으로 강조.
 
-## 6. 색 바꾸기
+## 6. 흑백 인쇄 (기본)
+- `template.html` 은 `tensor.css` 다음에 `theme-mono.css` 를 불러온다. 색 대신 **모양**으로 구분한다: 시험 개념 태그 = 검정 반전, 원서 개념 = 실선, 원서 간접 개념 = 점선(`.tg.ind`) / 개념 박스 = 이중선·실선·점선(`.concept`, `.concept.book`, `.concept.ind`) / 시험적 해법 = 굵은 왼쪽 막대, 원서적 해법 = 옅은 회색.
+- 장 표지·띠·탭은 칠하지 않고 선으로만(잉크 절약). 컬러로 뽑을 때만 `theme-mono.css` 링크를 지우고 `TENSOR_THEME=color` 로 그림을 다시 만든다.
+
+## 7. 색 바꾸기 (컬러 인쇄일 때)
 `tensor.css` 맨 위 `:root` 의 `--p`(포인트), `--pl`(옅은 배경), `--pm`(중간), `--pd`(진한) 4개만 바꾸고, `circuits.py` 의 `ACCENT` 를 같은 값으로 바꾼다.

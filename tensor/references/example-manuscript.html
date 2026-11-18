@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="tensor://katex/katex.min.css">
 <link rel="stylesheet" href="tensor://pretendard/pretendard.css">
 <link rel="stylesheet" href="tensor://css/tensor.css">
+<link rel="stylesheet" href="tensor://css/theme-mono.css">
 <script src="tensor://katex/katex.min.js"></script>
 <script src="tensor://katex/contrib/auto-render.min.js"></script>
 <script src="tensor://css/paginate.js"></script>
@@ -18,7 +19,7 @@
   <div class="chap">CHAPTER</div>
   <div class="num">14</div>
   <div class="ttl">라플라스 변환<small>The Laplace Transform</small></div>
-  <div class="note"><b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class="tg">원서 개념</span>을 시험 문제에 맞게 다시 다듬는 단계입니다. 강의에서 다룬 문제와 원서 연습문제에 반복해서 등장하는 생각을 <span class="tg">시험 개념</span>으로 묶고, 그것이 왜 성립하는지 원서 개념으로 확인합니다. <br><span style="opacity:.75">※ 데모 — 이 책의 모든 문제는 자체 제작 문항입니다.</span></div>
+  <div class="note"><b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class="tg ws">원서 개념</span>을 시험 문제에 맞게 다시 다듬는 단계다. 강의 문제와 원서 연습문제에 반복되는 생각을 <span class="tg">시험 개념</span>으로 묶고, 그것이 왜 성립하는지 원서 개념으로 확인한다. <br><span style="opacity:.75">※ 데모: 이 책의 모든 문제는 자체 제작 문항이다.</span></div>
 </section>
 
 <!-- ============ Chapter 목차 ============ -->
@@ -38,7 +39,7 @@
       <tr><td></td><td>TOPIC 07. 입력이 바뀌면 곱하는 것만 바뀐다</td><td class="pg" style="color:#bbb">—</td></tr>
       <tr><td></td><td>TOPIC 08. 정상상태 항과 과도 항 나누기</td><td class="pg" style="color:#bbb">—</td></tr>
       <tr><td></td><td>TOPIC 09. 펄스 입력은 시간 이동으로</td><td class="pg" style="color:#bbb">—</td></tr>
-      <tr><td></td><td>TOPIC 10. 종속전원이 극을 오른쪽으로 민다</td><td class="pg" style="color:#bbb">—</td></tr>
+      <tr><td></td><td>TOPIC 10. 종속전원은 극을 옮긴다</td><td class="pg" style="color:#bbb">—</td></tr>
       <tr><td></td><td>TOPIC 11. 컨볼루션은 언제 꺼내나</td><td class="pg" style="color:#bbb">—</td></tr>
       <tr><td></td><td class="pc">A·01</td><td class="pg" data-ref="a01"></td></tr>
       <tr><td></td><td class="pc">Review</td><td class="pg" data-ref="review"></td></tr>
@@ -53,16 +54,16 @@
     <div class="pv-title"><span class="n">14</span>라플라스 변환</div>
     <div class="pv-box">
       <div class="pv-ico"><span class="fig8">∑</span>PRE–<br>VIEW</div>
-      <p>14장은 라플라스 변환을 회로 해석의 도구로 쓰는 장입니다. Part1에서 변환표, 부분분수, 초기값·최종값 정리, s영역 소자 모델을 하나씩 정리했다면, Part2에서는 그 도구로 시험 문제를 <b>빨리, 그리고 틀리지 않게</b> 푸는 데 집중합니다.</p>
-      <p>이 장의 강의 예제와 연습문제를 모아 보면 눈에 띄는 구조가 하나 있습니다. <b>응답식을 먼저 주고, 회로 소자의 값을 거꾸로 묻는 문제</b>입니다. 원서 본문은 정방향(회로 → 응답) 풀이만 설명하기 때문에, 이 역방향 문제를 따로 정리해 두지 않으면 시험장에서 매번 처음부터 s영역 회로를 세우게 됩니다. 첫 TOPIC을 이 유형으로 시작하는 이유입니다.</p>
-      <p>이어서 s영역 소자 모델의 직렬형·병렬형 선택, 부분분수의 빠른 처리, 최종값 정리의 사용 조건, 2차 분모 읽기, 입력별 응답, 종속전원과 안정도를 다룹니다.</p>
+      <p>14장은 라플라스 변환을 회로 해석 도구로 쓰는 장이다. Part1에서 변환표, 부분분수, 초기값·최종값 정리, s영역 소자 모델을 정리했다면, Part2에서는 같은 도구로 시험 문제를 빠르고 정확하게 푸는 데 집중한다.</p>
+      <p>이 장의 강의 예제와 연습문제에는 반복되는 구조가 하나 있다. 응답식을 먼저 주고 회로 소자의 값을 거꾸로 묻는 문제다. 원서 본문은 회로에서 응답으로 가는 정방향 풀이만 설명하므로, 이 역방향 문제는 따로 정리해 두어야 한다. 그래서 첫 TOPIC을 이 유형으로 잡았다.</p>
+      <p>이어서 s영역 소자 모델의 직렬형·병렬형 선택, 부분분수의 빠른 처리, 최종값 정리의 사용 조건, 2차 분모 읽기, 입력별 응답, 종속전원과 안정도를 다룬다.</p>
       <p class="sans" style="color:var(--p);font-weight:800;margin:5mm 0 1mm">〈학습 방법〉</p>
       <div class="howto">
-        <div class="k">① 강의 선정 문제 :</div><div>강의에서 다룬 원서 예제·연습문제입니다. 출제 의도에 가장 가까운 문제이므로 먼저 <span class="tg ws">원서 개념</span>만으로 풀어 보고 본문으로 넘어갑니다.</div>
-        <div class="k">② 본문(TOPIC) :</div><div><span class="tg">시험 개념</span>을 하나씩 만들고, 원서 개념으로 왜 성립하는지 확인합니다.</div>
-        <div class="k">③ 적용문제 :</div><div>본문의 시험 개념을 바로 써 볼 수 있는 문항입니다.</div>
-        <div class="k">④ 연습문제 :</div><div>원서 장 끝 문제 중 주요 문항입니다. <span class="tg ws">원서적 해법</span>과 <span class="tg">시험적 해법</span>을 모두 완성하는 것이 목표입니다.</div>
-        <div class="k">⑤ 채점 포인트 :</div><div>대학 시험은 서술형 부분점수로 채점됩니다. 어떤 줄이 점수가 되는지 TOPIC마다 정리했습니다.</div>
+        <div class="k">① 강의 선정 문제 :</div><div>강의에서 다룬 원서 예제·연습문제다. 출제 의도에 가장 가까우므로 먼저 <span class="tg ws">원서 개념</span>만으로 풀어 보고 본문으로 넘어간다.</div>
+        <div class="k">② 본문(TOPIC) :</div><div><span class="tg">시험 개념</span>을 하나씩 만들고, 원서 개념으로 왜 성립하는지 확인한다.</div>
+        <div class="k">③ 적용문제 :</div><div>본문의 시험 개념을 바로 써 보는 문항이다. 막히면 문제 아래 힌트를 본다.</div>
+        <div class="k">④ 연습문제 :</div><div>원서 장 끝 문제 중 주요 문항이다. <span class="tg ws">원서적 해법</span>과 <span class="tg">시험적 해법</span>을 모두 완성하는 것이 목표다.</div>
+        <div class="k">⑤ 채점 포인트 :</div><div>대학 시험은 서술형 부분점수로 채점된다. 어떤 줄이 점수가 되는지 TOPIC마다 정리했다.</div>
       </div>
     </div>
   </div>
@@ -71,25 +72,25 @@
 
 <!-- ============ 강의 선정 문제 ============ -->
 <section class="problems" data-id="lecture" data-title="강의 선정 문제" data-desc="강의에서 다룬 원서 문제다. 먼저 [원서적 해법]으로 풀어 보고,<br>본문을 공부한 뒤 [시험적 해법]으로 다시 풀어 보자. (데모: 자체 제작 문항)" data-per="2">
-  <div class="qitem" data-no="L·01" data-lv="1" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="L·01" data-hint="전원을 끄면 C가 보는 저항은? 지수 0.25 = 1/τ" data-lv="1" data-src="자체 제작" data-topic="01">
     <div class="t">그림의 회로에서 스위치는 $t=0$에 닫히며, $t&lt;0$에서 회로는 정상상태이다. $t&gt;0$에서
         $$v_o(t)=20-12.5e^{-0.25t}\ \text{V}$$
         일 때, 커패시턴스 $C$의 값을 구하시오.</div>
     <div class="fig"><img src="fig/ex01.svg" style="width:62mm"></div>
   </div>
-  <div class="qitem" data-no="L·02" data-lv="2" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="L·02" data-hint="연속인 것은 i_L. v_o(0^+)를 i(0)로 바꿔서 t<0 회로에 넣는다" data-lv="2" data-src="자체 제작" data-topic="01">
     <div class="t">그림의 회로에서 스위치는 $t=0$에 닫히며, $t&lt;0$에서 회로는 정상상태이다. $t&gt;0$에서
         $$v_o(t)=18-6e^{-2t}\ \text{V}$$
         일 때, $L$, $R_1$, $R_2$의 값을 구하시오.</div>
     <div class="fig"><img src="fig/ex02.svg" style="width:60mm"></div>
   </div>
-  <div class="qitem" data-no="L·03" data-lv="3" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="L·03" data-hint="분자 6은 독립 정보인가?" data-lv="3" data-src="자체 제작" data-topic="01">
     <div class="t">그림 회로의 입력은 $V_1(s)$, 출력은 $V_o(s)$이다. 이 회로의 임펄스 응답이
         $$h(t)=6\left(e^{-2t}-e^{-3t}\right),\quad t\ge 0$$
         일 때, $R$, $L$, $C$의 값을 구하시오. 답이 하나로 정해지지 않는다면 그 이유를 쓰시오.</div>
     <div class="fig"><img src="fig/ex03.svg" style="width:62mm"></div>
   </div>
-  <div class="qitem" data-no="L·04" data-lv="2" data-src="자체 제작" data-topic="05">
+  <div class="qitem" data-no="L·04" data-hint="t<0에서 v_c, i_L 두 초기값을 먼저 구한다" data-lv="2" data-src="자체 제작" data-topic="05">
     <div class="t">그림의 회로에서 입력 전압은 $v_i(t)=6+6u(t)$ V이다. $t&lt;0$에서 회로가 정상상태일 때, $t&gt;0$에서 커패시터 전압 $v_c(t)$를 구하시오.</div>
     <div class="fig"><img src="fig/l04.svg" style="width:76mm"></div>
   </div>
@@ -128,7 +129,7 @@
   
     <div class="step"><span class="n">④</span><span>출력 전압은 커패시터 가지의 전압이다.
     $$V_o(s)=\frac{1}{Cs}I_2+\frac{7.5}{s}=\frac{6.25}{Cs\left(s+\frac{1}{2C}\right)}+\frac{7.5}{s}=\frac{20}{s}-\frac{12.5}{s+\frac{1}{2C}}$$</span></div>
-    <div class="step"><span class="n">⑤</span><span>주어진 응답을 변환하면 $\mathcal{L}[v_o(t)]=\dfrac{20}{s}-\dfrac{12.5}{s+0.25}$ 이다. 두 식을 비교하면
+    <div class="step"><span class="n">⑤</span><span>주어진 응답을 변환하면 $\mathcal{L}[v_o(t)]=\tfrac{20}{s}-\tfrac{12.5}{s+0.25}$ 이다. 두 식을 비교하면
     $$\frac{1}{2C}=0.25\qquad\therefore\ C=2\ \text{F}$$</span></div>
   </div></div>
   <p>풀이에 틀린 곳은 없다. 그런데 ⑤에서 $C$를 결정한 것은 <b>지수의 0.25 하나뿐</b>이었다. 20과 −12.5는 ③, ④를 거쳐 다시 나왔을 뿐 새로운 정보를 주지 않았다. 답은 처음부터 응답식의 지수 안에 있었고, 우리는 그것을 꺼내려고 메시 방정식 두 개와 부분분수를 거친 셈이다.</p>
@@ -137,10 +138,10 @@
   <p>이 의문에서 출발하면 응답식의 숫자 세 개가 각각 회로의 어디에서 왔는지를 거꾸로 읽어 낼 수 있다.</p>
   <div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
     <div class="box">
-      <p style="margin-bottom:2mm">응답식의 세 숫자를 회로에 하나씩 대응시킨다.
+      <p style="margin-bottom:2mm"><span class="cond" style="display:block;border:none;margin:0 0 1.5mm;padding:0"><b>적용 조건</b>지수항이 하나인 1차 응답, 스위치 이후 회로가 하나로 고정</span>응답식의 세 숫자를 회로에 하나씩 대응시킨다.
       $$v_o(t)=\underbrace{20}_{\text{최종값}}\ \underbrace{-\,12.5}_{\text{초기값}-\text{최종값}}\,e^{-\overbrace{0.25}^{1/\tau}\,t}$$</p>
       <div class="fig"><img src="fig/ex01_dead.svg" style="width:78mm"><div class="cap">전원을 끈 $t&gt;0$ 회로</div></div>
-      <div class="step"><span class="n">③</span><span><b>극(지수) 0.25</b> : 스위치가 닫힌 뒤 독립전원을 끄면(전압원 단락) 커패시터가 보는 저항은 $6\,\Omega\parallel3\,\Omega=2\,\Omega$이다. 따라서 $\tau=2C$이고 $\ \dfrac{1}{2C}=0.25\quad\therefore\ \underline{C=2\ \text{F}}$</span></div>
+      <div class="step"><span class="n">③</span><span><b>극(지수) 0.25</b> : 스위치가 닫힌 뒤 독립전원을 끄면(전압원 단락) 커패시터가 보는 저항은 $6\,\Omega\parallel3\,\Omega=2\,\Omega$이다. 따라서 $\tau=2C$이고 $\ \tfrac{1}{2C}=0.25\quad\therefore\ \underline{C=2\ \text{F}}$</span></div>
       <div class="step"><span class="n">①</span><span>(검산) <b>최종값</b> : 커패시터 개방 → $v_o(\infty)=30\times\frac{6}{6+3}=20$ V ✓</span></div>
       <div class="step"><span class="n">②</span><span>(검산) <b>초기값</b> : $v_o(0^+)=v_o(0^-)=7.5$ V $=20-12.5$ ✓</span></div>
     </div>
@@ -161,7 +162,7 @@
         <tr><td>$A+B$</td><td>초기값 $x(0^+)$</td><td>$t=0^+$ 회로 ($v_C$, $i_L$만 연속)</td></tr>
         <tr><td>$p$</td><td>$1/\tau$ = 회로의 극</td><td>독립전원을 끈 회로 : $\tau=R_{th}C$ 또는 $\tau=L/R_{th}$</td></tr>
       </table>
-      <p>미지수가 세 개 이하이면 라플라스 변환 없이 결정된다.</p>
+      <div class="cond"><b>적용 조건</b>응답이 상수 + 지수항 하나(1차 회로)이고, 세 숫자가 서로 다른 소자 조합을 정할 때. 지수항이 둘 이상이거나 두 숫자가 같은 조합을 정하면 2절 '숫자를 세라'로 넘어간다.</div>
     </div>
   </div>
   <div class="core"><span class="lab">CORE</span><div class="box">[응답식이 주어진 역추적 문제] ⟹ [상수 = 최종값, $t=0$ 값 = 초기값, 지수 = $1/\tau$ 를 먼저 쓰고 미지수와 맞춘다]</div></div>
@@ -180,12 +181,13 @@
   <p class="keep-next">미지수가 세 개($L$, $R_1$, $R_2$), 응답식의 숫자도 세 개(18, 12, 2)다. 하나씩 짝지으면 된다.</p>
   <div class="sol exam"><span class="lab"><span class="a">시험적</span><span class="b">해법</span></span>
     <div class="box">
+      <div class="cond" style="border:none;margin:0 0 1.5mm;padding:0"><b>적용 조건</b>지수항이 하나인 1차 응답, 미지수 셋이 최종값·초기값·극에 하나씩 대응</div>
       <div class="step"><span class="n">①</span><span><b>최종값 18</b> : 스위치가 닫히면 $R_1$이 단락되고, 정상상태에서 $L$도 단락이다.
       $$v_o(\infty)=36\times\frac{9}{R_2+9}=18\qquad\therefore\ \underline{R_2=9\ \Omega}$$</span></div>
       <div class="step"><span class="n">②</span><span><b>초기값 $18-6=12$</b> : 연속인 것은 인덕터 전류뿐이므로 $i$를 거쳐서 옮긴다. $i(0^+)=\frac{v_o(0^+)}{9}=\frac{4}{3}$ A이고, $t&lt;0$에서
       $$i(0^-)=\frac{36}{R_1+R_2+9}=\frac{4}{3}\qquad\therefore\ \underline{R_1=9\ \Omega}$$</span></div>
       <div class="step"><span class="n">③</span><span><b>극 2</b> : 전원을 끄면 $L$이 보는 저항은 $R_2+9=18\ \Omega$이다.
-      $\ \dfrac{1}{\tau}=\dfrac{18}{L}=2\qquad\therefore\ \underline{L=9\ \text{H}}$</span></div>
+      $\ \tfrac{1}{\tau}=\tfrac{18}{L}=2\qquad\therefore\ \underline{L=9\ \text{H}}$</span></div>
     </div>
   </div>
   <p>②에서 $v_o$를 곧바로 $t=0^-$ 회로에 대입하지 않은 점에 주목하자. 스위치 순간에 연속인 것은 $v_C$와 $i_L$뿐이다. 초기값은 반드시 이 둘을 거쳐서 옮긴다.</p>
@@ -201,7 +203,7 @@
   </div>
   <div class="sol"><span class="lab"><span class="a">원서적</span><span class="b">해법</span></span>
     <div class="box">
-      <p>임펄스 응답의 변환은 전달함수이다. $\ H(s)=6\left(\frac{1}{s+2}-\frac{1}{s+3}\right)=\dfrac{6}{s^2+5s+6}$</p>
+      <p>임펄스 응답의 변환은 전달함수이다. $\ H(s)=6\left(\frac{1}{s+2}-\frac{1}{s+3}\right)=\tfrac{6}{s^2+5s+6}$</p>
       <p>회로에서 전달함수를 구하면
       $$H(s)=\frac{R\parallel\frac{1}{Cs}}{Ls+R\parallel\frac{1}{Cs}}=\frac{\frac{1}{LC}}{s^2+\frac{1}{RC}s+\frac{1}{LC}}$$
       비교하면 $\frac{1}{LC}=6,\ \frac{1}{RC}=5$. 식은 두 개, 미지수는 세 개이므로 <b>해는 유일하지 않다.</b> 예를 들어 $C=0.1$ F로 정하면 $L=\frac{5}{3}$ H, $R=2\ \Omega$이다.</p>
@@ -220,6 +222,7 @@
         <tr><td>미지수 &gt;</td><td>유일해 없음</td><td>"해가 유일하지 않음" + 선택한 값을 명시</td></tr>
         <tr><td>숫자 &gt;</td><td>남는 숫자는 검산용</td><td>검산 결과를 한 줄로</td></tr>
       </table>
+      <div class="cond"><b>적용 조건</b>회로의 연결 구조는 알고 소자 값만 모를 때. 구조까지 모르면(소자 배치를 설계하는 문제) 먼저 전달함수의 차수로 소자 개수를 정한다.</div>
     </div>
   </div>
   <div class="grade">
@@ -253,23 +256,23 @@
 
 <!-- ============ 적용문제 ============ -->
 <section class="problems" data-id="a01" data-title="TOPIC 적용문제" data-desc="TOPIC에서 만든 [시험 개념]을 바로 써 보는 문항이다.<br>원서 연습문제와 자체 제작 문항으로 구성한다. (데모: 전부 자체 제작)" data-per="2">
-  <div class="qitem" data-no="A·01" data-lv="1" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="A·01" data-hint="t<0에서 스위치가 닫혀 R이 단락된 상태" data-lv="1" data-src="자체 제작" data-topic="01">
     <div class="t">그림의 회로에서 스위치는 $t=0$에 열리며, $t&lt;0$에서 회로는 정상상태이다. $t&gt;0$에서
         $$v_o(t)=8+16e^{-3t}\ \text{V}$$
         일 때, 저항 $R$과 커패시턴스 $C$의 값을 구하시오.</div>
     <div class="fig"><img src="fig/a01.svg" style="width:62mm"></div>
   </div>
-  <div class="qitem" data-no="A·02" data-lv="2" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="A·02" data-hint="그래프에서 읽을 숫자 셋: 초기값, 최종값, 한 점" data-lv="2" data-src="자체 제작" data-topic="01">
     <div class="t">그림 (a) 회로의 커패시터 전압 $v(t)$가 그림 (b)와 같다. 이 회로를 s영역에서 나타낼 때 독립전원을 $\frac{D}{s}$, 커패시터의 초기전압 전원을 $\frac{E}{s}$로 쓴다. $D$, $E$의 값과 $R_1$, $C$의 값을 구하시오.</div>
     <div class="fig"><img src="fig/a02.svg" style="width:62mm"><div class="cap">(a)</div><img src="fig/a02_plot.svg" style="width:52mm"><div class="cap">(b)</div></div>
   </div>
-  <div class="qitem" data-no="A·03" data-lv="2" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="A·03" data-hint="증폭기 이득이 최종값과 초기값에 똑같이 곱해진다" data-lv="2" data-src="자체 제작" data-topic="01">
     <div class="t">그림 회로의 입력은 $v_s(t)=4-2u(t)$ V이고, 출력은 $t\ge0$에서
         $$v_o(t)=6+6e^{-50t}\ \text{V}$$
         이다. $R_1$과 $R_2$의 값을 구하시오.</div>
     <div class="fig"><img src="fig/a03.svg" style="width:76mm"></div>
   </div>
-  <div class="qitem" data-no="A·04" data-lv="3" data-src="자체 제작" data-topic="01">
+  <div class="qitem" data-no="A·04" data-hint="k는 최종값, 두 지수는 R_1/L과 1/(R_2C). 몇 개를 골라야 하나?" data-lv="3" data-src="자체 제작" data-topic="01">
     <div class="t">그림 회로의 입력은 $v_i(t)$, 출력은 $v_o(t)$이다. 계단 응답이
         $$v_o(t)=\left(4-8e^{-1000t}+4e^{-2000t}\right)u(t)\ \text{V}$$
         가 되도록 $L$, $C$, $k$, $R_1$, $R_2$의 값을 정하시오.</div>
@@ -283,7 +286,7 @@
   <div class="pv-frame"><div class="pv-title"><span class="n">14</span>라플라스 변환</div>
     <div class="pv-box"><div class="pv-ico"><span class="fig8">∑</span>OVER–<br>VIEW</div>
       <p>TOPIC 01에서는 응답식이 주어진 역추적 문제를 다뤘다. 핵심은 응답식의 숫자를 <b>최종값·초기값·극</b>으로 나눠 읽는 것, 그리고 극은 전원을 끈 회로가 정한다는 것이다. 이 관점은 TOPIC 05(분모는 전원을 끄고 본다)와 TOPIC 06(2차 분모 읽기)에서 2차 회로로 그대로 확장된다.</p>
-      <p>미지수가 정보보다 많을 때 "해가 유일하지 않음"을 쓰는 것은 틀린 답이 아니라 정답의 일부다. 설계형 문제에서 특히 자주 요구된다.</p></div></div>
+      <p>미지수가 정보보다 많을 때 "해가 유일하지 않음"을 쓰는 것은 틀린 답이 아니라 정답의 일부다. 설계형 문제가 이것을 요구한다.</p></div></div>
   <div style="margin-top:6mm"><div class="ox-title">✓ TOPIC 본문 O/X</div>
     <table class="ox">
       <tr><td class="tp">TOPIC 01<br>응답식에서 회로 읽기</td><td class="pg" data-ref="topic-01"></td><td><ul>

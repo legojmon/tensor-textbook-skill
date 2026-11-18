@@ -13,6 +13,7 @@
   textbook/pNNNN.png      ← 원서 해당 장 쪽 이미지 (그림 다시 그릴 때 본다)
   solutions/text.md       ← 해설집 해당 장 텍스트 (있으면)
   mapping.csv             ← 강의 쪽, 강의 표기, 원서 번호, 원서 쪽
+  figures/                ← 원서 그림 자동 잘라내기 (흑백 변환) + figures.md 색인(캡션·쪽·관련 예제/문제)
 
 스캔본(텍스트 없음)이면 경고를 내고 이미지만 만든다 — 이때는 이미지를 직접 보고 목록을 만든다.
 """
@@ -102,6 +103,74 @@ def sheets(paths, out_dir, prefix="sheet", per=6):
     return outs
 
 
+CAPTION = re.compile(r"(?i)^\s*fig(?:ure)?\.?\s*((?:P|E)?\s?\d{1,2}\.\d{1,2}(?:-\d{1,3})?)")
+
+
+def extract_figures(book, s, e, out, ch):
+    """캡션(Figure …) 위쪽, 같은 단 안의 벡터 도형·이미지를 묶어 그림 영역을 잘라낸다."""
+    fdir = out / "figures"
+    fdir.mkdir(exist_ok=True)
+    rows = []
+    for i in range(s, e + 1):
+        pg = book[i]
+        W = pg.rect.width
+        blocks = pg.get_text("blocks")
+        shapes = [d["rect"] for d in pg.get_drawings()]
+        shapes += [pymupdf.Rect(b["bbox"]) for b in pg.get_text("dict")["blocks"] if b.get("type") == 1]
+        caps = [b for b in blocks if CAPTION.match(b[4])]
+        for cb in caps:
+            cx0, cy0 = cb[0], cb[1]
+            left = cx0 < W / 2 - 20
+            col = (0, W / 2) if left else (W / 2, W)
+            wide = cb[2] - cb[0] > W * 0.55       # 두 단에 걸친 캡션
+            if wide:
+                col = (0, W)
+            # 위쪽 경계: 같은 단에서 캡션보다 위에 있는 본문 문단(긴 텍스트)이나 다른 캡션의 아래
+            top = max(60, cy0 - 340)                # 머리글 제외, 캡션 위 최대 12cm
+            for b in blocks:
+                if b is cb or b[3] > cy0 - 2:
+                    continue
+                inside = col[0] - 5 <= b[0] and b[2] <= col[1] + 5
+                para = len(b[4].strip()) > 80 and (b[2] - b[0]) > (col[1] - col[0]) * 0.6
+                if inside and (para or CAPTION.match(b[4])):
+                    top = max(top, b[3])
+            box = None
+            cw = col[1] - col[0]
+            for r in shapes:
+                big_bg = r.width > cw * 0.85 and r.height > pg.rect.height * 0.2   # 예제 상자 등 배경
+                if big_bg or r.y0 < 55:
+                    continue
+                if r.y1 <= cy0 + 2 and r.y0 >= top - 2 and r.x0 >= col[0] - 10 and r.x1 <= col[1] + 10:
+                    box = r if box is None else box | r
+            if box is None or box.height < 20:
+                continue
+            # 그림 안의 라벨 글자까지 포함
+            for b in blocks:
+                br = pymupdf.Rect(b[:4])
+                if br.intersects(box + (-6, -6, 6, 6)) and len(b[4]) < 40 and br.y0 >= top - 2 and br.y1 <= cy0 + 2:
+                    box |= br
+            box = (box + (-6, -6, 6, 6)) & pymupdf.Rect(col[0] - 12, 0, col[1] + 12, pg.rect.height) & pg.rect
+            prose_inside = sum(1 for b in blocks if pymupdf.Rect(b[:4]).intersects(box) and len(b[4].strip()) > 40 and not CAPTION.match(b[4]))
+            big_txt = any(sp["size"] > 13 for b in pg.get_text("dict")["blocks"] if b.get("type") == 0
+                          for ln in b["lines"] for sp in ln["spans"] if pymupdf.Rect(sp["bbox"]).intersects(box) and sp["text"].strip())
+            suspicious = big_txt or prose_inside >= 2 or box.height > pg.rect.height * 0.45 or box.width * box.height > pg.rect.width * pg.rect.height * 0.3 or box.height < 40
+            fid = re.sub(r"\s+", "", CAPTION.match(cb[4]).group(1))
+            cap = re.sub(r"\s+", " ", cb[4]).strip()
+            name = f"fig_{fid.replace('.', '_')}_p{i + 1}.png"
+            pix = pg.get_pixmap(dpi=200, clip=box, colorspace=pymupdf.csGRAY)
+            pix.save(str(fdir / name))
+            refs = sorted(set(re.findall(rf"(?:Example|Exercise|Problem|P)\s?({ch}\.\d{{1,2}}-\d{{1,3}})", cap)))
+            if fid.upper().startswith("P"):
+                refs = sorted(set(refs + [fid[1:]]))
+            rows.append((("⚠ " if suspicious else "") + fid, i + 1, name, ", ".join(refs), cap[:90]))
+    with open(fdir / "figures.md", "w", encoding="utf-8") as f:
+        f.write("⚠ = 자동 자르기가 의심스러움 → textbook/p*.png 를 보고 figtools.py crop 으로 다시 자른다\n\n")
+        f.write("| 그림 | 원서 PDF 쪽 | 파일 | 관련 예제/문제 | 캡션 |\n|---|---|---|---|---|\n")
+        for r in rows:
+            f.write("| " + " | ".join(str(x) for x in r) + " |\n")
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--lecture", required=True)
@@ -163,6 +232,9 @@ def main():
                 if m.group(1) not in [x[0] for x in sections]:
                     sections.append((m.group(1), title.replace(" ", "") if len(title.split()) > 6 else title, i + 1))
 
+    # ---------------- figures
+    figs = [] if scanned else extract_figures(book, s, e, out, ch)
+
     # ---------------- solutions
     sol_idx = {}
     if a.solutions:
@@ -205,6 +277,7 @@ def main():
     L.append(f"- 원서: {Path(a.textbook).name} — 이 장은 PDF p.{s + 1}–{e + 1} → textbook/text.md, textbook/p*.png")
     if a.solutions:
         L.append(f"- 해설집: {Path(a.solutions).name} → solutions/text.md (번호 {len(sol_idx)}개 색인)")
+    L.append(f"- 그림: 원서에서 {len(figs)}개 자동 추출 → figures/figures.md (흑백, 200dpi). 강의 그림은 lecture/p*.png 에서 figtools.py crop 으로 잘라 쓴다")
     for n in notes:
         L.append(f"- ⚠ {n}")
     L.append("\n## 절 목록")

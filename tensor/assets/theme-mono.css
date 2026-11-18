@@ -1,0 +1,105 @@
+/* Tensor 흑백 인쇄 테마 (기본값)
+ * - 색이 아니라 모양으로 구분한다: 테두리 종류(실선/점선/이중선), 반전(검정 바탕 흰 글자), 왼쪽 막대
+ * - 전면 칠 금지: 장 표지·띠·탭은 선으로만. 면 칠은 옅은 회색(#F2F2F2) 소면적만
+ * 컬러로 뽑으려면 template.html 에서 이 파일 링크만 지운다.
+ */
+:root{
+  --p:#141414; --p2:#2a2a2a; --pl:#F2F2F2; --pm:#9b9b9b; --pd:#111;
+  --g:#333; --gl:#F2F2F2; --gm:#D2D2D2; --ink:#111; --muted:#666;
+}
+
+/* ---------- 구분 규칙: 개념 태그 ---------- */
+.tg{border:.8pt solid #111;color:#fff;background:#111}            /* 시험 개념 = 반전 */
+.tg.ws{background:#fff;color:#111;border:.8pt solid #111}         /* 원서 개념 = 실선 */
+.tg.ind{background:#fff;color:#111;border:.8pt dashed #111}       /* 원서 간접 개념 = 점선 */
+.tgk .tg:last-child{background:#111;color:#fff}
+
+/* ---------- 해법 박스 ---------- */
+.sol .lab{border-color:#111}
+.sol .lab .a{background:#fff;color:#111;border-right:.8pt solid #111;font-weight:700}
+.sol .lab .b{background:#fff}
+.sol .box{background:#F2F2F2}                                      /* 원서적 해법 = 옅은 회색 */
+.sol.exam .lab{border-color:#111}
+.sol.exam .lab .a{background:#111;color:#fff;border-right:none}
+.sol.exam .box{background:#fff;border-left:2.4pt solid #111;padding-left:5mm;border-top:.6pt solid #111;border-bottom:.6pt solid #111}
+.step .n,.hl,.pc{color:#111}
+
+/* ---------- 개념 박스: 테두리로 종류 구분 ---------- */
+.concept .ico{background:#111}
+.concept .tabs{background:none;color:#a5a5a5}
+.concept .tabs .on{color:#111;text-decoration:underline;text-underline-offset:2px}
+.concept .body{border:3px double #111}                             /* 시험 개념(기본) = 이중선 */
+.concept.book .body{border:1.1pt solid #111}                       /* 원서 개념 = 실선 */
+.concept.ind .body{border:1.1pt dashed #111}                       /* 원서 간접 개념 = 점선 */
+.concept th{background:#EDEDED;color:#111;border-bottom:.8pt solid #111}
+.concept td{border-bottom:.5pt solid #ccc}
+.concept td:first-child{color:#111}
+.cond{font-family:var(--sans);font-size:8pt;border-top:.6pt dotted #111;margin-top:2mm;padding-top:1.5mm}
+.cond b{display:inline-block;border:.8pt solid #111;padding:0 1.2mm;margin-right:1.5mm;font-size:7pt}
+
+/* ---------- 작은 부품 ---------- */
+.core .lab{color:#111;border-color:#111}
+.core .box{border-color:#111;color:#111}
+.bubble .b{border-color:#111;box-shadow:0 0 0 2.2mm #EFEFEF}
+.bubble .dots{color:#111}
+.tip .lab{background:#333}
+.tip .lab small{color:#ddd}
+.tip .lab:after{border-left-color:#333}
+.tip .body{background:#F2F2F2}
+.grade{border:1pt solid #111}
+.grade .hd{background:#fff;color:#111;border-bottom:1pt solid #111}
+.vs .lab .v{color:#111}
+.flow .c.end{border-color:#111;color:#111}
+.rev{color:#111}.rev .line{border-top-color:#111}.rev .line:before{border-right-color:#111}
+.ex .badge{background:#111}
+.ex .badge span{color:#111;border-color:#111}
+.ex .src{color:#444}
+h3{color:#111}
+.topic-title{border-bottom-color:#111}
+.topic-title .no{color:#111}
+.topic-title .no i{color:#9b9b9b}
+.fn .k{color:#111}
+
+/* ---------- 쪽 장식: 칠 대신 선 ---------- */
+.topline{background:#111;height:.6pt}
+.topic-band{background:#fff;color:#111;border-bottom:1.4pt solid #111;border-radius:0;height:19mm;padding-top:12.5mm}
+.tab-part{background:#fff;color:#111;border:.9pt solid #111;border-right:none}
+.tab-topic{background:#fff;color:#111;border:.9pt solid #111;border-right:none}
+.foot .t{color:#111}
+.foot .bar{background:#111}
+
+/* ---------- 문제 쪽 ---------- */
+.qhead .big{color:#111;border-color:#111}
+.qhead .desc{background:#EDEDED}
+.qh .no{color:#111}
+.qh .no i{color:#9b9b9b}
+.lv i{background:#fff;border:.7pt solid #111}
+.lv i.on{background:#111}
+.qh .r2{border-color:#111}
+.qh .r2 .k{background:#111}
+.hint{border-top-color:#111}
+
+/* ---------- Preview / Review ---------- */
+.pv-head .tag{background:#fff;color:#111;border:1pt solid #111;border-top:none}
+.pv-title .n,.pv-ico{color:#111}
+.ox-title{color:#111}
+.ox td.pg{background:#fff;color:#111;border:.8pt solid #111}
+.newmark{background:#111}
+
+/* ---------- 장 표지·목차: 전면 칠 없음 ---------- */
+.cover{background:#fff}
+.cover .arch{background:#fff;border:1.4pt solid #111;border-top:none}
+.cover .chap{color:#111}
+.cover .num{color:#111;font-weight:300}
+.cover .ttl{color:#111}
+.cover .ttl small{color:#444;opacity:1}
+.cover .note{color:#222;border-color:#999}
+.cover .note .tg{border-color:#111}
+.cover .brand{color:#111}
+.toc{background:#fff}
+.toc .panel{background:#fff;border-top:1.4pt solid #111;border-bottom:1.4pt solid #111;left:12mm;right:12mm}
+.toc .circle{background:#fff;color:#111;border:1.2pt solid #111}
+.toc .hdr{color:#111;border-bottom-color:#111}
+.toc .hdr small,.toc .pc{color:#444}
+.cover .note .tg{background:#111;color:#fff;border-color:#111}
+.cover .note .tg.ws{background:#fff;color:#111;border-color:#111}

@@ -12,7 +12,7 @@ cover.json 예시 (assets/cover/cover.example.json 참고):
   "tagline": ["기본부터", "심화까지", "완성하는"],
   "authors": "김준형 · 최재원",
   "school": ["Seoul National", "University"],
-  "logo": "snu_logo.png",               사용자가 준 로고 파일(투명 배경 PNG/SVG). 색 위에 흰색으로 들어간다
+  "logo": "snu",                        "snu" = 내장 서울대 흰색 로고(assets/cover/snu_logo_white.svg). 다른 학교는 투명 배경 PNG/SVG 경로
   "cover_color": "#6B3FD4",             ← 바꿀 수 있는 색 1: 표지(도형 그라데이션·하단 띠·포인트)
   "spine_color": "#6B3FD4",             ← 바꿀 수 있는 색 2: 책등 (없으면 cover_color)
   "pages": 220,                          내지 쪽수 → 책등 두께 자동 계산
@@ -47,6 +47,9 @@ def data_uri(path):
     p = Path(path)
     mt = mimetypes.guess_type(p.name)[0] or "image/png"
     return f"data:{mt};base64,{base64.b64encode(p.read_bytes()).decode()}"
+
+
+BUILTIN_LOGO = {"snu": SKILL / "assets/cover/snu_logo_white.svg"}
 
 
 def logo_html(cfg, h):
@@ -255,7 +258,9 @@ def main():
     a = ap.parse_args()
     cfg = json.loads(Path(a.config).read_text(encoding="utf-8"))
     base = Path(a.config).parent
-    if cfg.get("logo") and not Path(cfg["logo"]).is_absolute():
+    if cfg.get("logo") in BUILTIN_LOGO:
+        cfg["logo"] = str(BUILTIN_LOGO[cfg["logo"]])
+    elif cfg.get("logo") and not Path(cfg["logo"]).is_absolute():
         cfg["logo"] = str(base / cfg["logo"])
     if cfg.get("symbol") not in (None, "circuit", "blocks") and not Path(cfg["symbol"]).is_absolute():
         cfg["symbol"] = str(base / cfg["symbol"])

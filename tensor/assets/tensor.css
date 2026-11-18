@@ -151,7 +151,7 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .qcontent{display:flex;flex-direction:column}
 .qgrid{flex:1;display:grid;min-height:0}
 .per2 .qgrid{grid-template-rows:1fr 1fr;row-gap:0}
-.per2 .qitem{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr;grid-template-areas:"qh qh" "t fig" "pad pad";column-gap:6mm;align-content:start;padding-top:3mm}
+.per2 .qitem{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr auto;grid-template-areas:"qh qh" "t fig" "pad pad" "hint hint";column-gap:6mm;align-content:start;padding-top:3mm}
 .per2 .qitem + .qitem{border-top:.8pt dashed var(--gm);padding-top:6mm}
 .per2 .qitem > .qh{grid-area:qh}
 .per2 .qitem > .t{grid-area:t}
@@ -235,3 +235,13 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .page .content{overflow:hidden;position:relative}
 .page .content > :first-child{margin-top:0}
 .page .content > .topic-title:first-child{margin-top:7mm}
+
+/* ---- 힌트 (문제 칸 맨 아래) ---- */
+.hint{grid-area:hint;align-self:end;font-family:var(--sans);font-size:7.2pt;color:#555;border-top:.6pt dotted var(--p);padding:1.6mm 0 2mm;margin-top:2mm}
+.hint b{display:inline-block;font-size:6.6pt;border:.7pt solid currentColor;padding:0 1.2mm;margin-right:1.6mm;color:#222}
+.per4 .qitem{display:flex;flex-direction:column}
+.per4 .qitem .hint{margin-top:auto}
+/* ---- 적용 조건 (시험 개념 박스·시험적 해법 안) ---- */
+.cond{font-family:var(--sans);font-size:8pt;border-top:.6pt dotted var(--p);margin-top:2mm;padding-top:1.5mm}
+.cond b{display:inline-block;border:.8pt solid var(--p);color:var(--p);padding:0 1.2mm;margin-right:1.5mm;font-size:7pt}
+.tg.ind{border-style:dashed}
