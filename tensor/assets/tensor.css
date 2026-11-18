@@ -144,28 +144,40 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .rev .line:before{content:"";position:absolute;left:-1mm;top:-1.6mm;border-right:2.4mm solid var(--p);border-top:1mm solid transparent;border-bottom:1mm solid transparent}
 
 /* ---- problem pages ---- */
-.qhead{display:flex;height:21mm;margin:-2mm 0 6mm}
-.qhead .big{width:50mm;border:1.2pt solid var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:15pt;font-weight:800;color:var(--p)}
+.qhead{display:flex;height:21mm;margin:-2mm 0 6mm;flex:none}
+.qhead .big{width:50mm;border:1.2pt solid var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:15pt;font-weight:800;color:var(--p);text-align:center;line-height:1.2}
 .qhead .desc{flex:1;background:var(--gm);padding:2.5mm 5mm;font-family:var(--sans);font-size:7.4pt;line-height:1.55}
 .qhead .desc b{font-size:8pt;display:block;margin-bottom:.6mm}
+.qcontent{display:flex;flex-direction:column}
+.qgrid{flex:1;display:grid;min-height:0}
+.per2 .qgrid{grid-template-rows:1fr 1fr;row-gap:0}
+.per2 .qitem{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr;grid-template-areas:"qh qh" "t fig" "pad pad";column-gap:6mm;align-content:start;padding-top:3mm}
+.per2 .qitem + .qitem{border-top:.8pt dashed var(--gm);padding-top:6mm}
+.per2 .qitem > .qh{grid-area:qh}
+.per2 .qitem > .t{grid-area:t}
+.per2 .qitem > .fig{grid-area:fig;margin:0}
+.per2 .qitem > .fig img{max-width:78mm}
+.per4 .qgrid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;column-gap:8mm}
+/* 고정 쪽으로 직접 쓰는 옛 형식 호환 */
 .qcols{display:grid;grid-template-columns:1fr 1fr;column-gap:8mm;height:228mm}
 .qcol{display:flex;flex-direction:column}
-.qitem{flex:1}
-.qh{display:flex;align-items:flex-end;gap:2mm;margin-bottom:2.5mm}
-.qh .no{font-family:var(--sans);font-size:14pt;font-weight:800;color:var(--p);line-height:1;width:15mm}
+.qcol .qitem{flex:1}
+
+.qh{display:flex;align-items:flex-end;gap:3mm;margin-bottom:3mm}
+.qh .no{font-family:var(--sans);font-size:15pt;font-weight:800;color:var(--p);line-height:1;white-space:nowrap;min-width:15mm}
 .qh .no i{font-style:normal;color:var(--pm)}
-.qh .meta{flex:1;font-family:var(--sans);font-size:5.6pt}
-.qh .r1{display:flex;justify-content:space-between;align-items:center}
-.lv{display:inline-flex;gap:.6mm}
-.lv i{width:3.4mm;height:3mm;background:var(--gm);display:inline-block}
+.qh .meta{flex:1;font-family:var(--sans);font-size:6.4pt;line-height:1;min-width:0}
+.qh .r1{display:flex;align-items:center;gap:3mm;height:4mm}
+.lv{display:inline-flex;gap:.7mm}
+.lv i{width:3.6mm;height:3.2mm;background:var(--gm);display:inline-block}
 .lv i.on{background:var(--p)}
-.rec{color:var(--muted);margin-left:2mm}
-.rec span{display:inline-block;width:3mm;height:3mm;border:.6pt solid var(--muted);vertical-align:-.6mm;margin:0 1.2mm 0 .6mm}
-.srcR{color:var(--g);font-size:6.4pt}
-.qh .r2{display:flex;margin-top:.8mm;border:.7pt solid var(--p);height:3.4mm;align-items:stretch}
-.qh .r2 .k{background:var(--p);color:#fff;padding:0 1.6mm;display:flex;align-items:center}
-.qh .r2 .v{padding:0 2.5mm;color:var(--g);display:flex;align-items:center;min-width:10mm}
-.qitem .t{font-size:9.2pt;line-height:1.75}
+.rec{color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
+.rec span{display:inline-block;width:3.2mm;height:3.2mm;border:.7pt solid var(--muted);margin:0 2mm 0 .8mm}
+.srcR{margin-left:auto;color:var(--g);font-size:6.6pt;white-space:nowrap}
+.qh .r2{display:flex;margin-top:1.2mm;border:.8pt solid var(--p);height:4.6mm;align-items:stretch;overflow:hidden}
+.qh .r2 .k{background:var(--p);color:#fff;padding:0 2.2mm;display:flex;align-items:center;font-weight:600;letter-spacing:.2mm}
+.qh .r2 .v{padding:0 3mm;color:var(--ink);display:flex;align-items:center;min-width:12mm;font-weight:600}
+.qitem .t{font-size:9.4pt;line-height:1.8}
 .qitem .fig{margin:3mm 0 2mm}
 
 /* ---- preview / review ---- */

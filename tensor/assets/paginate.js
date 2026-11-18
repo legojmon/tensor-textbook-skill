@@ -9,6 +9,16 @@
  * <body> 속성: data-chapter="14" data-chtitle="라플라스 변환" data-part="Part2" data-start="16"
  *   data-start = 첫 .page(표지)의 쪽 번호
  *
+ * 문제 쪽도 자동:
+ *   <section class="problems" data-id="a01" data-title="TOPIC 적용문제" data-desc="설명 한두 줄" data-per="2">
+ *     <div class="qitem" data-no="A·01" data-lv="2" data-src="원서 P14.7-6" data-topic="01">
+ *       <div class="t">지문</div><div class="fig"><img …></div>
+ *     </div> …
+ *   </section>
+ *   data-per="2" (기본): 한 쪽에 위·아래 2문제, 나머지는 풀이 공간
+ *   data-per="4": 짧은 계산 문제용 2×2
+ *   data-lv = 난이도 1~3, data-topic = 관련 TOPIC (PAGE 칸은 그 TOPIC 첫 쪽으로 자동)
+ *
  * 하는 일
  *  1. KaTeX 렌더 → 글꼴·그림 로딩 대기
  *  2. TOPIC 블록을 A4 쪽에 채워 넣고, 넘치면 다음 쪽으로
@@ -114,6 +124,49 @@
     }
   }
 
+
+  function qhead(it) {
+    const d = it.dataset;
+    const lv = parseInt(d.lv || "1", 10);
+    const sq = [1, 2, 3].map((k) => `<i class="${k <= lv ? "on" : ""}"></i>`).join("");
+    const no = d.no || "";
+    const m = no.match(/^(.*?)(\d)(\d)$/);
+    const noHtml = m ? `${m[1]}<i>${m[2]}</i>${m[3]}` : no;
+    return el("div", "qh",
+      `<div class="no">${noHtml}</div>` +
+      `<div class="meta"><div class="r1"><span class="lv">${sq}</span>` +
+      `<span class="rec">1회<span></span>2회<span></span></span>` +
+      `<span class="srcR">${d.src ? "| " + d.src + " |" : ""}</span></div>` +
+      `<div class="r2"><span class="k">PAGE</span><span class="v" data-qpage="${d.topic || ""}"></span>` +
+      `<span class="k">TOPIC</span><span class="v">${d.topic || "–"}</span></div></div>`);
+  }
+
+  function layoutProblems(sec, anchor) {
+    const per = parseInt(sec.dataset.per || "2", 10);
+    const items = Array.from(sec.querySelectorAll(":scope > .qitem"));
+    for (let i = 0; i < items.length; i += per) {
+      const pg = el("section", `page qpage per${per}`);
+      if (i === 0 && sec.dataset.id) pg.dataset.id = sec.dataset.id;
+      pg.dataset.run = sec.dataset.title || "";
+      const content = el("div", "content qcontent");
+      content.style.height = CONTENT_H + "mm";
+      if (i === 0) {
+        content.appendChild(el("div", "qhead",
+          `<div class="big">${sec.dataset.title || ""}</div>` +
+          `<div class="desc"><b>${sec.dataset.title || ""}</b>${sec.dataset.desc || ""}</div>`));
+      }
+      const grid = el("div", "qgrid");
+      items.slice(i, i + per).forEach((it) => {
+        if (!it.querySelector(":scope > .qh")) it.insertBefore(qhead(it), it.firstChild);
+        grid.appendChild(it);
+      });
+      content.appendChild(grid);
+      pg.appendChild(content);
+      anchor.parentNode.insertBefore(pg, anchor);
+    }
+    sec.remove();
+  }
+
   function decorate() {
     const start = parseInt(B.dataset.start || "1", 10);
     const pages = Array.from(document.querySelectorAll(".page"));
@@ -133,6 +186,13 @@
       else if (odd && topic) ttl = `<span class="t">TOPIC ${topic}</span>&nbsp; ${pg.dataset.topictitle}`;
       else ttl = `<span class="t">${CH}</span>&nbsp; ${CHT}`;
       foot.innerHTML = `<span class="num">${n}</span><span class="bar"></span><span class="ttl">${ttl}</span>`;
+    });
+    // 문제 머리의 PAGE 칸: 관련 TOPIC 첫 쪽
+    document.querySelectorAll("[data-qpage]").forEach((sp) => {
+      const t = sp.dataset.qpage;
+      const target = t && document.querySelector(`.flowpage[data-topic="${t}"]`);
+      if (target) sp.textContent = start + pages.indexOf(target);
+      else if (!sp.textContent) sp.textContent = "–";
     });
     // 목차 쪽 번호 자동 채우기: <td class="pg" data-ref="topic-01"> / data-ref="preview" 등
     document.querySelectorAll("[data-ref]").forEach((td) => {
@@ -169,6 +229,7 @@
       art.querySelectorAll(":scope > section.topic").forEach((t) => flowTopic(t, art));
       art.remove();
     });
+    document.querySelectorAll("section.problems").forEach((sec) => layoutProblems(sec, sec));
     decorate();
     B.setAttribute("data-ready", "1");
   }

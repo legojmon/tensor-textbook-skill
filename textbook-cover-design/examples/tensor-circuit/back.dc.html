@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>TENSOR 회로이론 뒷표지</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:'Pretendard';font-weight:300;font-display:block;src:url(/_blob/8cc7bd3b1db3aec4aa705ef029fc6e3d) format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:400;font-display:block;src:url(/_blob/dc197ca8d3d37740129fb8d9b1771913) format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:500;font-display:block;src:url(/_blob/832a0ed097d97e90d6661e607b2db56c) format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:700;font-display:block;src:url(/_blob/92350088d47d6e261f5cb1fdfaa14dea) format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:900;font-display:block;src:url(/_blob/108f498773a99ec91be9d8270d8fa017) format('woff2')}
+body{margin:0}
+a{color:#666}a:hover{color:#333}
+</style>
+</helmet>
+<div style="width: 794px; height: 1123px; position: relative; overflow: hidden; background: #ffffff; font-family: 'Pretendard', sans-serif; color: #33333b">
+
+<svg width="794" height="1123" viewBox="0 0 794 1123" style="position: absolute; left: 0; top: 0" aria-hidden="true">
+<defs>
+<linearGradient id="backA" gradientUnits="userSpaceOnUse" x1="794" y1="300" x2="1214" y2="860">
+<stop offset="0" stop-color="#ECE6FE"></stop>
+<stop offset="0.45" stop-color="#C9B8F7"></stop>
+<stop offset="1" stop-color="#9C80EC"></stop>
+</linearGradient>
+</defs>
+<!-- 앞표지 Ω가 책등을 넘어 이어지는 부분 -->
+<circle cx="904" cy="560" r="220" fill="url(#backA)"></circle>
+<rect x="774" y="752" width="104" height="58" fill="url(#backA)"></rect>
+</svg>
+
+<!-- 좌상단: 교재명 -->
+<div style="position: absolute; left: 56px; top: 56px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 22px; font-weight: 900; letter-spacing: 0.38em; color: {{accent}}">TENSOR</span>
+<span style="font-size: 13px; font-weight: 400; letter-spacing: 0.3em; color: #44444c">회로이론및실습</span>
+</div>
+
+<!-- 본문 소개 -->
+<div style="position: absolute; left: 56px; top: 330px; width: 540px; display: flex; flex-direction: column; gap: 28px">
+<h2 style="margin: 0; font-size: 36px; font-weight: 900; line-height: 1.3; letter-spacing: -0.01em; color: {{ink}}">회로이론 및 실습<br>시험 개념의 완성</h2>
+<div style="width: 56px; height: 4px; background: {{accent}}"></div>
+<p style="margin: 0; font-size: 15px; font-weight: 400; line-height: 1.8; color: #44444c">시험에 꼭 필요한 시험 개념을 기본부터 심화까지 완성합니다.</p>
+<p style="margin: 0; font-size: 15px; font-weight: 400; line-height: 1.8; color: #44444c">원서 개념의 핵심 내용이 무엇인지, 시험에서 더 깊이 공부해야 하는 개념이 무엇인지 명확하게 제시하고, 실전 개념이 강의록 문제와 원서 연습문제에 어떻게 활용되는지 확인할 수 있습니다.</p>
+</div>
+
+<!-- 하단 구분선 -->
+<div style="position: absolute; left: 56px; right: 56px; bottom: 132px; border-top: 1.5px dashed #b4b4bc"></div>
+
+<!-- 하단 좌: 서울대학교 -->
+<div style="position: absolute; left: 56px; bottom: 44px; display: flex; align-items: center; gap: 12px">
+<img src="/_blob/0558e11e7b3d5346f5d45d6e0e309767" alt="Seoul National University logo" style="height: 52px; width: auto; display: block">
+<span style="font-size: 14px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.3; color: #33333b">Seoul National<br>University</span>
+</div>
+
+<!-- 하단 우: 저자 -->
+<div style="position: absolute; right: 56px; bottom: 56px; display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: #44444c">
+<span style="font-weight: 500; letter-spacing: 0.18em">김준형 · 최재원</span>
+<span style="font-weight: 300; color: #6a6a72">지음</span>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#6B3FD4"},"ink":{"editor":"color","default":"#3A3A42"},"$preview":{"width":794,"height":1123}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#6B3FD4', ink: this.props.ink ?? '#3A3A42' };
+}
+}
+</script>
+</body>
+</html>

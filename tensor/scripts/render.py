@@ -65,6 +65,10 @@ def find_chrome():
 
 async def main(a):
     from playwright.async_api import async_playwright
+    need = [BUILD / "node_modules/katex/dist/katex.min.js", BUILD / "node_modules/pretendard/dist/web/static/pretendard.css"]
+    missing = [str(n) for n in need if not n.exists()]
+    if missing:
+        sys.exit("[오류] 렌더링 자원이 없습니다. 먼저 `bash <skill>/scripts/setup.sh` 를 실행하세요.\n  없음: " + ", ".join(missing))
     src = Path(a.html).resolve()
     tmp = src.with_name(f".{src.stem}.resolved.html")
     tmp.write_text(resolve(src.read_text(encoding="utf-8")), encoding="utf-8")
@@ -76,6 +80,9 @@ async def main(a):
             kw["executable_path"] = ch
         b = await p.chromium.launch(**kw)
         pg = await b.new_page(viewport={"width": 900, "height": 1200})
+        errs = []
+        pg.on("console", lambda m: errs.append(m.text) if m.type in ("error", "warning") else None)
+        pg.on("pageerror", lambda e: errs.append("JS 오류: " + str(e)))
         await pg.goto(tmp.as_uri())
         try:
             await pg.wait_for_selector("body[data-ready='1']", timeout=20000)
@@ -88,6 +95,8 @@ async def main(a):
         await b.close()
     tmp.unlink(missing_ok=True)
     print(f"PDF: {out}")
+    for e in errs:
+        print(f"[브라우저] {e}")
     if over:
         for n, mm in over:
             print(f"[넘침] {n}쪽: 본문이 하단 한계선을 약 {mm}mm 넘었습니다.")
