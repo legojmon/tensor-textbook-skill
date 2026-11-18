@@ -285,7 +285,7 @@
       const items = Array.from(body.children);
       body.replaceChildren();
       let page = first, cur = body;
-      const bottom = () => page.getBoundingClientRect().bottom - (page.classList.contains("nofoot") ? 20 : 26) * MM;
+      const bottom = () => page.getBoundingClientRect().bottom - 26 * MM;
       for (const item of items) {
         cur.appendChild(item);
         if (item.getBoundingClientRect().bottom <= bottom() || cur.children.length === 1) continue;
@@ -323,6 +323,7 @@
     const pg = first.cloneNode(false);
     pg.classList.add("cont");
     if (first.querySelector(".fm-head.guide")) pg.appendChild(el("div", "topline"));
+    else if (first.dataset.repeatHead) pg.appendChild(first.querySelector(".fm-head").cloneNode(true));
     const body = el("div", "fm-body");
     pg.appendChild(body);
     after.after(pg);

@@ -113,7 +113,7 @@ def uri(base, p):
 
 
 # ---------------------------------------------------------------- 쪽 틀
-def page(title, body, cls="", run=None, toc=None, guide=None, foot=False, line=False):
+def page(title, body, cls="", run=None, toc=None, guide=None, foot=False, line=False, repeat=False):
     """앞부분 한 묶음. 넘치면 paginate.js 가 다음 쪽으로 이어 붙인다.
     guide=(Part, 제목) 이면 본문 TOPIC 쪽과 같은 머리(띠 + 큰 제목)를 쓴다."""
     if not body:
@@ -123,6 +123,8 @@ def page(title, body, cls="", run=None, toc=None, guide=None, foot=False, line=F
         attrs += f' data-run="{escape(run)}"'
     if toc:
         attrs += f' data-toc="{escape(toc)}"'
+    if repeat:
+        attrs += ' data-repeat-head="1"'
     if line:
         head = '<div class="fm-head guide line"><div class="topline"></div></div>'
     elif guide:
@@ -166,26 +168,31 @@ def curriculum(A, B, P):
     return page(f'{A.get("brand", "TENSOR")} 커리큘럼', body, "fm-curr")
 
 
-def road_svg(stations):
-    """구불구불한 길 위에 정류장을 고르게 놓는다."""
-    W, rows, R, x0, x1 = 640, [60, 190, 320], 65, 135, 505
-    pts = []
-
-    def line(a, b, n=40):
+def catmull(pts, n=24):
+    """웨이포인트를 지나는 매끄러운 곡선 (Catmull-Rom)"""
+    out = []
+    P = [pts[0]] + pts + [pts[-1]]
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
         for k in range(n):
             t = k / n
-            pts.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+            t2, t3 = t * t, t * t * t
+            out.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2
+                                    + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3) for j in (0, 1)))
+    out.append(pts[-1])
+    return out
 
-    def arc(cx, cy, right, n=40):
-        for k in range(n):
-            th = -math.pi / 2 + math.pi * k / n
-            pts.append((cx + (R * math.cos(th) if right else -R * math.cos(th)), cy + R * math.sin(th)))
 
-    line((x0 - 70, rows[0]), (x1, rows[0]))
-    arc(x1, (rows[0] + rows[1]) / 2, True)
-    line((x1, rows[1]), (x0, rows[1]))
-    arc(x0, (rows[1] + rows[2]) / 2, False)
-    line((x0, rows[2]), (x1 + 70, rows[2]), 41)
+# 한완수 로드맵과 같은 S자 길 (위에서 아래로, 좌우로 크게 휘어 내려간다)
+ROAD = [(x + 25, 40 + (y - 70) * 1.22) for x, y in
+        [(380, 70), (275, 70), (205, 105), (190, 165), (225, 215), (310, 232), (385, 245), (425, 295),
+         (428, 360), (395, 410), (320, 428), (235, 438), (190, 485), (185, 560), (225, 612), (320, 625), (430, 615)]]
+VW, VH, CW, CH = 600, 740, 108, 94
+MIDX = 330
+
+
+def road_svg(points, cards):
+    pts = catmull(ROAD)
     seg = [0.0]
     for a, b in zip(pts, pts[1:]):
         seg.append(seg[-1] + math.dist(a, b))
@@ -195,37 +202,104 @@ def road_svg(stations):
         L = f * total
         for i in range(1, len(seg)):
             if seg[i] >= L:
-                return pts[i]
-        return pts[-1]
+                (x0, y0), (x1, y1) = pts[i - 1], pts[i]
+                d = math.dist(pts[i - 1], pts[i]) or 1
+                return (x0 + (x1 - x0) * (L - seg[i - 1]) / d, y0 + (y1 - y0) * (L - seg[i - 1]) / d), ((x1 - x0) / d, (y1 - y0) / d)
+        return pts[-1], (1, 0)
 
+    n = len(points)
+    dots = [at(0.015 + 0.97 * i / max(1, n - 1)) for i in range(n)]
+    boxes = []
+
+    def free(x, y, w, h, pad=6):
+        if x < 4 or y < 4 or x + w > VW - 4 or y + h > VH - 4:
+            return False
+        for (px, py) in pts[::2]:
+            if x - 13 - pad < px < x + w + 13 + pad and y - 13 - pad < py < y + h + 13 + pad:
+                return False
+        for (bx, by, bw, bh) in boxes:
+            if x < bx + bw + pad and bx < x + w + pad and y < by + bh + pad and by < y + h + pad:
+                return False
+        return True
+
+    out = []
+    card_side = {}
+    for c in cards:
+        i = c.get("at", 0)
+        if not (0 <= i < n):
+            continue
+        (x, y), (tx, ty) = dots[i]
+        nx, ny = -ty, tx
+        placed = None
+        out_x = -1 if x < MIDX else 1            # 길 바깥쪽(좌우 여백)을 먼저 쓴다
+        dirs = [(out_x, 0), (out_x * .7, -.7), (out_x * .7, .7), (nx, ny), (-nx, -ny), (0, -1), (0, 1), (-out_x, 0)]
+        for dist in (78, 92, 108, 126):
+            for sx, sy in dirs:
+                cx, cy = x + sx * dist, y + sy * dist
+                bx, by = cx - CW / 2, cy - CH / 2
+                if free(bx, by, CW, CH):
+                    placed = (bx, by, sx, sy)
+                    break
+            if placed:
+                break
+        if not placed:
+            continue
+        bx, by, sx, sy = placed
+        boxes.append((bx, by, CW, CH))
+        card_side[i] = (sx, sy)
+        # 꼬리: 카드 가장자리에서 점 쪽으로
+        cx, cy = bx + CW / 2, by + CH / 2
+        ex = min(max(x, bx + 14), bx + CW - 14)
+        ey = min(max(y, by + 14), by + CH - 14)
+        if abs(sy) >= abs(sx):
+            ey = by + CH if y > cy else by
+        else:
+            ex = bx + CW if x > cx else bx
+        vx, vy = x - ex, y - ey
+        L = math.hypot(vx, vy) or 1
+        tipx, tipy = x - vx / L * 13, y - vy / L * 13
+        px, py = -vy / L * 8, vx / L * 8
+        out.append(f'<polygon class="tail" points="{ex + px:.1f},{ey + py:.1f} {ex - px:.1f},{ey - py:.1f} {tipx:.1f},{tipy:.1f}"/>')
+        out.append(f'<rect class="card" x="{bx:.1f}" y="{by:.1f}" width="{CW}" height="{CH}" rx="7"/>'
+                   f'<text x="{cx:.1f}" y="{by + 21:.1f}" class="ct">{escape(str(c.get("top", "")))}</text>'
+                   f'<text x="{cx:.1f}" y="{by + 49:.1f}" class="cb">{escape(str(c.get("big", "")))}</text>'
+                   f'<line x1="{bx + 14:.1f}" y1="{by + 60:.1f}" x2="{bx + CW - 14:.1f}" y2="{by + 60:.1f}" class="cl"/>'
+                   f'<text x="{cx:.1f}" y="{by + 78:.1f}" class="cs">{escape(str(c.get("sub", "")))}</text>')
     d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
-    n = len(stations)
-    marks = ""
-    for i, s in enumerate(stations):
-        x, y = at(0.04 + 0.92 * i / max(1, n - 1))
-        big = s.get("big")
-        lab = escape(str(s.get("label", "")))
-        txt = escape(str(s.get("text") or s.get("date") or ""))
-        w = max(58, 11 * len(lab) + 20) if not big else max(70, 12 * len(lab) + 24)
-        marks += (f'<g class="stn{" big" if big else ""}"><circle cx="{x:.1f}" cy="{y:.1f}" r="{11 if big else 8}"/>'
-                  f'<rect x="{x - w / 2:.1f}" y="{y - 44:.1f}" width="{w}" height="22" rx="4"/>'
-                  f'<text x="{x:.1f}" y="{y - 28.5:.1f}" class="lb">{lab}</text>'
-                  f'<text x="{x:.1f}" y="{y + 27:.1f}" class="dt">{txt}</text></g>')
-    return (f'<svg viewBox="0 0 {W} 370" class="fm-road"><path class="rd" d="{d}"/>'
-            f'<path class="cl" d="{d}"/>{marks}</svg>')
+    marks = []
+    for i, (((x, y), (tx, ty)), p) in enumerate(zip(dots, points)):
+        big = p.get("big")
+        nx, ny = -ty, tx
+        sx, sy = card_side.get(i, (nx, ny))
+        lx, ly = x - sx * 24, y - sy * 24          # 카드 반대쪽에 날짜
+        if abs(ly - y) < 6:
+            ly += 4
+        anchor = "middle" if abs(lx - x) < 10 else ("start" if lx > x else "end")
+        if i in (0, n - 1):                        # 길 끝의 점은 오른쪽에
+            lx, ly, anchor = x + 17, y + 4, "start"
+        lab = escape(str(p.get("label", "")))
+        sub = escape(str(p.get("sub", "") or ""))
+        r = 10 if big else 8
+        marks.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" class="{"dot big" if big else "dot"}"/>')
+        t = f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" class="{"pl big" if big else "pl"}">{lab}'
+        if sub:
+            t += f'<tspan x="{lx:.1f}" dy="13" class="ps">{sub}</tspan>'
+        marks.append(t + "</text>")
+    return (f'<svg viewBox="0 0 {VW} {VH}" class="fm-road"><path class="rd" d="{d}"/>'
+            + "".join(out) + "".join(marks) + "</svg>")
 
 
 def roadmap(B):
     D = DEFAULTS["roadmap"]
-    st = [s for s in B.get("semester", []) if filled(s.get("label"))]
-    stations = [{"label": s["label"], "text": s.get("date") if filled(s.get("date")) else "", "big": s.get("big")}
-                for s in st] or D["stations"]
-    steps = [s for s in B.get("roadmap_steps", []) if filled(s.get("when"))] or D["steps"]
-    tr = "".join(f'<tr><td class="when">{fmt(s["when"])}</td><td>{fmt(s["what"])}</td></tr>' for s in steps)
+    sem = [s for s in B.get("semester", []) if filled(s.get("label"))]
+    points = [{"label": s["label"], "sub": s.get("date") if filled(s.get("date")) else s.get("sub", ""),
+               "big": s.get("big")} for s in sem] or D["points"]
+    cards = B.get("roadmap_cards") or []
+    if not cards:
+        n0, n = len(D["points"]), len(points)
+        cards = [dict(c, at=round(c["at"] * (n - 1) / (n0 - 1))) for c in D["cards"]]
     year = B.get("year", "")
-    body = (road_svg(stations) +
-            f'<table class="fm-tbl steps"><tr><th>언제</th><th>무엇을</th></tr>{tr}</table>')
-    return page(f'{year} 학기 로드맵'.strip(), body, "fm-roadmap")
+    return page(f'{year} 로드맵'.strip() if filled(year) else "학기 로드맵", road_svg(points, cards), "fm-roadmap")
 
 
 def testimonials(B):
@@ -270,22 +344,26 @@ def authors_page(A, B, base, people):
     cards = []
     for au in people:
         img = uri(base, au.get("photo"))
-        ph = f'<img src="{img}" alt="">' if img else '<div class="ph-empty">사진</div>'
         av = uri(base, au.get("avatar"))
-        ph += f'<img class="av" src="{av}" alt="">' if av else ""
+        if img:      # 사진이 있으면 일러스트는 사진 모서리의 작은 동그라미
+            ph = f'<div class="ph"><img class="pic" src="{img}" alt="">' + (f'<img class="av" src="{av}" alt="">' if av else "") + "</div>"
+            name_av = ""
+        else:        # 사진이 없으면 자리를 비우지 않는다. 일러스트만 이름 옆에 작게
+            ph = ""
+            name_av = f'<img class="av" src="{av}" alt="">' if av else ""
         bio = "".join(f"<li>{fmt(b)}</li>" for b in au.get("bio", []) if filled(b))
         intro = paras([p for p in au.get("intro", []) if filled(p)])
         scene = (f'<div class="scene"><b>막혔던 장면</b><p>{fmt(au["scene"])}</p></div>'
                  if filled(au.get("scene")) else "")
         msg = f'<p class="msg">{fmt(au["message"])}</p>' if filled(au.get("message")) else ""
-        cards.append(f'<div class="fm-author"><div class="ph">{ph}</div><div class="info">'
-                     f'<div class="nm">{escape(au["name"])}<small>{escape(au.get("name_en", ""))}</small></div>'
+        cards.append(f'<div class="fm-author{"" if ph else " nophoto"}">{ph}<div class="info">'
+                     f'<div class="nm">{name_av}{escape(au["name"])}<small>{escape(au.get("name_en", ""))}</small></div>'
                      f'<ul>{bio}</ul>{f"<div class=intro>{intro}</div>" if intro else ""}{scene}{msg}</div></div>')
     col = {k: v for k, v in (B.get("colophon") or {}).items() if filled(v)}
     if col:
         cards.append('<table class="fm-tbl colophon">' +
                      "".join(f"<tr><th>{escape(k)}</th><td>{escape(str(v))}</td></tr>" for k, v in col.items()) + "</table>")
-    return page("저자 소개", "".join(cards), "fm-authors")
+    return page("저자 소개", "".join(cards), "fm-authors", repeat=True)
 
 
 LEGEND = '''
@@ -528,7 +606,7 @@ def main():
         print("※ Method I 에 쓸 EX(원서적 해법이 있는 예제)를 원고에서 찾지 못해 설명 글만 넣었다.")
     empty = [p["name"] for p in A.get("authors", []) if filled(p.get("name")) and not filled(p.get("photo"))]
     if empty:
-        print("※ 사진이 비어 있는 저자:", ", ".join(empty))
+        print("※ 사진 없이 넣은 저자(자리 비우지 않음):", ", ".join(empty))
 
 
 if __name__ == "__main__":
