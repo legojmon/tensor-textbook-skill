@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
+<meta name="tensor-build" content="2be3889f640c631c368f39c34a114460f396eaee33065007f1a7ce47c44b6110">
 <title>회로이론 Part2 Ch14 — Tensor</title>
 <link rel="stylesheet" href="tensor://katex/katex.min.css">
 <link rel="stylesheet" href="tensor://pretendard/pretendard.css">
@@ -12,7 +13,7 @@
 <body data-chapter="14" data-chtitle="라플라스 변환" data-part="Part2" data-start="16">
 <!-- tensor build.py 가 만든 파일. 손으로 고치지 말고 JSON 원고를 고친다. -->
 <!-- FRONTMATTER -->
-<section class="page cover"><div class="brand">TENSOR</div><div class="arch"></div><div class="chap">CHAPTER</div><div class="num">14</div><div class="ttl">라플라스 변환<small>The Laplace Transform</small></div><div class="note"><b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class="tg ws">원서 개념</span>을 시험 문제에 맞게 다시 다듬는 단계다. 강의 문제와 원서 연습문제에 반복되는 생각을 <span class="tg">시험 개념</span>으로 묶고, 그것이 왜 성립하는지 원서 개념으로 확인한다. <br><span class="note-extra">※ 데모: 이 책의 모든 문제는 자체 제작 문항이다.</span></div></section>
+<section class="page cover" data-chapter="14" data-chtitle="라플라스 변환"><div class="brand">TENSOR</div><div class="arch"></div><div class="chap">CHAPTER</div><div class="num">14</div><div class="ttl">라플라스 변환<small>The Laplace Transform</small></div><div class="note"><b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class="tg ws">원서 개념</span>을 시험 문제에 맞게 다시 다듬는 단계다. 강의 문제와 원서 연습문제에 반복되는 생각을 <span class="tg">시험 개념</span>으로 묶고, 그것이 왜 성립하는지 원서 개념으로 확인한다. <br><span class="note-extra">※ 데모: 이 책의 모든 문제는 자체 제작 문항이다.</span></div></section>
 
 <section class="page toc"><div class="panel"></div><div class="circle">Chapter<b>14</b></div><div class="list"><div class="hdr">회로이론 시험 개념의 완성 &nbsp;<small>: Part1 정리 + 시험에 꼭 필요한 [시험 개념]</small></div><table><tr><td class="c1">14. 라플라스 변환</td><td class="pc">Preview</td><td class="pg" data-ref="preview"></td></tr><tr><td></td><td class="pc">W·01 워밍업 문제</td><td class="pg" data-ref="warmup"></td></tr><tr><td></td><td>TOPIC 01. 응답식에서 회로 읽기</td><td class="pg" data-ref="topic-01"></td></tr><tr><td></td><td>TOPIC 02. 초기조건은 전원이다</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 03. 부분분수는 가리고 대입한다</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 04. 최종값 정리를 믿기 전에</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 05. 분모는 전원을 끄고 본다</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 06. 2차 분모에서 ζ, ω<sub>n</sub> 바로 읽기</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 07. 입력이 바뀌면 곱하는 것만 바뀐다</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 08. 정상상태 항과 과도 항 나누기</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 09. 펄스 입력은 시간 이동으로</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 10. 종속전원은 극을 옮긴다</td><td class="pg muted">—</td></tr><tr><td></td><td>TOPIC 11. 컨볼루션은 언제 꺼내나</td><td class="pg muted">—</td></tr><tr><td></td><td class="pc">A·01</td><td class="pg" data-ref="a01"></td></tr><tr><td></td><td class="pc">X·01 실전 문제</td><td class="pg" data-ref="exam"></td></tr><tr><td></td><td class="pc">Review</td><td class="pg" data-ref="review"></td></tr><tr><td></td><td class="pc">빠른 정답·해설</td><td class="pg" data-ref="topic-해설"></td></tr></table></div></section>
 

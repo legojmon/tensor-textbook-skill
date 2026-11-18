@@ -3,7 +3,7 @@
 
     python lint.py work/book.html [--inventory work/INVENTORY.md] [--draft]
 
-build.py 가 만든 book.html 을 다시 검사한다(손으로 고친 흔적, 문체, 번호 대조).
+build.py 가 만든 book.html 을 다시 검사한다(build.py 도장, 손으로 고친 흔적, 문체, 번호 대조).
 경고 0개가 될 때까지 JSON 원고를 고치고 build.py 를 다시 돌린다. --draft 는 TOPIC 시안용
 (TOPIC 수·연습문제 B 를 묻지 않는다).
 """
@@ -180,8 +180,14 @@ def main():
     ap.add_argument("--inventory")
     ap.add_argument("--draft", action="store_true", help="TOPIC 시안: TOPIC 수와 연습문제(B)를 묻지 않는다")
     a = ap.parse_args()
-    soup = BeautifulSoup(Path(a.html).read_text(encoding="utf-8"), "html.parser")
+    source = Path(a.html).read_text(encoding="utf-8")
+    soup = BeautifulSoup(source, "html.parser")
     W = []
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import stamp
+    ok, why = stamp.verify(source)
+    if not ok:
+        W.append(f"[도장] 문서: {why}")
     structure(soup, W, a.draft)
     for t in soup(["script", "style"]):
         t.decompose()

@@ -590,9 +590,14 @@ def main():
     args = parser.parse_args()
     load = lambda path: json.loads(path.read_text(encoding="utf-8-sig"))
     source = args.into.read_text(encoding="utf-8")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import stamp
+    ok, why = stamp.verify(source)
+    if not ok:
+        raise SystemExit(f"[앞부분 거부] {args.into.name}: {why}")
     A, B = load(args.authors), load(args.book)
     pages = render(A, B, args.authors.resolve().parent, source)
-    result = insert(source, pages)
+    result = stamp.seal(insert(source, pages))
     with NamedTemporaryFile(mode="w", dir=args.into.parent, encoding="utf-8", newline="\n", delete=False) as tmp:
         tmp.write(result)
     try:

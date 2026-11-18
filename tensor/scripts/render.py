@@ -1,4 +1,7 @@
-"""Render a TENSOR manuscript and optional page previews with the shared Chromium driver."""
+"""Render a TENSOR manuscript and optional page previews with the shared Chromium driver.
+
+Only manuscripts made by build.py (and frontmatter.py) are accepted: the build stamp must match.
+"""
 import sys
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -82,7 +85,12 @@ def main():
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
     output = args.output or args.html.with_suffix(".pdf")
-    print_sheets([(resolve(args.html.read_text(encoding="utf-8")), args.html.parent, output, True)], args.strict)
+    source = args.html.read_text(encoding="utf-8")
+    import stamp
+    ok, why = stamp.verify(source)
+    if not ok:
+        raise SystemExit(f"[조판 거부] {args.html.name}: {why}")
+    print_sheets([(resolve(source), args.html.parent, output, True)], args.strict)
     if args.png:
         import pymupdf
         args.png.mkdir(parents=True, exist_ok=True)

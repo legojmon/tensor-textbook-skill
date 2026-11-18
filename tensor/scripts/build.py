@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Tensor 원고 빌더 — 구조화된 JSON 원고를 고정 부품으로 조립해 book.html 을 만든다.
 
-    python build.py work/book.json [-o work/book.html] [--lenient]
+    python build.py work/book.json [-o work/book.html] [--lenient] [--color]
+    python build.py work/ch08.json work/ch09.json … -o work/book.html     # 여러 장을 한 책으로
 
 원고 형식은 references/manuscript-schema.md 에 있다. 표지·목차·Preview·워밍업 문제·TOPIC·
 적용문제·연습문제·실전 문제·Review·빠른 정답·해설의 HTML 은 전부 이 스크립트가 만든다. 원고에는 글만 쓴다.
 필수 부품이 빠지거나 순서·분량 규칙에 어긋나면 오류를 모두 출력하고 파일을 쓰지 않는다.
---lenient 는 분량(개수) 규칙만 경고로 낮춘다. 사용자가 명시적으로 허락했을 때만 쓴다.
+--lenient 는 분량(개수) 규칙만 경고로 낮춘다. 사용자가 허락한 말이 approval.lenient 에 있어야 쓸 수 있다.
+사용자의 제작 전 답과 TOPIC 구성안 승인(approval)이 없거나, 승인 뒤 구성안이 바뀌었으면 빌드하지 않는다.
+만든 HTML 에는 도장(stamp.py)을 찍는다. 손으로 고친 HTML 은 render.py 가 조판하지 않는다.
 """
 import argparse
 import html
@@ -21,12 +24,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import prep  # noqa: E402  배열 매크로·컬러판 그림
+import stamp  # noqa: E402  build.py 도장
 
 ALLOWED_TAGS = {"b", "i", "u", "em", "strong", "sub", "sup", "span", "br", "small", "code", "s"}
 MATH = re.compile(r"\$\$.*?\$\$|\$[^$\n]*?\$", re.S)
 TAG = re.compile(r"<(/?)([A-Za-z][\w-]*)([^<>]*)>")
 CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮"
 TOPIC_RANGE = (6, 12)
+# TOPIC 본문 최소 분량(한글 글자 수, 수식·태그 제외). 견본 TOPIC 01 은 약 2,300자,
+# 기준에 못 미친 Codex 결과물의 TOPIC 은 약 400자였다.
+MIN_TOPIC_HANGUL = 1500
+MIN_BOOK_STEPS = 3          # 첫 EX 의 원서적 해법 단계 수 하한 (계산을 생략하지 않는다)
+# 제작 전 확인(SKILL.md 1-B)에서 사용자에게 받은 답. 키 → 이름
+APPROVAL_KEYS = {"materials": "자료 점검(장·판, 누락 자료 처리)", "scope": "범위", "exam": "시험 형식",
+                 "layout": "문제 쪽 배치·출력", "figures": "그림 방식"}
+PLACEHOLDER = re.compile(r"\{\{|\bTODO\b|\bTBD\b|미정|^[\s.…?·-]*$|사용자 답|여기에|예시 답", re.I)
 
 COVER_NOTE = ("<b>Part2 「시험 개념의 완성」</b>은 Part1에서 정리한 <span class=\"tg ws\">원서 개념</span>을 시험 문제에 맞게 "
               "다시 다듬는 단계다. 강의 문제와 원서 연습문제에 반복되는 생각을 <span class=\"tg\">시험 개념</span>으로 묶고, "
@@ -127,6 +139,8 @@ class Builder:
             src = self.need(it, "src", where)
             if src and not (self.out_dir / src).is_file():
                 self.err(where, f"그림 파일 없음: {src} (출력 폴더 기준)")
+            elif src:
+                self.check_fig_origin(it, src, where)
             width = it.get("width", default_width)
             if not re.fullmatch(r"\d+(\.\d+)?mm", str(width)):
                 self.err(where, f"그림 폭은 'NNmm' 형식: {width}")
@@ -141,6 +155,26 @@ class Builder:
         if not obj.get("nofig"):
             self.err(where, "그림(fig) 없음. 그림이 필요 없는 문제이면 nofig 에 이유를 쓴다")
         return ""
+
+    def check_fig_origin(self, it, src, where):
+        """그림마다 원본(from)을 밝힌다. 원서·강의 그림을 SVG 로 다시 그렸으면 대조 시트가 있어야 한다."""
+        origin = it.get("from")
+        if not isinstance(origin, str) or not origin.strip():
+            self.err(where, f"그림 {src} 의 원본(from) 없음. 예: \"원서 Fig 14.7-6 p.747\", \"강의 p.12\", \"자체 제작\"")
+            return
+        origin = origin.strip()
+        if origin.startswith("자체 제작"):
+            return
+        self.check_src(origin, f"{where} 그림 원본")
+        path = self.out_dir / src
+        if path.suffix.lower() != ".svg":      # 원본을 잘라 흑백 보정한 그림(figtools crop/mono)
+            return
+        sheet = self.out_dir / "compare" / f"{path.stem}.png"
+        if not sheet.is_file():
+            self.err(where, f"다시 그린 그림 {src} 의 대조 시트 없음 → python <skill>/scripts/figtools.py compare <원본.png> {src} "
+                            f"-o compare/{path.stem}.png 로 만들고 열어서 값·라벨·방향·연결을 확인한다")
+        elif sheet.stat().st_mtime < path.stat().st_mtime:
+            self.err(where, f"대조 시트 compare/{path.stem}.png 가 {src} 보다 오래됨. 그림을 고쳤으면 다시 대조한다")
 
     # ---------- 단위 부품 (해법·개념 박스 안) ----------
     def units(self, items, where, counter=None, default_n="·"):
@@ -250,6 +284,11 @@ class Builder:
             inner = self.units(b.get("units", []), where, counter)
             if not inner:
                 self.err(where, "해법 내용(units) 없음")
+            if k == "book" and t["ex"] == 1 and not t.get("book_checked"):
+                t["book_checked"] = True
+                steps = inner.count('<div class="step">')
+                if steps < MIN_BOOK_STEPS:
+                    self.count(where, f"첫 EX 의 원서적 해법은 {MIN_BOOK_STEPS}단계 이상 ({steps}단계). 원서 방식 그대로, 계산을 생략하지 않는다")
             if k == "exam":
                 cond = b.get("cond")
                 if not cond:
@@ -348,6 +387,10 @@ class Builder:
             kinds.append(k)
             parts.append(h)
         self.check_topic(kinds, where, t)
+        hangul = len(re.findall(r"[가-힣]", TAG.sub(" ", MATH.sub(" ", html.unescape("\n".join(parts))))))
+        if hangul < MIN_TOPIC_HANGUL:
+            self.count(where, f"본문이 너무 짧다: 한글 {hangul}자 (최소 {MIN_TOPIC_HANGUL}자, 견본 TOPIC 01 은 약 2,300자). "
+                              "도입·관찰·논증 문단과 EX 02·03 을 견본 밀도로 쓴다")
         ox = tp.get("ox")
         if not isinstance(ox, list) or not 3 <= len(ox) <= 5:
             self.count(where, f"Review O/X 문항(ox)은 3~5개 ({len(ox) if isinstance(ox, list) else 0}개)")
@@ -545,6 +588,7 @@ class Builder:
                 self.count("topics", f"장 전체의 TOPIC 은 {TOPIC_RANGE[0]}~{TOPIC_RANGE[1]}개 ({len(topics)}개). 승인받은 구성안과 맞춘다")
         elif not topics:
             self.err("topics", "TOPIC 원고가 하나도 없음")
+        self.check_approval(d.get("approval"), plan)
 
         theme = "" if d.get("theme") == "color" else '<link rel="stylesheet" href="tensor://css/theme-mono.css">\n'
         head = (f'<!DOCTYPE html>\n<html lang="ko"><head><meta charset="utf-8">\n<title>{subject} {part} Ch{chapter} — Tensor</title>\n'
@@ -556,7 +600,9 @@ class Builder:
                 f'data-part="{html.escape(part)}" data-start="{start}">\n'
                 '<!-- tensor build.py 가 만든 파일. 손으로 고치지 말고 JSON 원고를 고친다. -->\n')
         note = COVER_NOTE + (f' <br><span class="note-extra">{self.inline(d["cover_note"], "cover_note")}</span>' if d.get("cover_note") else "")
-        cover = (f'<!-- FRONTMATTER -->\n<section class="page cover"><div class="brand">TENSOR</div><div class="arch"></div><div class="chap">CHAPTER</div>'
+        cover = (f'<!-- FRONTMATTER -->\n<section class="page cover" data-chapter="{chapter}" '
+                 f'data-chtitle="{html.escape(str(ch.get("title", "")), quote=True)}">'
+                 '<div class="brand">TENSOR</div><div class="arch"></div><div class="chap">CHAPTER</div>'
                  f'<div class="num">{chapter}</div><div class="ttl">{chtitle}<small>{title_en}</small></div><div class="note">{note}</div></section>')
         rows = [f'<tr><td class="c1">{chapter}. {chtitle}</td><td class="pc">Preview</td><td class="pg" data-ref="preview"></td></tr>']
         for p in plan:
@@ -599,6 +645,42 @@ class Builder:
         return "\n\n".join(x for x in [head + cover, toc, preview, warmup, f'<article class="manuscript">\n{body}\n</article>',
                                        apply_, exercises, exam, review, answers, "</body></html>\n"] if x)
 
+    def check_approval(self, ap, plan):
+        """제작 전 확인(1-B)과 TOPIC 구성안 승인(2단계)을 사용자에게 받았는지. 사용자의 말을 그대로 옮긴 기록이 있어야 빌드한다."""
+        where = "approval"
+        hint = ("제작 전 질문과 TOPIC 구성안을 사용자에게 보여 주고 답을 받은 뒤, 사용자의 말을 그대로 approval 에 옮긴다 "
+                "(manuscript-schema.md §2). 답을 받기 전에는 원고를 쓰지 않는다")
+        if not isinstance(ap, dict):
+            self.err(where, "승인 기록(approval) 없음. " + hint)
+            return
+
+        def said(value, name):
+            if not isinstance(value, str) or len(value.strip()) < 2 or PLACEHOLDER.search(value.strip()):
+                self.err(where, f"{name}: 사용자의 답을 그대로 적는다 (비었거나 자리표시 문구)")
+                return False
+            return True
+
+        answers = ap.get("answers")
+        if not isinstance(answers, dict):
+            self.err(where, f"answers 없음: {', '.join(f'{k}({v})' for k, v in APPROVAL_KEYS.items())}. " + hint)
+            answers = {}
+        for key, name in APPROVAL_KEYS.items():
+            if key not in answers:
+                self.err(where, f"answers.{key} 없음 — {name}에 대한 사용자 답")
+            else:
+                said(answers[key], f"answers.{key} ({name})")
+        said(ap.get("plan_ok"), "plan_ok (TOPIC 구성안을 승인한 사용자의 말)")
+        approved = ap.get("plan")
+        current = [f'{p.get("no")} {p.get("title")}' for p in plan]
+        if not isinstance(approved, list) or not approved:
+            self.err(where, "plan 없음 — 사용자가 승인한 구성안을 '01 제목' 형식 목록으로 그대로 적는다")
+        elif [str(x).strip() for x in approved] != current:
+            changed = [c for c in current if c not in approved] + [f"(삭제) {a}" for a in approved if a not in current]
+            self.err(where, "승인한 구성안과 지금 plan 이 다르다: " + "; ".join(changed[:4])
+                     + ". 바뀐 표를 사용자에게 다시 보여 주고 승인받아 approval.plan·plan_ok 를 갱신한다")
+        if self.lenient and not (isinstance(ap.get("lenient"), str) and ap["lenient"].strip()):
+            self.err(where, "--lenient 를 쓰려면 분량 규칙 완화를 허락한 사용자의 말을 approval.lenient 에 적는다")
+
     def check_problem_counts(self, d, built, scope):
         W, A, B, X = (len(d.get(k) or []) for k in ("warmup", "apply", "exercises", "exam"))
         if W < 1:
@@ -620,35 +702,57 @@ class Builder:
             self.count("apply", f"시안에도 적용문제는 2개 이상 ({A}개)")
 
 
+def chapter_body(page):
+    """한 장의 HTML 에서 <body> 안쪽만. 여러 장을 한 책으로 이을 때 둘째 장부터 쓴다."""
+    m = re.search(r"<body\b[^>]*>\n?(.*)</body>", page, re.S)
+    inner = m.group(1) if m else page
+    inner = inner.replace("<!-- FRONTMATTER -->\n", "", 1)
+    return re.sub(r"<!-- tensor build.py 가 만든 파일[^\n]*-->\n", "", inner)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("json", type=Path)
-    ap.add_argument("-o", "--output", type=Path, help="기본: 원고와 같은 폴더의 book.html")
-    ap.add_argument("--lenient", action="store_true", help="분량 규칙을 경고로 낮춘다 (사용자가 허락한 경우만)")
+    ap.add_argument("json", type=Path, nargs="+", help="장 원고 JSON. 여러 개면 순서대로 한 책(book.html)으로 잇는다")
+    ap.add_argument("-o", "--output", type=Path, help="기본: 첫 원고와 같은 폴더의 book.html")
+    ap.add_argument("--lenient", action="store_true", help="분량 규칙을 경고로 낮춘다 (approval.lenient 에 사용자 허락이 있을 때만)")
     ap.add_argument("--color", action="store_true", help="컬러판(화면용): theme-mono 제거, fig/ → figc/ 강조색 그림")
     ap.add_argument("--accent", default="#6B3FD4", help="컬러판 그림 강조색")
     a = ap.parse_args()
-    try:
-        data = json.loads(a.json.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        sys.exit(f"[오류] JSON 문법: {e}")
-    out = a.output or a.json.with_name("book.html")
-    b = Builder(data, out.parent.resolve(), a.lenient)
-    page = b.build()
+    out = a.output or a.json[0].with_name("book.html")
+    pages, errors, n_topics, n_problems = [], 0, 0, 0
+    for path in a.json:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"[오류] {path.name}: JSON 을 읽을 수 없음: {e}")
+            errors += 1
+            continue
+        b = Builder(data, out.parent.resolve(), a.lenient)
+        page = b.build()
+        tag = f"{path.name} · " if len(a.json) > 1 else ""
+        for line in b.warnings + b.errors:
+            print(tag + line)
+        errors += len(b.errors)
+        n_topics += len(data.get("topics") or [])
+        n_problems += len(b.labels)
+        pages.append(page)
+    if errors:
+        print(f"\n오류 {errors}개 · 파일을 쓰지 않았다. JSON 원고를 고친 뒤 다시 실행한다.")
+        sys.exit(1)
+    page = pages[0]
+    if len(pages) > 1:
+        rest = "\n".join(chapter_body(p) for p in pages[1:])
+        page = page.replace("</body></html>", rest + "\n</body></html>", 1)
     page = prep.expand_arrays(page)
     if a.color:
         page = re.sub(r'<link rel="stylesheet" href="[^"]*theme-mono\.css">\n?', "", page)
         page = page.replace('src="fig/', 'src="figc/')
         if (out.parent / "fig").is_dir():
             prep.colorize_figs(out.parent / "fig", out.parent / "figc", a.accent)
-    for line in b.warnings + b.errors:
-        print(line)
-    if b.errors:
-        print(f"\n오류 {len(b.errors)}개 · 파일을 쓰지 않았다. JSON 원고를 고친 뒤 다시 실행한다.")
-        sys.exit(1)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(page, encoding="utf-8")
-    print(f"{out} · TOPIC {len(data.get('topics') or [])}개 · 문제 {len(b.labels)}개 · 경고 {len(b.warnings)}개")
+    out.write_text(stamp.seal(page), encoding="utf-8", newline="\n")
+    chapters = f"{len(pages)}개 장 · " if len(pages) > 1 else ""
+    print(f"{out} · {chapters}TOPIC {n_topics}개 · 문제 {n_problems}개 · 도장 찍음")
 
 
 if __name__ == "__main__":

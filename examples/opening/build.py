@@ -29,9 +29,12 @@ def main():
     with tempfile.TemporaryDirectory(dir=scratch, prefix="opening-") as directory:
         work = Path(directory)
         manuscript = work / "book.html"
-        source = (DEMO / "demo.html").read_text(encoding="utf-8")
-        manuscript.write_text(source.replace('data-start="16"', 'data-start="1"', 1), encoding="utf-8")
+        # 책 전체는 1쪽부터: 견본 JSON 의 시작 쪽만 바꿔 build.py 로 다시 만든다(HTML 은 손대지 않는다)
+        source = json.loads((ROOT / "tensor/references/example-manuscript.json").read_text(encoding="utf-8"))
+        source["start_page"] = 1
+        (work / "book.json").write_text(json.dumps(source, ensure_ascii=False), encoding="utf-8")
         shutil.copytree(DEMO / "fig", work / "fig")
+        run("build.py", work / "book.json", "-o", manuscript)
         run("frontmatter.py", "--authors", ROOT / "author/authors.json", "--book", HERE / "book.json", "--into", manuscript)
         run("render.py", manuscript, "-o", work / "book.pdf", "--strict")
         cover = json.loads((HERE / "cover.json").read_text(encoding="utf-8"))

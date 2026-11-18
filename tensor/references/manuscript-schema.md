@@ -5,11 +5,14 @@
 ```bash
 python <skill>/scripts/build.py work/book.json            # → work/book.json 옆에 book.html (흑백, 인쇄용)
 python <skill>/scripts/build.py work/book.json -o work/book_color.html --color   # 컬러판(화면용): theme-mono 제거, fig/ → figc/
+python <skill>/scripts/build.py work/ch08.json work/ch09.json -o work/book.html  # 여러 장을 한 책으로 (장마다 JSON 하나)
 python <skill>/scripts/lint.py  work/book.html --inventory work/INVENTORY.md
 python <skill>/scripts/render.py work/book.html --strict --png work/preview/
 ```
 
-build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모두 출력하고 파일을 쓰지 않는다.** 오류 메시지의 위치(`TOPIC 01 블록 7`)를 보고 JSON 을 고친다. `--lenient` 는 분량(개수) 규칙만 경고로 낮추며, 사용자가 명시적으로 허락했을 때만 쓴다.
+build.py 는 필수 부품·순서·분량 규칙을 어기거나 **사용자 승인 기록(`approval`)이 없으면** 오류를 모두 출력하고 파일을 쓰지 않는다. 오류 메시지의 위치(`TOPIC 01 블록 7`)를 보고 JSON 을 고친다. `--lenient` 는 분량(개수·글자 수) 규칙만 경고로 낮추며, 사용자가 허락한 말이 `approval.lenient` 에 있어야 쓸 수 있다.
+
+만든 `book.html` 에는 **도장**(`<meta name="tensor-build">`, 내용 해시)이 찍힌다. 한 글자라도 손으로 고치거나 HTML 을 직접 쓰면 도장이 맞지 않아 `render.py` 가 조판을 거부하고 `lint.py` 가 경고한다. `frontmatter.py` 는 도장이 맞는 원고에만 앞부분을 넣고 다시 도장을 찍는다.
 
 완성 견본: `references/example-manuscript.json` (회로이론 14장 TOPIC 01 시안, 배포본에서도 같은 경로). 쓰기 전에 한 번 읽고, 쓴 뒤 나란히 비교한다.
 
@@ -38,6 +41,7 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
   },
   "cover_note": "",                        // 선택. 장 표지 안내문 뒤에 작게 붙는 한 줄
   "plan": [{"no": "01", "title": "응답식에서 회로 읽기"}, …],   // 승인받은 TOPIC 구성안 전체 (시안이면 안 만든 TOPIC 도 적는다)
+  "approval": { … },                        // 사용자 승인 기록 (필수, 아래)
   "preview": {"paragraphs": ["…", "…", "…"]},                 // 정확히 3문단 (writing-style §4-14)
   "warmup_note": "", "warmup": [ 문제 … ],                     // 워밍업 문제 W·01… (문제마다 pre = [준비] 칸)
   "topics": [ TOPIC … ],
@@ -49,6 +53,28 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
 }
 ```
 
+### 승인 기록 `approval` (필수)
+
+제작 전 확인(SKILL.md 1-B)과 TOPIC 구성안 승인(2단계)에서 **사용자가 한 말을 그대로** 옮긴다. 답을 받기 전에는 원고를 쓰지 않으므로, 이 칸을 채울 수 없으면 아직 원고를 쓸 때가 아니다. 지어 넣지 않는다.
+
+```json
+"approval": {
+  "answers": {
+    "materials": "강의록 L9~19 다 넣었고 해설집은 없어. 답은 시뮬레이션으로 검증해서 써.",   // 자료 점검·누락 자료 처리
+    "scope": "12장 전체",                                                              // 범위 (장 전체 / TOPIC 시안)
+    "exam": "서술형, 손추적이랑 손코딩 위주. 계산기 없음.",                             // 시험 형식
+    "layout": "쪽당 2문제, 흑백이랑 컬러 둘 다",                                         // 문제 쪽 배치·출력
+    "figures": "알아서 해 → 다시 그리기(기본)"                                           // 그림 방식. 맡긴 경우 그 말과 고른 기본값
+  },
+  "plan": ["01 반으로 나눈 뒤 어디서 정렬하는가", "02 두 앞머리로 합병하기", …],      // 승인한 구성안: "번호 제목" 목록
+  "plan_ok": "이대로 진행해",                                                           // 구성안을 승인한 말
+  "lenient": ""                                                                          // 선택. --lenient 를 허락한 말
+}
+```
+
+- `answers` 의 다섯 칸과 `plan_ok` 는 비었거나 `{{…}}`·`TODO`·`미정` 같은 자리표시면 오류다.
+- `approval.plan` 이 지금의 `plan`(`"번호 제목"`)과 한 글자라도 다르면 오류다. 구성안을 바꿨으면 바뀐 표를 다시 보여 주고 승인받아 두 칸을 갱신한다.
+
 `sources.chapters` 를 적으면 출처 문자열의 장 번호(`14.7-1`, `R-8.3`, `Listing 5.3` 의 앞 수)가 선언된 장과 다를 때 오류가 난다. 보조 교재의 장 번호를 원서 장 번호와 섞는 실수를 막는다.
 
 ## 3. 문제 (warmup / apply / exercises / exam 의 원소)
@@ -58,11 +84,12 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
  "pre": "정상상태에서 커패시터는 개방이다. 1차 응답의 시정수는 $\\tau=R_{th}C$ 이다.",   // warmup 만. 정의·규칙 한두 줄, 답은 쓰지 않는다
  "hint": "분자 6은 독립 정보인가?",
  "text": "그림의 회로에서 … 의 값을 구하시오.",
- "fig": {"src": "fig/a01.svg", "width": "62mm"}}
+ "fig": {"src": "fig/a01.svg", "width": "62mm", "from": "원서 Fig P14.7-6 p.747"}}
 ```
 
 - 번호(`W·01`, `A·01`, `B·01`, `X·01`)는 순서대로 자동. 다른 글자는 없다. `lv` 1~3, `topic` 은 관련 TOPIC 번호(쪽 번호 칸에 쓰인다), `hint` 는 한 줄.
 - `fig` 는 객체 또는 객체 목록(`cap` 선택). 그림이 정말 필요 없는 문제만 `"nofig": "이유"` 를 쓴다. 둘 다 없으면 오류.
+- **모든 그림 객체에 `from`(원본)이 필수다**(본문 블록·해법 단위 안의 그림 포함): `"원서 Fig 14.7-6 p.747"`, `"강의 p.12"`, `"보조 Fig 3.2"`, `"자체 제작"`. 출처 이름은 `sources` 에 선언한 것이어야 하고 장 번호도 검사한다. 원서·강의 그림을 **SVG 로 다시 그렸으면** 출력 폴더의 `compare/<그림 이름>.png`(`figtools.py compare 원본.png fig/a01.svg -o compare/a01.png`)가 있어야 하고 그림 파일보다 새것이어야 한다. 원본을 잘라 쓴 PNG 와 자체 제작 그림은 대조 시트가 필요 없다.
 - 실전 문제(X)의 출처는 `실전 · 근거`(강의 랩 함정, 시험 복기 유형 등)로 쓴다. 시험 형식이 T/F·단답이면 지문 끝을 `(T/F)` 또는 질문으로 끝내도 된다.
 - 문제 쪽 그림 폭 60~76mm. 파일은 `book.html` 이 놓일 폴더 기준 상대 경로이고, 없으면 오류.
 
@@ -123,7 +150,7 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
 
 - 빠지면 오류: EX, 원서적 해법, 말풍선, 시험적 해법, 시험 개념 박스, CORE, 채점 포인트, VS 표, 소절 제목, 도입 문단, 관찰 문단.
 - 순서가 어긋나면 오류: 첫 EX 다음은 원서적 해법 / EX → 원서적 → 말풍선 → 시험적 → 개념 박스 → CORE / 채점 포인트·VS 표는 개념 박스 뒤.
-- 분량(`--lenient` 로만 완화): EX 2~3개, 소절 2~3개, 채점 4~6줄, VS 4~6행, ox 3~5개, Preview 3문단, Review 2문단, 장 전체 TOPIC 6~12개, 워밍업 2개 이상, 연습문제 4개 이상, 실전 문제 5개, TOPIC마다 적용문제 1개 이상.
+- 분량(`--lenient` 로만 완화): **TOPIC 본문 한글 1,500자 이상**(수식·태그 제외, 견본 TOPIC 01 은 약 2,300자), 첫 EX 의 원서적 해법 3단계 이상, EX 2~3개, 소절 2~3개, 채점 4~6줄, VS 4~6행, ox 3~5개, Preview 3문단, Review 2문단, 장 전체 TOPIC 6~12개, 워밍업 2개 이상, 연습문제 4개 이상, 실전 문제 5개, TOPIC마다 적용문제 1개 이상.
 
 본문 속 코드 조각은 `<code class="c">…</code>`, 트리·그래프 그림은 `scripts/dsfig.py` 로 SVG 를 만들어 `fig` 로 넣는다.
 
@@ -136,6 +163,14 @@ build.py 는 필수 부품·순서·분량 규칙을 어기면 **오류를 모�
 
 `answers[].for` 에는 문제 번호를 쓴다: `W·01`, `A·02`, `B·03`, `X·01`, EX 는 `"{TOPIC}-EX{번호}"` (예: `"01-EX02"`). 같은 문제가 W 와 EX 에 중복되면 한 항목에 둘 다 적는다. `label` 을 생략하면 `W·01 / EX 01` 처럼 자동으로 만든다. `text` 는 답과 핵심 근거 한 줄, 코드 답은 `"code"` 에 따로 쓴다. 빌더가 워밍업 → 적용 → 연습 → 실전 순서의 **빠른 정답·해설** 장(Review 뒤, 자동 쪽 나눔)으로 만든다. 모든 번호에 답이 있어야 빌드된다. 답은 sympy·시뮬레이션 등으로 검증한 값만 쓰고, 원서 정답이 틀렸으면 "원서 정답 정정" 이라고 적는다.
 
-## 7. 결과 쪽 순서
+## 7. 여러 장을 한 책으로
+
+장마다 JSON 을 하나씩 쓰고(`work/ch08.json`, `work/ch09.json` …) 한 번에 빌드한다. 첫 장의 `start_page` 부터 쪽 번호가 이어지고, 목차·PAGE 칸·꼬리말은 장마다 따로 계산된다. 장마다 `plan`·`approval` 을 따로 둔다. 장별 HTML 을 이어 붙이지 않는다(도장이 맞지 않아 조판되지 않는다).
+
+```bash
+python <skill>/scripts/build.py work/ch08.json work/ch09.json work/ch10.json -o work/book.html
+```
+
+## 8. 결과 쪽 순서
 
 장 표지 → 장 목차 → Preview → 워밍업 문제(W) → TOPIC … → 적용문제(A) → 연습문제(B) → 실전 문제(X) → Review: 개념진단(O/X, 넘치면 자동으로 다음 쪽) → 빠른 정답·해설. 책 전체의 앞부분(서문·전체 차례)은 `frontmatter.py` 가 `<!-- FRONTMATTER -->` 자리에 끼운다.
