@@ -16,6 +16,9 @@ TENSOR 교재 제작에 쓰는 Claude 스킬 모음입니다.
 - `back.dc.html` — 뒷표지 (A4, 794×1123)
 - `spine.dc.html` — 책등 (15mm, 57×1123)
 
-이 파일들은 Claude Design 캔버스 형식(`.dc.html`)입니다. 글꼴(Pretendard)과 서울대학교 로고는 캔버스에 올린 파일(`/_blob/...`)을 가리키므로, 캔버스 밖에서 열면 표시되지 않습니다. 다른 곳에서 쓰려면 해당 경로를 직접 가진 글꼴·로고 파일로 바꿔 주세요.
+이 파일들은 Claude Design 캔버스 형식(`.dc.html`)입니다. 글꼴과 로고는 `textbook-cover-design/assets/`를 가리키며, 캔버스에 올릴 때 `scripts/fill_assets.py`로 업로드 URL로 바꿉니다. 자세한 절차는 SKILL.md의 "빠른 시작"을 보세요.
+
+- 글꼴: Pretendard (SIL Open Font License 1.1, `assets/fonts/OFL-LICENSE.txt`)
+- 로고: 서울대학교 로고 (`assets/logo/snu-logo.png`)
 
 저자: 김준형 · 최재원

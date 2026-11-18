@@ -7,10 +7,30 @@ description: 교재 내지 PDF와 레퍼런스 표지 이미지를 바탕으로 
 
 내지 PDF의 색·글꼴을 그대로 가져오고, 레퍼런스 표지의 **구성**(거대한 기하 도형 + 세로 대형 타이틀 + 모서리의 작은 자간 넓은 문구)을 빌려 오되, 도형은 **과목을 상징하는 기호**로 바꾼다.
 
+## 이 폴더에 들어 있는 것 (따로 구할 필요 없음)
+```
+textbook-cover-design/
+├── SKILL.md
+├── assets/
+│   ├── fonts/Pretendard-{Light,Regular,Medium,Bold,Black}.woff2   # 300/400/500/700/900, OFL-1.1
+│   ├── fonts/OFL-LICENSE.txt
+│   └── logo/snu-logo.png                                          # 서울대학교 로고 (컬러, 투명 배경)
+├── examples/tensor-circuit/{front,back,spine}.dc.html             # 완성본 (assets/ 경로 사용)
+└── scripts/fill_assets.py                                         # assets/ 경로 → 업로드 URL 치환
+```
+
+## 빠른 시작 (TENSOR 회로이론 표지를 그대로 다시 만들 때)
+1. `list_types` → Design 타입으로 `create_from_type`.
+2. `upload_asset`으로 `assets/fonts/` 5개 + `assets/logo/snu-logo.png`를 한 번에 올린다.
+3. 결과의 url로 `mapping.json`(키 = `assets/...` 상대경로, 값 = `/_blob/...`)을 만들고
+   `python3 scripts/fill_assets.py mapping.json <root>/project` 실행 → `Main/Back/Spine.dc.html` 생성.
+4. `canvas.json`의 boards에 Main(0,0,794×1123,a4), Back(874,0,794×1123,a4), Spine(1748,0,57×1123)을 등록하고 `publish_files`(mode patch)로 올린다.
+다른 과목·교재라면 아래 절차대로 고치되, 글꼴·로고는 2–3번을 그대로 쓴다.
+
 ## 0. 입력 확인
-필요한 것: 내지 PDF, 레퍼런스 표지 이미지, **교재명(브랜드)**, **과목명**, 저자, 학교 로고 파일.
+필요한 것: 내지 PDF, 레퍼런스 표지 이미지, **교재명(브랜드)**, **과목명**, 저자. (서울대 로고·Pretendard는 `assets/`에 있음)
 - 교재명과 과목명을 혼동하지 말 것. 교재명(예: TENSOR)이 표지의 주인공(세로 대형 타이틀)이고, 과목명(예: 회로이론)은 우상단 보조 타이틀이다.
-- 로고 파일이 없으면 학교 사이트에서 받을 수 없으므로(네트워크 차단) 점선 자리만 잡고 사용자에게 PNG/SVG(투명 배경) 첨부를 요청한다.
+- 다른 학교 로고가 필요하면 학교 사이트에서 받을 수 없으므로(네트워크 차단) 사용자에게 PNG/SVG(투명 배경) 첨부를 요청하고 `assets/logo/`에 추가한다.
 
 ## 1. 내지 분석
 ```bash
@@ -26,11 +46,7 @@ PIL로 배경·포인트 픽셀을 찍어 hex를 얻는다 (예: 보라 #6B3FD4,
 - 사용자가 캔버스에서 직접 수정하므로, 수정 전에는 **항상 최신 파일을 read_file** 하고, 작은 변경은 `edit_version`(path 지정)으로 한다. 로컬 사본으로 통째로 덮어쓰지 말 것.
 
 ## 3. 글꼴: 내지와 같은 글꼴을 직접 올린다
-Google Fonts의 Noto Sans KR은 영문이 어색해 보인다는 피드백이 있었다. 내지 글꼴을 npm으로 받아 업로드한다.
-```bash
-npm pack pretendard@1.3.9 && tar xzf pretendard-*.tgz
-# package/dist/web/static/woff2/Pretendard-{Light,Regular,Medium,Bold,Black}.woff2
-```
+Google Fonts의 Noto Sans KR은 영문이 어색해 보인다는 피드백이 있었다. Pretendard는 `assets/fonts/`에 이미 있다(다른 글꼴이 필요할 때만 `npm pack <패키지>`로 받는다).
 `upload_asset`으로 5개 굵기를 올리고 `<helmet><style>`에 `@font-face`(300/400/500/700/900, `font-display:block`, `src:url(/_blob/...)`)로 등록. 모든 아트보드에서 같은 blob URL을 재사용.
 
 ## 4. 앞표지 구성 (794×1123)
