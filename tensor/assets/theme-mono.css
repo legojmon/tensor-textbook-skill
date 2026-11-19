@@ -121,3 +121,7 @@ h3{color:#111}
 .toc .hdr small,.toc .pc{color:#444}
 .cover .note .tg{background:#111;color:#fff;border-color:#111}
 .cover .note .tg.ws{background:#fff;color:#111;border-color:#111}
+
+/* ---------- 앞부분 저자 사진: 흑백판에서만 회색조 (컬러판은 원래 색) ---------- */
+.fm-author .ph .pic{filter:grayscale(1) contrast(1.06)}
+.fm-author .ph .av{filter:grayscale(1)}

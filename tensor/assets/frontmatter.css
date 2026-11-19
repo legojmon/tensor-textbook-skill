@@ -83,14 +83,14 @@ h3.fm-sec .n{margin-right:1mm}
 
 /* ---------- 저자 소개 ---------- */
 .fm-author{display:grid;grid-template-columns:40mm 1fr;gap:8mm;margin-bottom:12mm;align-items:start}
-.fm-author.nophoto{grid-template-columns:1fr}
 .fm-author .ph{position:relative;width:40mm}
-.fm-author .ph .pic{width:40mm;height:50mm;object-fit:cover;filter:grayscale(1) contrast(1.06);display:block}
+.fm-author .ph .pic,.fm-author .ph .ph-empty{width:40mm;height:50mm;object-fit:cover;display:block}
+.fm-author .ph .ph-empty{border:1px dashed #999;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:8pt;color:#999}
+/* 사진·일러스트는 컬러판에서 원래 색 그대로, 흑백판은 theme-mono.css 가 회색조로 바꾼다 */
 /* 일러스트: 사진 모서리에 작은 동그라미 프로필 */
-.fm-author .ph .av{position:absolute;right:-5mm;bottom:-5mm;width:16mm;height:16mm;border-radius:50%;object-fit:cover;background:#fff;border:1pt solid var(--ink);box-shadow:0 0 0 1.2mm #fff;filter:grayscale(1)}
+.fm-author .ph .av{position:absolute;right:-5mm;bottom:-5mm;width:16mm;height:16mm;border-radius:50%;object-fit:cover;background:#fff;border:1pt solid var(--ink);box-shadow:0 0 0 1.2mm #fff}
 .fm-author .nm{display:flex;align-items:center;gap:2.5mm;font-family:var(--sans);font-size:16pt;font-weight:800;margin-bottom:3mm}
 .fm-author .nm small{font-size:8.5pt;font-weight:400;color:var(--muted)}
-.fm-author .nm .av{width:11mm;height:11mm;border-radius:50%;object-fit:cover;border:.8pt solid var(--ink);filter:grayscale(1)}
 .fm-author ul{margin:0 0 4mm;padding-left:4mm;font-family:var(--sans);font-size:8.8pt;line-height:1.75}
 .fm-author .intro p{font-size:9.2pt;line-height:1.85;margin:0 0 3mm}
 .fm-author .scene{border:1px dashed #777;padding:3mm 4mm;margin:2mm 0 4mm;font-size:9pt}

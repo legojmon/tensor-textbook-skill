@@ -345,19 +345,16 @@ def authors_page(A, B, base, people):
     for au in people:
         img = uri(base, au.get("photo"))
         av = uri(base, au.get("avatar"))
-        if img:      # 사진이 있으면 일러스트는 사진 모서리의 작은 동그라미
-            ph = f'<div class="ph"><img class="pic" src="{img}" alt="">' + (f'<img class="av" src="{av}" alt="">' if av else "") + "</div>"
-            name_av = ""
-        else:        # 사진이 없으면 자리를 비우지 않는다. 일러스트만 이름 옆에 작게
-            ph = ""
-            name_av = f'<img class="av" src="{av}" alt="">' if av else ""
+        # 사진이 없으면 같은 크기의 빈 사진 칸을 남긴다(나중에 사진만 넣으면 된다). 일러스트는 모서리의 작은 동그라미
+        pic = f'<img class="pic" src="{img}" alt="">' if img else '<div class="ph-empty">사진</div>'
+        ph = f'<div class="ph">{pic}' + (f'<img class="av" src="{av}" alt="">' if av else "") + "</div>"
         bio = "".join(f"<li>{fmt(b)}</li>" for b in au.get("bio", []) if filled(b))
         intro = paras([p for p in au.get("intro", []) if filled(p)])
         scene = (f'<div class="scene"><b>막혔던 장면</b><p>{fmt(au["scene"])}</p></div>'
                  if filled(au.get("scene")) else "")
         msg = f'<p class="msg">{fmt(au["message"])}</p>' if filled(au.get("message")) else ""
-        cards.append(f'<div class="fm-author{"" if ph else " nophoto"}">{ph}<div class="info">'
-                     f'<div class="nm">{name_av}{escape(au["name"])}<small>{escape(au.get("name_en", ""))}</small></div>'
+        cards.append(f'<div class="fm-author">{ph}<div class="info">'
+                     f'<div class="nm">{escape(au["name"])}<small>{escape(au.get("name_en", ""))}</small></div>'
                      f'<ul>{bio}</ul>{f"<div class=intro>{intro}</div>" if intro else ""}{scene}{msg}</div></div>')
     col = {k: v for k, v in (B.get("colophon") or {}).items() if filled(v)}
     if col:
@@ -611,7 +608,7 @@ def main():
         print("※ Method I 에 쓸 EX(원서적 해법이 있는 예제)를 원고에서 찾지 못해 설명 글만 넣었다.")
     empty = [p["name"] for p in A.get("authors", []) if filled(p.get("name")) and not filled(p.get("photo"))]
     if empty:
-        print("※ 사진 없이 넣은 저자(자리 비우지 않음):", ", ".join(empty))
+        print("※ 사진이 없어 빈 사진 칸을 남긴 저자:", ", ".join(empty))
 
 
 if __name__ == "__main__":
