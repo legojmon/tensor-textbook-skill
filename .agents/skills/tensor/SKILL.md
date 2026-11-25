@@ -29,7 +29,7 @@ description: 강의록·원서 PDF로 TENSOR 교재를 제작한다. Codex에서
 - 문제 번호는 W(워밍업, [준비] 칸 필수)·A(적용문제)·B(연습문제)·X(실전 문제)와 TOPIC 안의 EX 뿐이다. 다른 글자를 만들지 않는다. 모든 문제의 답을 `answers` 에 넣고 검증한다(빠른 정답·해설 장이 된다).
 - EX 와 문제마다 그림을 준비한다. 그림이 필요 없는 문제만 `nofig` 에 이유를 쓴다.
 - 보조 교재가 있으면 `sources` 에 책마다 이름과 장 번호를 선언하고, 출처는 그 이름으로 시작한다. 빌더가 장 번호 불일치를 잡는다.
-- 시안(한 TOPIC)은 `"scope": "draft"`, 승인된 구성안 전체를 `plan` 에 둔다. 장 전체는 `"scope": "chapter"` 로 `plan` 의 모든 TOPIC 을 쓴다. 여러 장은 장마다 JSON 을 쓰고 `build.py work/ch08.json work/ch09.json -o work/book.html` 로 한 번에 만든다. 기본 결과물은 Part1(원서 개념의 정리)과 Part2(시험 개념의 완성)를 담은 한 권이다. 장마다 Part1 원고 `work/ch08_p1.json`(`"part": "Part1"`)과 Part2 원고를 쓰고, Part1 장들을 먼저 넘긴다. `render.py` 가 마지막에 `optimize.py` 로 PDF 를 원서처럼 가볍게 다시 쓰므로(보고 줄 확인), 인쇄용 흑백 PDF와 화면용 컬러 PDF를 그대로 전달한다. 굿노트용 그림 판(`flatten.py --split`)은 요청할 때만 만든다.
+- 시안(한 TOPIC)은 `"scope": "draft"`, 승인된 구성안 전체를 `plan` 에 둔다. 장 전체는 `"scope": "chapter"` 로 `plan` 의 모든 TOPIC 을 쓴다. 여러 장은 장마다 JSON 을 쓰고 `build.py work/ch08.json work/ch09.json -o work/book.html` 로 한 번에 만든다. 기본 결과물은 Part1(원서 개념의 정리)과 Part2(시험 개념의 완성)를 담은 한 권이다. 장마다 Part1 원고 `work/ch08_p1.json`(`"part": "Part1"`)과 Part2 원고를 쓰고, Part1 장들을 먼저 넘긴다. `render.py` 가 마지막에 `optimize.py` 로 PDF 를 원서처럼 가볍게 다시 쓰므로(보고 줄 확인), 최종 전달물은 인쇄용 흑백 PDF와, 컬러판을 `python tensor/scripts/tablet.py work/book_color.pdf --split` 으로 바꾼 태블릿용 PDF(아이패드·갤럭시에서 렌더링 오류가 없는 판, Part별 파일)다.
 - **빌더가 막는 것 (돌아가는 길을 찾지 말고 원인을 고친다)**
   - `approval` 이 없거나 칸이 비었거나 자리표시면, 또는 승인 뒤 `plan` 이 바뀌었으면 빌드하지 않는다. 사용자에게 묻지 않고 답을 지어 넣지 않는다. 바뀐 구성안은 다시 보여 주고 승인받는다.
   - TOPIC 본문이 한글 1,500자 미만이면 빌드하지 않는다(견본 TOPIC 01 은 약 2,300자). 시간·토큰을 아끼려고 TOPIC·EX·문제 수나 문단을 줄이지 않는다. 범위가 크면 장 단위로 끝까지 만들고 진행 상황을 알린 뒤 이어서 만든다.

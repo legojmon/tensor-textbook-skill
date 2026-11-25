@@ -31,7 +31,7 @@ $tensor 첨부한 강의록과 원서로 TENSOR 교재를 만들어줘. 견본 �
 ## 어떻게 같은 모양이 나오나
 
 1. 모델은 제작 전 질문과 TOPIC 구성안을 먼저 보여 주고, 사용자의 답과 승인을 그대로 원고의 `approval` 에 옮긴 뒤 `work/book.json` 에 글만 쓴다 (형식: [manuscript-schema.md](tensor/references/manuscript-schema.md)). 승인 기록이 없거나 승인 뒤 구성안이 바뀌면 빌드되지 않는다.
-2. `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·워밍업 문제(준비 칸)·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, TIP, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·실전 문제·Review·빠른 정답·해설을 고정 HTML/CSS 로 조립한다. `--color` 로 화면용 컬러판도 같은 원고에서 나온다. 필수 부품·순서·분량(TOPIC 본문 한글 1,500자 이상)·그림과 그 원본(다시 그린 그림은 대조 시트)·출처·정답이 빠지면 파일을 쓰지 않는다. 여러 장은 `build.py ch08.json ch09.json … -o book.html` 로 한 책이 된다.
+2. `python tensor/scripts/build.py work/book.json` 이 장 표지·목차·Preview·워밍업 문제(준비 칸)·TOPIC 부품(EX, 원서적·시험적 해법, 말풍선, 3탭 개념 박스, CORE, TIP, 채점 포인트, 강의 VS 연습문제 표)·적용문제·연습문제·실전 문제·Review·빠른 정답·해설을 고정 HTML/CSS 로 조립한다. `--color` 로 컬러판도 같은 원고에서 나오고, `tablet.py` 가 이를 아이패드·갤럭시용 태블릿판(쪽 그림 + 검색되는 글자 층, 책갈피)으로 바꾼다. 인쇄는 흑백판으로 한다. 필수 부품·순서·분량(TOPIC 본문 한글 1,500자 이상)·그림과 그 원본(다시 그린 그림은 대조 시트)·출처·정답이 빠지면 파일을 쓰지 않는다. 여러 장은 `build.py ch08.json ch09.json … -o book.html` 로 한 책이 된다.
 3. `build.py` 는 결과에 도장(내용 해시)을 찍는다. 손으로 쓰거나 고친 HTML 은 `render.py` 가 조판하지 않는다.
 4. `lint.py` 가 문체·번호·구조를, `render.py --strict` 가 넘침·수식·그림 오류를 잡는다. 셋 다 0 이어야 전달한다.
 
