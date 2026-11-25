@@ -154,6 +154,20 @@ build.py 는 필수 부품·순서·분량 규칙을 어기거나 **사용자 �
 
 본문 속 코드 조각은 `<code class="c">…</code>`, 트리·그래프 그림은 `scripts/dsfig.py` 로 SVG 를 만들어 `fig` 로 넣는다.
 
+### Part1 원고 (`"part": "Part1"`)
+
+같은 JSON 형식에 `"part": "Part1"` 을 쓰면 빌더가 Part1 규칙으로 검사한다.
+
+```
+"## 1. …"  →  도입 문단(원서 절·강의 쪽)  →  원서 개념 박스(concept kind book)  →  EX 01  →  원서적 해법
+→  관찰 문단  →  말풍선  →  (원서 간접 개념 박스, kind ind)  →  CORE  →  (TIP)  →  EX 02 → 원서적 해법 …
+```
+
+- 빠지면 오류: 소절 제목, 도입 문단(첫 개념 박스·EX 앞), 원서 개념 박스, EX, 원서적 해법, CORE. **모든 EX 바로 다음은 원서적 해법**이다.
+- 넣으면 오류: 시험적 해법, 시험 개념 박스(kind exam), 채점 포인트, 강의 VS 표, 워밍업(W), 실전 문제(X).
+- 문제는 `apply`(확인문제 A, 원서 Exercise)와 `exercises`(연습문제 B, 장 끝 기본 문제)만. TOPIC마다 A 또는 B 하나 이상, B는 장마다 4개 이상.
+- 분량 규칙(한글 1,500자, EX 2~3개, ox 3~5개, Preview 3문단, Review 2문단)은 Part2와 같다.
+
 ## 5. scope 와 시안
 
 - `"scope": "draft"`: 한 TOPIC 시안. `plan` 에는 구성안 전체를 적고 `topics` 에는 만드는 TOPIC 만 넣는다. 목차에서 안 만든 TOPIC 은 `—` 로 표시된다. 연습문제(B)·실전 문제(X)는 생략 가능, 적용문제는 2개 이상.
@@ -169,6 +183,12 @@ build.py 는 필수 부품·순서·분량 규칙을 어기거나 **사용자 �
 
 ```bash
 python <skill>/scripts/build.py work/ch08.json work/ch09.json work/ch10.json -o work/book.html
+```
+
+**Part1과 Part2를 한 권으로(기본)**: 장마다 Part1 원고(`work/ch08_p1.json`, `"part": "Part1"`)와 Part2 원고(`work/ch08.json`)를 따로 쓰고, Part1 장들을 먼저, Part2 장들을 뒤에 넘긴다. 빌더가 장 표지에 `data-part` 를 붙이고, 조판기가 Part 탭·목차·PAGE 칸·꼬리말을 Part와 장을 함께 보고 계산한다. `frontmatter.py` 는 Part2 첫 장 앞에 Part2 표지·가이드라인·Method I를 자동으로 끼운다.
+
+```bash
+python <skill>/scripts/build.py work/ch08_p1.json work/ch09_p1.json work/ch08.json work/ch09.json -o work/book.html
 ```
 
 ## 8. 결과 쪽 순서

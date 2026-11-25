@@ -30,6 +30,10 @@ python <skill>/scripts/frontmatter.py --authors <repo>/author/authors.json --boo
 
 Part1 책이면 가이드라인 목표가 Part1용으로 바뀌고 Method I 는 넣지 않는다.
 
+**Part1·Part2 한 권(기본)**: 원고에 두 Part의 장이 모두 있으면 `frontmatter.py` 가 알아서 나눈다. 책 앞에는 커리큘럼(두 Part 모두 강조) → 로드맵 → 소개 → 서문 → 저자 소개 → 이 책의 구성 → **전체 차례(Part1·Part2 모두, 장 이름 앞에 Part 표시)** → Part1 표지 → Part1 가이드라인, 그리고 **Part2 첫 장 바로 앞**에 Part2 표지 → Part2 가이드라인 → Method I 를 넣는다. Part마다 다른 문안은 `work/front.json` 의 `"parts": {"Part1": {...}, "Part2": {...}}` 에 `part` 와 같은 키(title, checklist, goals, goals_replace …)로 적는다.
+
+**개념 박스 인덱스(뒷부분)**: `work/front.json` 에 `"index": true` 를 쓰면 책 맨 뒤에 한완수식 개념 박스 인덱스가 붙는다. 원서 개념·원서 간접 개념·시험 개념 박스와 저자의 특강(TIP)의 제목과 쪽을 Part·장 순서대로 모은다(쪽 번호 자동, 넘치면 다음 쪽). 안내문은 `"index_lead"` 로 바꾼다. 책 전체를 만들 때는 기본으로 켠다.
+
 ## 흑백판과 컬러판
 - 흑백판(기본): `theme-mono.css` 가 저자 사진·일러스트를 회색조로 바꾼다.
 - 컬러판: 사용자가 컬러를 요청하면 `build.py ... --color` 로 만든 `book_color.html` 에 **같은 명령으로** 앞부분을 넣는다(`--into work/book_color.html`). 사진·일러스트가 원래 색으로 들어간다. 사진 파일은 컬러 원본을 그대로 둔다(흑백으로 바꿔 저장하지 않는다).

@@ -29,6 +29,7 @@ from bs4 import BeautifulSoup
 
 START = "<!-- FRONTMATTER -->"
 END = "<!-- /FRONTMATTER -->"
+START2, END2 = "<!-- PART2FRONT -->", "<!-- /PART2FRONT -->"   # Part1·Part2 한 권: Part2 첫 장 앞
 HERE = Path(__file__).resolve().parent
 DEFAULTS = json.loads((HERE.parent / "assets" / "frontmatter.default.json").read_text(encoding="utf-8"))
 CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩"
@@ -148,7 +149,7 @@ def curriculum(A, B, P):
     subj = B.get("subject", "")
     rows = []
     for i, s in enumerate(C["stages"]):
-        on = " on" if s.get("tag") == P["name"] else ""
+        on = " on" if s.get("tag") in P.get("names", [P["name"]]) else ""
         rows.append(
             f'<div class="st{on}"><div class="tag"><b>{escape(s["tag"])}</b></div>'
             f'<div class="tx"><div class="tt">{fmt(s["title"])}</div><p>{fmt(s["text"])}</p></div>'
@@ -384,22 +385,44 @@ LEGEND = '''
 </div>'''
 
 
-def structure(B):
+LEGEND_P1 = '''
+<div class="fm-legend">
+  <div class="lg"><div class="demo"><span class="tg ws">원서 개념</span> <span class="tg ind">원서 간접 개념</span></div>
+    <div class="tx"><b>개념 태그</b> 실선 = 원서 본문에 정리된 개념. 점선 = 강의록이나 원서의 예제·그림에만 있는 개념.</div></div>
+  <div class="lg"><div class="demo"><div class="sol"><span class="lab"><span class="a">원서적</span><span class="b">해법</span></span><div class="box">원서 방식 그대로 푼다</div></div></div>
+    <div class="tx"><b>원서적 해법</b> 원서 개념만으로 원서의 방식 그대로 푼 풀이다. Part1의 모든 EX는 이 해법으로 끝까지 푼다.</div></div>
+  <div class="lg"><div class="demo"><div class="concept book"><div class="body">원서 개념</div></div><div class="concept ind"><div class="body">간접 개념</div></div></div>
+    <div class="tx"><b>개념 박스</b> 실선 = 원서 개념, 점선 = 원서 간접 개념. 박스 아래 작은 글씨는 그 식을 쓸 수 있는 조건이다.</div></div>
+  <div class="lg"><div class="demo"><div class="bubble"><span class="b">이 식은 어디서 나왔지?</span></div></div>
+    <div class="tx"><b>생각 말풍선</b> 본문을 읽다가 생기는 의문이다. 바로 다음 EX나 문단이 그 의문에 답한다.</div></div>
+  <div class="lg"><div class="demo"><div class="core"><span class="lab">CORE</span><div class="box">[조건] ⟹ [바로 할 행동]</div></div></div>
+    <div class="tx"><b>CORE</b> TOPIC의 결론 한 줄이다. 복습할 때는 CORE만 이어 읽어도 장 전체가 떠오르게 썼다.</div></div>
+  <div class="lg"><div class="demo"><div class="qh"><div class="no">A·<i>0</i>1</div><div class="meta"><div class="r1"><span class="lv"><i class="on"></i><i class="on"></i><i></i></span><span class="rec">1회<span></span>2회<span></span></span></div><div class="r2"><span class="k">PAGE</span><span class="v">24</span><span class="k">TOPIC</span><span class="v">01</span></div></div></div></div>
+    <div class="tx"><b>문제 머리</b> 난이도(칸 수), 풀이 기록, 관련 본문 쪽과 TOPIC이다. 막히면 문제 칸 아래의 <b>힌트</b>를 본다.</div></div>
+</div>'''
+
+
+def structure(B, P=None):
     S = B.get("structure") or DEFAULTS["structure"]
+    legend = LEGEND_P1 if P and P.get("name") == "Part1" else LEGEND
     flow = '<div class="fm-flow">' + '<i>→</i>'.join(f"<span>{escape(x)}</span>" for x in S["flow"]) + "</div>"
     parts = "".join(f'<div class="fm-about"><div class="tt"><span class="n">{i + 1}.</span>{fmt(t)}</div><p>{fmt(d)}</p></div>'
                     for i, (t, d) in enumerate(pairs(S["parts"])))
     body = (flow + '<p class="fm-lead">한 장은 위 순서로 짜여 있다. 각 부분의 역할은 다음과 같다.</p>' + parts +
-            '<div class="fm-sub keep-next">흑백 표시 읽는 법</div>' + LEGEND)
+            '<div class="fm-sub keep-next">흑백 표시 읽는 법</div>' + legend)
     return page("이 책의 구성", body, "fm-structure")
 
 
-def part_info(A, B):
+def part_info(A, B, want=None):
+    """want 가 있으면(Part1·Part2 한 권) 그 Part 의 정보. book.parts[want] 또는 이름이 같은 book.part 를 덧씌운다."""
     p = B.get("part") or "Part2"
     if isinstance(p, str):
         name, extra = p, {}
     else:
         name, extra = p.get("name") or "Part2", p
+    if want:
+        extra = (B.get("parts") or {}).get(want) or (extra if name == want else {})
+        name = want
     name = name if name in DEFAULTS["part"] else ("Part1" if "1" in name else "Part2")
     D = dict(DEFAULTS["part"][name])
     D["name"] = name
@@ -409,12 +432,15 @@ def part_info(A, B):
         if filled(extra.get(k)):
             D[k] = extra[k]
     D["check"] = D["check"] + [x for x in extra.get("checklist", []) if filled(x)]
-    D["goals"] = D["goals"] + [x for x in extra.get("goals", []) if filled(x)]
+    if extra.get("goals_replace"):
+        D["goals"] = [x for x in extra.get("goals", []) if filled(x)] or D["goals"]
+    else:
+        D["goals"] = D["goals"] + [x for x in extra.get("goals", []) if filled(x)]
     return D
 
 
 def part_cover(P):
-    return (f'<section class="page cover fm-partcover nofoot" data-front="1">'
+    return (f'<section class="page cover fm-partcover nofoot" data-front="1" data-part="{escape(P["name"])}">'
             f'<div class="brand">TENSOR</div><div class="arch"></div><div class="chap">PART</div>'
             f'<div class="num">{escape(P["no"])}</div><div class="ttl">{escape(P["title"])}</div>'
             f'<div class="note">{fmt(P["desc"]).replace(escape(P["name"]), "<b>" + escape(P["name"]) + "</b>", 1)}</div>'
@@ -522,6 +548,7 @@ def method(P, html):
         return ""
     M = DEFAULTS["method"]
     exs = examples(html)
+    exs = [g for g in exs if g.get("exam")] + [g for g in exs if not g.get("exam")]   # Part1 EX(원서적 해법만)는 뒤로
     bar = f'<div class="fm-method"><span class="k">✎ Method I</span><b>{escape(M["title"])}</b></div>'
     b = bar + h3(1, M["why_title"])
     g1 = exs[0] if exs else None
@@ -556,13 +583,31 @@ def method(P, html):
 
 
 # ---------------------------------------------------------------- 조립
+def book_parts(html):
+    """장 표지(data-part)에 나온 Part 들을 순서대로."""
+    seen = []
+    for m in re.finditer(r'<section class="page cover" data-chapter="[^"]*" data-part="([^"]+)"', html or ""):
+        if m.group(1) not in seen:
+            seen.append(m.group(1))
+    return seen
+
+
 def render(A, B, base, html=""):
+    """앞부분 쪽들. Part1·Part2 가 한 권이면 (앞부분, Part2 머리) 두 덩어리를 돌려준다."""
     people = [p for p in A.get("authors", []) if filled(p.get("name"))]
+    if len(book_parts(html)) > 1:
+        P1, P2 = part_info(A, B, "Part1"), part_info(A, B, "Part2")
+        Pb = dict(P1, no="1·2", names=["Part1", "Part2"], title=f'{P1["title"]} · {P2["title"]}',
+                  toc_desc="Part1에서 [원서 개념]을 원서 순서대로 정리하고, Part2에서 [시험 개념]을 완성하는 한 권")
+        head = [curriculum(A, B, Pb), roadmap(B), testimonials(B), about(A, B), preface(A, B, base, people),
+                authors_page(A, B, base, people), structure(B, P2), book_toc(B, Pb), part_cover(P1), guideline(A, P1)]
+        mid = [part_cover(P2), guideline(A, P2), method(P2, html)]
+        return "".join(p for p in head if p), "".join(p for p in mid if p)
     P = part_info(A, B)
     pages = [curriculum(A, B, P), roadmap(B), testimonials(B), about(A, B), preface(A, B, base, people),
-             authors_page(A, B, base, people), structure(B), part_cover(P), book_toc(B, P),
+             authors_page(A, B, base, people), structure(B, P), part_cover(P), book_toc(B, P),
              guideline(A, P), method(P, html)]
-    return "".join(p for p in pages if p)
+    return "".join(p for p in pages if p), ""
 
 
 def insert(source, pages):
@@ -593,15 +638,28 @@ def main():
     if not ok:
         raise SystemExit(f"[앞부분 거부] {args.into.name}: {why}")
     A, B = load(args.authors), load(args.book)
-    pages = render(A, B, args.authors.resolve().parent, source)
-    result = stamp.seal(insert(source, pages))
+    pages, part2 = render(A, B, args.authors.resolve().parent, source)
+    merged = insert(source, pages)
+    merged = re.sub(re.escape(START2) + r".*?" + re.escape(END2) + r"\n?", "", merged, flags=re.S)
+    if part2:
+        m = re.search(r'<section class="page cover" data-chapter="[^"]*" data-part="Part2"', merged)
+        merged = merged[:m.start()] + START2 + "\n" + part2 + END2 + "\n" + merged[m.start():]
+    if B.get("index") and "data-index-host" not in merged:
+        lead = B.get("index_lead") or ("이 책의 개념 박스와 저자의 특강(TIP)을 장 순서대로 모았다. "
+                                       "실선 표시는 원서 개념, 점선 표시는 원서 간접 개념이다.")
+        ix = ('<section class="page" data-id="index" data-run="개념 박스 인덱스" data-index-host>'
+              '<div class="pv-head"><span class="tag">개념 박스 인덱스</span></div>'
+              f'<p class="ix-lead">{fmt(lead)}</p><table class="ix"></table></section>\n')
+        cut = merged.rfind("</body>")
+        merged = merged[:cut] + ix + merged[cut:]
+    result = stamp.seal(merged)
     with NamedTemporaryFile(mode="w", dir=args.into.parent, encoding="utf-8", newline="\n", delete=False) as tmp:
         tmp.write(result)
     try:
         os.replace(tmp.name, args.into)
     finally:
         Path(tmp.name).unlink(missing_ok=True)
-    made = re.findall(r'class="fm-h">([^<]+)<|data-run="([^"]+)"|class="page cover fm-partcover', pages)
+    made = re.findall(r'class="fm-h">([^<]+)<|data-run="([^"]+)"|class="page cover fm-partcover', pages + part2)
     names = [a or b or "Part 표지" for a, b in made]
     print("앞부분:", " → ".join(dict.fromkeys(names)), "→ Part 전체 차례(자동)")
     if not examples(source):

@@ -45,7 +45,7 @@ python <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf 
 
 **항상 확인** (분석 결과를 보여주며)
 1. 과목명(정식 명칭)과 장: "강의록은 ○장 ○○, 원서 『제목』 ○판 p.○–○로 찾았습니다. 맞나요?"
-2. 범위: 장 전체 / TOPIC 1개 시안 / Part1(원서 개념 정리)도 포함
+2. 범위: **Part1+Part2 한 권(기본)** / Part2만 / Part1만 / TOPIC 1개 시안. 사용자가 따로 말하지 않으면 한 권에 Part1(원서 개념의 정리)과 Part2(시험 개념의 완성)를 모두 담는다
 3. 시험 형식: 서술형·객관식·혼합, 오픈북·계산기 여부 → 채점 포인트 방향을 정한다
 4. 추가 자료: 해설집, 채점 기준이 있는 풀이, 과거 시험 — 있으면 첨부 요청
 5. 문제 쪽 배치: 쪽당 2문제(기본, 풀이 공간 넉넉) / 쪽당 4문제(짧은 계산 문제)
@@ -91,6 +91,17 @@ python <skill>/scripts/extract.py --lecture 강의록.pdf --textbook 원서.pdf 
 - 반복이 1회뿐이라 TOPIC에서 뺀 후보: {목록}
 - 워밍업(W): {번호 목록} / 적용문제(A) 후보: {번호} / 연습문제(B) 후보: {번호} / 실전 문제(X): {유형}
 ```
+Part1+Part2 한 권(기본)이면 **Part1 구성안도 같은 턴에 함께** 보여 준다. Part1 TOPIC은 원서 절 순서를 따르고, 강의에서 다룬 절 + 장 끝의 '답 확인과 설계 예제'(How Can We Check·DESIGN 절)로 짠다.
+
+```
+## Part1 TOPIC 구성안 — {과목} {장}장 {장 제목}
+
+| # | TOPIC 제목 | 원서 절 | 원서 개념(박스) | EX 예정(원서 예제·강의 예제) | 확인문제(Exercise) |
+|---|---|---|---|---|---|
+| 01 | 정의와 기본 변환쌍 | 14.2 | 정의식, 변환표, 성질표 | Example 14.2-1·14.2-3·14.2-4 | P14.2-1 |
+
+- 뺀 절: {MATLAB·PSpice 등 도구 절}
+```
 질문(선택지 + 자유 입력): "이대로 진행 / TOPIC 추가·삭제·병합 / 순서 변경 / 특정 TOPIC만 먼저(시안)".
 - 사용자가 수정하면 고친 표를 다시 보여주고 한 번 더 확인받는다. 확정된 표가 원고의 `plan` 이 된다.
 - 승인한 사용자의 말을 `approval.plan_ok` 에, 승인한 표의 TOPIC 을 `"01 제목"` 목록으로 `approval.plan` 에 그대로 적는다. 나중에 `plan` 을 바꾸면 `approval.plan` 과 달라져 빌드가 멈춘다. 그때는 바뀐 표를 다시 보여 주고 승인받는다.
@@ -133,6 +144,7 @@ python <skill>/scripts/build.py work/book.json -o work/book_color.html --color  
 - **분량 하한**: TOPIC 하나의 본문은 한글 1,500자 이상이어야 빌드된다(수식·태그 제외, 견본 TOPIC 01 은 약 2,300자). 첫 EX 의 원서적 해법은 3단계 이상. 짧다는 오류가 나면 부품을 늘리지 말고 도입·관찰·논증 문단과 EX 02·03 을 견본 밀도로 쓴다.
 - `--lenient` 는 사용자가 분량 규칙 완화를 명시적으로 허락했을 때만 쓴다. 그 말을 `approval.lenient` 에 적어야 빌더가 받아 주고, 전달 때 그 사실을 적는다.
 - 여러 장을 한 책으로 낼 때는 장마다 JSON 을 따로 쓰고 한 번에 빌드한다: `build.py work/ch08.json work/ch09.json … -o work/book.html`. HTML 을 이어 붙이지 않는다.
+- **Part1+Part2 한 권(기본)**: 장마다 Part1 원고 `work/ch08_p1.json`(`"part": "Part1"`, 형식은 `manuscript-schema.md` §4 Part1)과 Part2 원고 `work/ch08.json` 을 쓰고 `build.py work/ch08_p1.json work/ch09_p1.json work/ch08.json work/ch09.json -o work/book.html` 처럼 Part1 장들을 먼저 넘긴다. 사용자가 장별로 받기를 원하면 장마다 Part1·Part2를 따로 빌드해 중간본으로 보내고, 마지막에 한 권으로 빌드한다. `work/front.json` 에 `"index": true` 를 넣어 개념 박스 인덱스를 붙인다.
 - `build.py` 는 결과에 **도장**(내용 해시)을 찍는다. `render.py` 는 도장이 없거나 내용과 다르면(손으로 쓰거나 고친 HTML) 조판하지 않고, `lint.py` 도 경고한다. 고칠 것은 언제나 JSON 이다.
 
 ### 5-B. 앞부분 (CH 시작 전까지: 책 전체를 만들 때는 반드시)
@@ -194,7 +206,7 @@ PDF들(내지, 표지 펼침면, 앞·뒤·책등)을 보내고 짧게: 범위, 
 - [ ] 원서 문장 번역 붙여넣기 없음
 
 ## 기본값
-Part2 · 장 번호 = 원서(주교재) 장 번호 · **내지 흑백 인쇄(`"theme": "mono"`), 요청하면 컬러판(`--color`) 함께** · 장 구성 Preview → W → TOPIC → A → B → X → Review → 빠른 정답·해설 · 표지색 `#6B3FD4` · 문제 쪽당 2문제 + 힌트 · 정답률 대신 풀이 기록칸 · 공부법 페이지 없음 · 교재명 TENSOR · 로고 `snu`
+**Part1+Part2 한 권**(Part1 장들 → Part2 장들 → 개념 박스 인덱스) · 장 번호 = 원서(주교재) 장 번호 · **내지 흑백 인쇄(`"theme": "mono"`), 요청하면 컬러판(`--color`) 함께** · 장 구성 Preview → W → TOPIC → A → B → X → Review → 빠른 정답·해설 · 표지색 `#6B3FD4` · 문제 쪽당 2문제 + 힌트 · 정답률 대신 풀이 기록칸 · 공부법 페이지 없음 · 교재명 TENSOR · 로고 `snu`
 
 ## 렌더링이 안 될 때
 브라우저 엔진을 못 찾으면 `book.html` + `fig/` 를 그대로 주고 "Chrome에서 열기 → 인쇄 → A4, 여백 없음, 배경 그래픽 켜기 → PDF로 저장"을 안내한다. 쪽 나눔은 브라우저 안에서 똑같이 된다. 이때도 `book.html` 은 build.py 가 만든 것이어야 한다.

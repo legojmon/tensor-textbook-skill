@@ -93,10 +93,10 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .concept td:first-child{text-align:center;font-family:var(--sans);font-weight:700;color:var(--p);width:16mm}
 
 /* ---- tags inline ---- */
-.tg{display:inline-block;font-family:var(--sans);font-size:7pt;border:1px solid var(--p);color:var(--p);padding:0 1.3mm;border-radius:.6mm;line-height:1.5;vertical-align:1px}
+.tg{display:inline-block;text-indent:0;text-align:center;font-family:var(--sans);font-size:7pt;border:1px solid var(--p);color:var(--p);padding:0 1.3mm;border-radius:.6mm;line-height:1.5;vertical-align:1px}
 .tg.ws{border-color:var(--g);color:var(--g)}
 .tg.full{background:var(--p);color:#fff}
-.tgk{display:inline-flex;vertical-align:1px}
+.tgk{display:inline-flex;vertical-align:1px;text-indent:0}
 .tgk .tg:first-child{border-radius:.6mm 0 0 .6mm}
 .tgk .tg:last-child{border-radius:0 .6mm .6mm 0;background:var(--p);color:#fff}
 
@@ -286,3 +286,15 @@ table.arr tr.mk td{border:none;font-size:6.6pt;font-weight:800;height:3.4mm}
 .labnote{font-size:8.6pt}
 table.trace{font-size:7.8pt}
 table.trace td,table.trace th{padding:.6mm 1.4mm}
+
+/* 개념 박스 인덱스 (뒷부분) */
+.ix-lead{font-size:9pt;line-height:1.6;margin:5mm 0 0}
+.ix{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:8.4pt;margin-top:3mm}
+.ix td{padding:.75mm 1mm;vertical-align:top;line-height:1.35;border-bottom:.3pt solid #d6d6d6}
+.ix tr.ch td{font-weight:800;font-size:9.4pt;padding-top:3.2mm;border-bottom:.9pt solid var(--ink)}
+.ix td.k{width:12mm}
+.ix td.pg{width:10mm;text-align:right;font-weight:700}
+.ix-k{display:inline-block;font-size:6.6pt;line-height:1.3;padding:.1mm 1.2mm;border:.6pt solid var(--ink);border-radius:1mm}
+.ix-k.k-ind{border-style:dashed}
+.ix-k.k-tip{background:#6a6a6a;color:#fff;border-color:#6a6a6a}
+.ix-k.k-exam{background:var(--ink);color:#fff;border-color:var(--ink)}

@@ -27,6 +27,9 @@ DASH = re.compile(r"\s[—–]\s|[가-힣a-zA-Z)]—|—[가-힣]")
 ID = re.compile(r"(?:Example|Exercise|Problem|Listing|Figure|Practice|Ex|P|R|C)[-\s]?(\d{1,2}[.\-]\d{1,3}(?:-\d{1,3})?)\b")
 PARTS = [(".sol:not(.exam)", "원서적 해법"), (".sol.exam", "시험적 해법"), (".bubble", "말풍선"), (".concept", "시험 개념 박스"),
          (".core", "CORE"), (".grade", "채점 포인트"), (".vs", "강의 VS 연습문제 표"), (".ex", "EX"), ("h3", "소절 제목")]
+PARTS_P1 = [(".sol:not(.exam)", "원서적 해법"), (".concept.book", "원서 개념 박스"), (".core", "CORE"), (".ex", "EX"), ("h3", "소절 제목")]
+FORBID_P1 = [(".sol.exam", "시험적 해법"), (".grade", "채점 포인트"), (".vs", "강의 VS 연습문제 표"),
+             (".concept:not(.book):not(.ind)", "시험 개념 박스")]
 PAGES = [("section.page.cover", "장 표지"), ("section.page.toc", "장 목차"), ("[data-id=preview]", "Preview"),
          ("[data-id=review]", "Review: 개념진단"), ("section.topic[data-no='해설']", "빠른 정답·해설")]
 
@@ -38,6 +41,8 @@ def text_of(el):
 def structure(soup, W, draft):
     def warn(where, msg):
         W.append(f"[구조] {where}: {msg}")
+    body = soup.find("body")
+    p1 = bool(body and body.get("data-part") == "Part1")
     if soup.find("style"):
         warn("문서", "원고 안의 <style> — 조판은 tensor.css 만 쓴다. build.py 로 다시 만든다")
     for el in soup.find_all(style=True):
@@ -65,9 +70,13 @@ def structure(soup, W, draft):
         seen.add(no)
         if not t.get("data-title"):
             warn(f"TOPIC {no}", "제목(data-title) 없음")
-        for sel, name in PARTS:
+        for sel, name in (PARTS_P1 if p1 else PARTS):
             if not t.select(sel):
                 warn(f"TOPIC {no}", f"{name} 없음")
+        if p1:
+            for sel, name in FORBID_P1:
+                if t.select(sel):
+                    warn(f"TOPIC {no}", f"Part1 에 {name}가 있음 (원서 개념·원서적 해법만)")
         for i, ex in enumerate(t.select(".ex"), 1):
             badge = ex.select_one(".badge")
             num = badge.select_one("span").get_text(strip=True) if badge and badge.select_one("span") else ""
@@ -89,7 +98,13 @@ def structure(soup, W, draft):
             if s_.select_one(".lab") and not s_.select(".cond"):
                 warn(f"TOPIC {no}", "시험적 해법에 적용 조건(.cond) 없음")
     sections = {s.get("data-id"): s for s in soup.select("section.problems")}
-    for pid, prefix, name in [("warmup", "W", "워밍업 문제"), ("a01", "A", "TOPIC 적용문제"), ("b01", "B", "연습문제"), ("exam", "X", "실전 문제")]:
+    sets = ([("a01", "A", "확인문제"), ("b01", "B", "연습문제")] if p1 else
+            [("warmup", "W", "워밍업 문제"), ("a01", "A", "TOPIC 적용문제"), ("b01", "B", "연습문제"), ("exam", "X", "실전 문제")])
+    if p1:
+        for pid, name in (("warmup", "워밍업 문제"), ("exam", "실전 문제")):
+            if pid in sections:
+                warn("문제", f"Part1 에 {name} 쪽이 있음")
+    for pid, prefix, name in sets:
         sec = sections.get(pid)
         if sec is None:
             if pid not in ("b01", "exam") or not draft:
@@ -119,6 +134,34 @@ def structure(soup, W, draft):
             lb = q.get("data-no", "")
             if lb and lb not in got:
                 warn("빠른 정답·해설", f"{lb} 의 답이 없음")
+
+
+def structure_book(soup, W, draft):
+    """여러 장을 이은 책은 장 표지마다 잘라 장 단위로 검사한다(TOPIC 번호는 장마다 01부터, Part 는 장마다 다를 수 있다)."""
+    body = soup.body or soup
+    kids = [n for n in body.children if getattr(n, "name", None)]
+    covers = [n for n in kids if n.name == "section" and "cover" in (n.get("class") or [])
+              and n.get("data-chapter") and "fm-partcover" not in (n.get("class") or [])]
+    if len(covers) <= 1:
+        structure(soup, W, draft)
+        return
+    segs, cur = [], None
+    for n in kids:
+        if any(n is c for c in covers):
+            cur = [n]
+            segs.append(cur)
+        elif cur is not None:
+            cur.append(n)
+    part0 = body.get("data-part") or "Part2"
+    for seg in segs:
+        part = seg[0].get("data-part") or part0
+        doc = BeautifulSoup("<html><body></body></html>", "html.parser")
+        doc.body["data-part"] = part
+        for n in seg:
+            doc.body.append(BeautifulSoup(str(n), "html.parser"))
+        sub = []
+        structure(doc, sub, draft)
+        W.extend(f"{w[:w.index(']') + 1]} {part} {seg[0].get('data-chapter')}장 ·{w[w.index(']') + 1:]}" for w in sub)
 
 
 def style(soup, W):
@@ -188,7 +231,7 @@ def main():
     ok, why = stamp.verify(source)
     if not ok:
         W.append(f"[도장] 문서: {why}")
-    structure(soup, W, a.draft)
+    structure_book(soup, W, a.draft)
     for t in soup(["script", "style"]):
         t.decompose()
     style(soup, W)

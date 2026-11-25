@@ -34,7 +34,7 @@
   const MM = 96 / 25.4;
   const CONTENT_H = 253;            // mm: 297 - 위 20 - 아래 24
 
-  let B, CH, CHT, PART;   // <head>에서 로드되므로 body 값은 run() 에서 읽는다
+  let B, CH, CHT, PART, MIXED = false;   // <head>에서 로드되므로 body 값은 run() 에서 읽는다
 
   function el(tag, cls, html) {
     const e = document.createElement(tag);
@@ -48,6 +48,7 @@
     const pg = el("section", "page flowpage");
     pg.dataset.chapter = anchor.dataset.chapter;
     pg.dataset.chtitle = anchor.dataset.chtitle;
+    if (anchor.dataset.part) pg.dataset.part = anchor.dataset.part;
     pg.dataset.topic = topic.dataset.no;
     pg.dataset.topictitle = topic.dataset.title;
     const content = el("div", "content");
@@ -170,20 +171,21 @@
       const pg = el("section", `page qpage per${per}`);
       pg.dataset.chapter = sec.dataset.chapter;
       pg.dataset.chtitle = sec.dataset.chtitle;
+      if (sec.dataset.part) pg.dataset.part = sec.dataset.part;
       if (i === 0 && sec.dataset.id) pg.dataset.id = sec.dataset.id;
       pg.dataset.run = sec.dataset.title || "";
       const content = el("div", "content qcontent");
       content.style.height = CONTENT_H + "mm";
       if (i === 0) {
-        content.appendChild(el("div", "qhead",
+        content.appendChild(tm(el("div", "qhead",
           `<div class="big">${sec.dataset.title || ""}</div>` +
-          `<div class="desc"><b>${sec.dataset.title || ""}</b>${sec.dataset.desc || ""}</div>`));
+          `<div class="desc"><b>${sec.dataset.title || ""}</b>${sec.dataset.desc || ""}</div>`)));
       }
       const grid = el("div", "qgrid");
       items.slice(i, i + per).forEach((it) => {
         if (!it.querySelector(":scope > .qh")) it.insertBefore(qhead(it), it.firstChild);
         if (it.dataset.hint && !it.querySelector(":scope > .hint"))
-          it.appendChild(el("div", "hint", `<b>힌트</b> ${it.dataset.hint}`));
+          it.appendChild(tm(el("div", "hint", `<b>힌트</b> ${it.dataset.hint}`)));
         grid.appendChild(it);
       });
       content.appendChild(grid);
@@ -196,15 +198,19 @@
   function labelChapters() {
     let chapter = B.dataset.chapter || "";
     let title = B.dataset.chtitle || "";
+    let part = B.dataset.part || "Part2";
     B.querySelectorAll(".page, article.manuscript, section.problems").forEach(node => {
-      if (node.dataset.front) return;
+      if (node.dataset.front) { if (node.dataset.part) part = node.dataset.part; return; }
       if (node.classList.contains("cover")) {
         chapter = node.dataset.chapter || B.dataset.chapter || "";
         title = node.dataset.chtitle || B.dataset.chtitle || "";
+        part = node.dataset.part || part;
       }
       node.dataset.chapter ||= chapter;
       node.dataset.chtitle ||= title;
+      node.dataset.part ||= part;
     });
+    MIXED = new Set(Array.from(B.querySelectorAll(".page.cover[data-chapter]")).map(n => n.dataset.part || part)).size > 1;
   }
 
   // ---- Part 전체 차례 (한완수식: 장 | 항목 | 쪽) ----
@@ -228,13 +234,13 @@
     const seen = new Set();
     for (const pg of B.querySelectorAll(".page:not([data-front])")) {
       if (pg.classList.contains("cover")) {
-        cur = { name: [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". "), rows: [] };
+        cur = { name: (MIXED ? pg.dataset.part + " · " : "") + [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". "), rows: [] };
         groups.push(cur);
         continue;
       }
       const lab = tocLabel(pg);
       if (!lab) continue;
-      const key = (pg.dataset.chapter || "") + "/" + (pg.dataset.topic || pg.dataset.id);
+      const key = (pg.dataset.part || "") + "/" + (pg.dataset.chapter || "") + "/" + (pg.dataset.topic || pg.dataset.id);
       if (seen.has(key)) continue;
       seen.add(key);
       if (!cur) { cur = { name: "", rows: [] }; groups.push(cur); }
@@ -276,6 +282,53 @@
     const pages = Array.from(B.querySelectorAll(".page"));
     const start = Number(B.dataset.start || 1);
     nums.forEach(([c, t]) => { c.textContent = start + pages.indexOf(t); });
+  }
+
+
+  // ---- 개념 박스 인덱스 (한완수 뒷부분): 원서 개념 / 원서 간접 개념 / 저자의 특강 TIP, 장별로 쪽 번호와 함께 ----
+  function makeConceptIndex() {
+    const host = B.querySelector("[data-index-host]");
+    if (!host) return;
+    const start = Number(B.dataset.start || 1);
+    const items = [];
+    Array.from(B.querySelectorAll(".page")).forEach((pg, i) => {
+      if (pg.dataset.front || pg.hasAttribute("data-index-host") || pg.dataset.ixclone) return;
+      pg.querySelectorAll(".concept, .tip").forEach((bx) => {
+        let kind, ttl;
+        if (bx.classList.contains("tip")) {
+          const h = bx.querySelector(":scope > .hd");
+          if (!h) return;
+          kind = ["TIP", "k-tip"]; ttl = h.innerHTML;
+        } else {
+          const t = bx.querySelector(".hd .ttl");
+          if (!t) return;
+          kind = bx.classList.contains("ind") ? ["간접", "k-ind"] : bx.classList.contains("book") ? ["원서", "k-book"] : ["시험", "k-exam"];
+          const c = t.cloneNode(true); c.querySelector(".ico")?.remove(); ttl = c.innerHTML;
+        }
+        items.push({ ch: (MIXED ? pg.dataset.part + " · " : "") + [pg.dataset.chapter, pg.dataset.chtitle].filter(Boolean).join(". "), kind, ttl, n: start + i });
+      });
+    });
+    let sheet = host, table = host.querySelector("table.ix"), lastCh = null;
+    const limit = () => sheet.getBoundingClientRect().bottom - 25 * MM;
+    items.forEach((it) => {
+      const rows = [];
+      if (it.ch !== lastCh) { rows.push(el("tr", "ch", `<td colspan="3">${it.ch}</td>`)); lastCh = it.ch; }
+      rows.push(el("tr", "", `<td class="k"><span class="ix-k ${it.kind[1]}">${it.kind[0]}</span></td><td class="t">${it.ttl}</td><td class="pg">${it.n}</td>`));
+      rows.forEach((r) => table.appendChild(r));
+      if (rows[rows.length - 1].getBoundingClientRect().bottom > limit() && table.rows.length > rows.length) {
+        rows.forEach((r) => r.remove());
+        const next = el("section", "page");
+        next.dataset.run = host.dataset.run || "개념 박스 인덱스";
+        next.dataset.ixclone = "1";
+        const head = host.querySelector(".pv-head");
+        if (head) next.appendChild(head.cloneNode(true));
+        table = el("table", "ix");
+        next.appendChild(table);
+        sheet.after(next); sheet = next;
+        if (rows.length === 1) table.appendChild(el("tr", "ch", `<td colspan="3">${it.ch} (계속)</td>`));
+        rows.forEach((r) => table.appendChild(r));
+      }
+    });
   }
 
   // ---- 앞부분: 묶음별로 넘치면 다음 쪽에 이어 붙인다 (첫 쪽에만 머리) ----
@@ -340,7 +393,7 @@
       pg.classList.add(odd ? "odd" : "even");
       if (pg.classList.contains("cover") || pg.classList.contains("toc") || pg.classList.contains("nofoot")) return;
       const topic = pg.dataset.topic;
-      if (odd && !pg.querySelector(".tab-part")) pg.appendChild(el("div", "tab-part", PART));
+      if (odd && !pg.querySelector(".tab-part")) pg.appendChild(el("div", "tab-part", pg.dataset.part || PART));
       const numbered = topic && /^\d/.test(topic);
       if (odd && numbered && !pg.querySelector(".tab-topic")) pg.appendChild(el("div", "tab-topic", `TOPIC<b>${topic}</b>`));
       let foot = pg.querySelector(".foot");
@@ -355,8 +408,8 @@
     // 문제 머리의 PAGE 칸: 관련 TOPIC 첫 쪽
     document.querySelectorAll("[data-qpage]").forEach((sp) => {
       const t = sp.dataset.qpage;
-      const chapter = sp.closest(".page").dataset.chapter;
-      const target = t && pages.find(p => p.dataset.topic === t && p.dataset.chapter === chapter);
+      const host = sp.closest(".page"), chapter = host.dataset.chapter, part = host.dataset.part;
+      const target = t && pages.find(p => p.dataset.topic === t && p.dataset.chapter === chapter && p.dataset.part === part);
       if (target) sp.textContent = start + pages.indexOf(target);
       else if (!sp.textContent) sp.textContent = "–";
     });
@@ -364,13 +417,24 @@
     document.querySelectorAll("[data-ref]").forEach((td) => {
       const ref = td.dataset.ref;
       let target = null;
-      const chapter = td.closest(".page")?.dataset.chapter;
-      target = pages.find(p => p.dataset.chapter === chapter && (ref.startsWith("topic-") ? p.dataset.topic === ref.slice(6) : p.dataset.id === ref));
+      const chapter = td.closest(".page")?.dataset.chapter, part = td.closest(".page")?.dataset.part;
+      target = pages.find(p => p.dataset.chapter === chapter && p.dataset.part === part && (ref.startsWith("topic-") ? p.dataset.topic === ref.slice(6) : p.dataset.id === ref));
       if (target) {
         const idx = Array.from(document.querySelectorAll(".page")).indexOf(target);
         td.textContent = start + idx;
       }
     });
+  }
+
+  // 레이아웃 단계에서 data-* 로 늦게 넣는 글(힌트·문제 머리말)의 수식도 조판한다
+  function tm(node) {
+    if (window.renderMathInElement) {
+      renderMathInElement(node, {
+        delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }],
+        throwOnError: false,
+      });
+    }
+    return node;
   }
 
   async function waitAssets() {
@@ -399,6 +463,7 @@
     document.querySelectorAll("section.problems").forEach((sec) => layoutProblems(sec, sec));
     paginateFrontMatter();
     makeBookContents();
+    makeConceptIndex();
     decorate();
     B.setAttribute("data-ready", "1");
   }
