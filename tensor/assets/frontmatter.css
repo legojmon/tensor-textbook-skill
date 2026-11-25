@@ -88,7 +88,7 @@ h3.fm-sec .n{margin-right:1mm}
 .fm-author .ph .ph-empty{border:1px dashed #999;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:8pt;color:#999}
 /* 사진·일러스트는 컬러판에서 원래 색 그대로, 흑백판은 theme-mono.css 가 회색조로 바꾼다 */
 /* 일러스트: 사진 모서리에 작은 동그라미 프로필 */
-.fm-author .ph .av{position:absolute;right:-5mm;bottom:-5mm;width:16mm;height:16mm;border-radius:50%;object-fit:cover;background:#fff;border:1pt solid var(--ink);box-shadow:0 0 0 1.2mm #fff}
+.fm-author .ph .av{position:absolute;right:-5mm;bottom:-5mm;width:16mm;height:16mm;border-radius:50%;object-fit:cover;background:#fff;border:1pt solid var(--ink);outline:1.2mm solid #fff}
 .fm-author .nm{display:flex;align-items:center;gap:2.5mm;font-family:var(--sans);font-size:16pt;font-weight:800;margin-bottom:3mm}
 .fm-author .nm small{font-size:8.5pt;font-weight:400;color:var(--muted)}
 .fm-author ul{margin:0 0 4mm;padding-left:4mm;font-family:var(--sans);font-size:8.8pt;line-height:1.75}

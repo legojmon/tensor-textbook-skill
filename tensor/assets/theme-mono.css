@@ -40,7 +40,7 @@
 /* ---------- 작은 부품 ---------- */
 .core .lab{color:#111;border-color:#111}
 .core .box{border-color:#111;color:#111}
-.bubble .b{border-color:#111;box-shadow:0 0 0 2.2mm #EFEFEF}
+.bubble .b{border-color:#111;outline:2.2mm solid #EFEFEF}
 .bubble .dots{color:#111}
 .tip .lab{background:#333}
 .tip .lab small{color:#ddd}

@@ -21,7 +21,7 @@ b,strong{font-family:var(--sans);font-weight:700}
 .pc{color:var(--p)}
 
 /* ---- running elements ---- */
-.topline{position:absolute;top:13mm;left:21mm;right:21mm;height:1px;background:linear-gradient(90deg,var(--pm),transparent)}
+.topline{position:absolute;top:13mm;left:21mm;right:21mm;height:1px;background:linear-gradient(90deg,var(--pm),#fff)}
 .foot{position:absolute;bottom:12mm;font-family:var(--sans);font-size:7.6pt;color:var(--g);display:flex;align-items:stretch;gap:3mm}
 .foot .num{font-size:9pt;color:var(--ink)}
 .foot .bar{width:.6pt;background:var(--ink);height:11mm;margin-top:-1mm}
@@ -75,7 +75,7 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 /* ---- bubble ---- */
 .bubble{display:flex;justify-content:center;align-items:center;margin:5mm 0}
 .bubble .dots{color:var(--p);font-size:9pt;margin-right:1mm;transform:translateY(3mm);font-family:var(--sans)}
-.bubble .b{border:1px solid var(--pm);background:#fff;border-radius:4mm;padding:2.6mm 7mm;font-family:var(--sans);font-size:8.6pt;box-shadow:0 0 0 2.5mm var(--pl)}
+.bubble .b{border:1px solid var(--pm);background:#fff;border-radius:4mm;padding:2.6mm 7mm;font-family:var(--sans);font-size:8.6pt;outline:2.5mm solid var(--pl)}
 
 /* ---- concept box ---- */
 .concept{margin:6mm 0 5mm}
@@ -83,7 +83,7 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .concept .ttl{display:flex;align-items:flex-end;gap:2mm;font-family:var(--sans);font-weight:800;font-size:9.6pt}
 .concept .ico{background:var(--p);color:#fff;font-size:6.2pt;line-height:1.1;font-weight:700;padding:1.3mm 1.6mm 4mm;border-radius:1.2mm 1.2mm 0 0;position:relative;text-align:center}
 .concept .ico:after{content:"";position:absolute;left:1.2mm;bottom:.6mm;width:2.4mm;height:2.4mm;border:1.1pt solid #fff;border-radius:50%}
-.concept .tabs{display:flex;gap:7mm;font-family:var(--sans);font-size:7.4pt;color:var(--pm);background:linear-gradient(transparent,var(--pl));padding:1mm 4mm;border-radius:2mm 2mm 0 0}
+.concept .tabs{display:flex;gap:7mm;font-family:var(--sans);font-size:7.4pt;color:var(--pm);background:linear-gradient(#fff,var(--pl));padding:1mm 4mm;border-radius:2mm 2mm 0 0}
 .concept .tabs .on{color:var(--p);font-weight:800}
 .concept .body{border:1.1pt solid var(--p2);border-radius:0 3mm 3mm 3mm;padding:4mm 5mm}
 .concept .body p:last-child{margin-bottom:0}
@@ -118,7 +118,7 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 /* ---- grade box (Tensor 추가) ---- */
 .grade{margin:6mm 0;border:1.1pt solid var(--pd);border-radius:2.5mm;overflow:hidden}
 .grade .hd{background:var(--pd);color:#fff;font-family:var(--sans);font-size:8.6pt;font-weight:800;padding:1.8mm 4mm;display:flex;justify-content:space-between}
-.grade .hd small{font-weight:400;opacity:.75;font-size:7pt}
+.grade .hd small{font-weight:400;color:color-mix(in srgb,currentColor 75%,#fff);font-size:7pt}
 .grade .body{padding:3.5mm 5mm;font-size:8.8pt}
 .grade ol{margin:1mm 0 0;padding-left:5mm}
 .grade li{margin-bottom:.6mm}
@@ -203,10 +203,10 @@ h4{font-family:var(--sans);font-size:10pt;font-weight:800;margin:5mm 0 2.5mm}
 .cover .chap{position:absolute;top:84mm;width:100%;text-align:center;font-family:var(--sans);color:#b9a3f5;letter-spacing:5.5mm;font-size:13pt;padding-left:5.5mm}
 .cover .num{position:absolute;top:96mm;width:100%;text-align:center;font-family:var(--sans);font-weight:200;color:#b9a3f5;font-size:96pt;line-height:1;letter-spacing:-2mm}
 .cover .ttl{position:absolute;top:160mm;width:100%;text-align:center;color:#fff;font-family:var(--sans);font-weight:800;font-size:28pt;line-height:1.25}
-.cover .ttl small{display:block;font-weight:400;font-size:11pt;opacity:.8;margin-top:2mm;letter-spacing:.3mm}
-.cover .note{position:absolute;bottom:42mm;left:24mm;right:24mm;border-top:1px dashed rgba(255,255,255,.6);border-bottom:1px dashed rgba(255,255,255,.6);padding:4mm 0;color:#fff;font-family:var(--sans);font-size:8.4pt;line-height:1.75}
+.cover .ttl small{display:block;font-weight:400;font-size:11pt;color:color-mix(in srgb,#fff 80%,var(--p));margin-top:2mm;letter-spacing:.3mm}
+.cover .note{position:absolute;bottom:42mm;left:24mm;right:24mm;border-top:1px dashed color-mix(in srgb,#fff 60%,var(--p));border-bottom:1px dashed color-mix(in srgb,#fff 60%,var(--p));padding:4mm 0;color:#fff;font-family:var(--sans);font-size:8.4pt;line-height:1.75}
 .cover .note .tg{border-color:#fff;color:#fff}
-.cover .brand{position:absolute;right:16mm;top:14mm;font-family:var(--sans);color:#fff;font-weight:800;letter-spacing:1.2mm;font-size:9pt;opacity:.85}
+.cover .brand{position:absolute;right:16mm;top:14mm;font-family:var(--sans);color:#fff;font-weight:800;letter-spacing:1.2mm;font-size:9pt;color:color-mix(in srgb,#fff 85%,var(--p))}
 /* toc */
 .toc{background:var(--p);padding:12mm 0 0}
 .toc .panel{position:absolute;left:0;right:0;top:12mm;bottom:12mm;background:#fff}
@@ -253,7 +253,7 @@ article.manuscript{position:absolute;left:-9999px;top:0;width:168mm}
 .sol .box > .cond{border-top:none;margin:0 0 1.5mm;padding-top:0}
 .howto-title{color:var(--p);font-weight:800;margin:5mm 0 1mm}
 .toc td.pg.muted{color:#bbb}
-.cover .note .note-extra{opacity:.75}
+.cover .note .note-extra{color:color-mix(in srgb,#fff 75%,var(--p))}
 .ox-wrap{margin-top:6mm}
 .tb{width:100%;border-collapse:collapse;font-size:8.6pt;margin:2mm 0 3mm}
 .tb th{font-family:var(--sans);font-weight:700;background:var(--pl);color:var(--pd);padding:1.3mm 2mm;border-bottom:1px solid var(--pm)}
@@ -301,3 +301,5 @@ table.trace td,table.trace th{padding:.6mm 1.4mm}
 /* 점선·파선 테두리는 모서리를 둥글리지 않는다. 크롬은 둥근 점선 모서리를 대시마다 곡선 조각으로 찍어
    PDF 가 무거워지고(아이패드에서 쪽을 넘길 때 빈 부분이 보인다), 곧은 점선은 optimize.py 가 선 하나로 묶는다. */
 .concept.ind .body,div.pre,.tg.ind,.ix-k.k-ind,.fm-author .ph .ph-empty,.fm-author .scene{border-radius:0 !important}
+/* 아이패드·굿노트에서 부분부분 흰 상자로 늦게 뜨는 원인을 쓰지 않는다: 투명으로 사라지는 그라데이션, opacity,
+   rgba, box-shadow 는 PDF 에서 소프트 마스크·투명 그룹이 된다. 불투명한 색(color-mix)과 outline 으로 같은 모양을 낸다. */
