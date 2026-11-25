@@ -49,6 +49,30 @@ def resolve(html):
     return html
 
 
+def raster_figs(html, base, dpi=400):
+    """SVG 그림을 고해상도 PNG 로 바꿔 넣는다(base/.figpng/ 에 보관, 원본이 바뀌면 다시 만든다).
+    크롬은 SVG 안의 글자를 글자 모양 선으로, 점선을 대시마다 작은 도형으로 풀어 넣는다. 그림 하나가 수천 개의
+    도형이 되어 아이패드·굿노트에서 그림이 있는 쪽만 끊긴다. 그림 한 장 = 이미지 하나로 바꾸면 원서처럼 가볍다."""
+    import pymupdf
+    cache = base / ".figpng"
+
+    def sub(m):
+        src, width = m.group(1), m.group(2)
+        path = (base / src)
+        if path.suffix.lower() != ".svg" or not path.is_file():
+            return m.group(0)
+        cache.mkdir(exist_ok=True)
+        out = cache / (src.replace("/", "_")[:-4] + ".png")
+        if not out.is_file() or out.stat().st_mtime < path.stat().st_mtime:
+            with pymupdf.open(path) as doc:
+                page = doc[0]
+                mm = float(width) if width else page.rect.width / 72 * 25.4
+                scale = min(4000, mm / 25.4 * dpi) / page.rect.width
+                page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).save(out)
+        return m.group(0).replace(f'src="{src}"', f'src="{out.as_uri()}"')
+    return re.sub(r'<img src="([^"]+)" style="width:(\d+(?:\.\d+)?)mm">', sub, html)
+
+
 def pin_sans(html):
     # Pretendard's upstream CSS prefers a locally installed font. Embed the locked files first.
     directory = (BUILD / "node_modules/pretendard/dist/web/static").as_uri()
@@ -91,6 +115,7 @@ def main():
     parser.add_argument("--dpi", type=int, default=80)
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--raw", action="store_true", help="마지막 가볍게 다시 쓰기(optimize.py)를 건너뛴다")
+    parser.add_argument("--vector-figs", action="store_true", help="그림을 SVG(벡터) 그대로 넣는다(기본: 400dpi 이미지)")
     args = parser.parse_args()
     output = args.output or args.html.with_suffix(".pdf")
     source = args.html.read_text(encoding="utf-8")
@@ -98,7 +123,10 @@ def main():
     ok, why = stamp.verify(source)
     if not ok:
         raise SystemExit(f"[조판 거부] {args.html.name}: {why}")
-    print_sheets([(resolve(source), args.html.parent, output, True)], args.strict)
+    resolved = resolve(source)
+    if not args.vector_figs:
+        resolved = raster_figs(resolved, args.html.parent.resolve())
+    print_sheets([(resolved, args.html.parent, output, True)], args.strict)
     if not args.raw:
         # 마지막 단계: 크롬이 한 자씩 찍은 글자를 원서처럼 줄 단위로 묶고 선형화한다(보기에는 같은 쪽).
         import optimize

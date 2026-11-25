@@ -298,3 +298,6 @@ table.trace td,table.trace th{padding:.6mm 1.4mm}
 .ix-k.k-ind{border-style:dashed}
 .ix-k.k-tip{background:#6a6a6a;color:#fff;border-color:#6a6a6a}
 .ix-k.k-exam{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* 점선·파선 테두리는 모서리를 둥글리지 않는다. 크롬은 둥근 점선 모서리를 대시마다 곡선 조각으로 찍어
+   PDF 가 무거워지고(아이패드에서 쪽을 넘길 때 빈 부분이 보인다), 곧은 점선은 optimize.py 가 선 하나로 묶는다. */
+.concept.ind .body,div.pre,.tg.ind,.ix-k.k-ind,.fm-author .ph .ph-empty,.fm-author .scene{border-radius:0 !important}
