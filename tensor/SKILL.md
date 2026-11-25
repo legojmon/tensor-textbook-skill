@@ -183,6 +183,10 @@ python <skill>/scripts/cover.py work/cover.json -o work/cover/
 - 하단 띠는 기본으로 없다(`band`), 글꼴 조합은 `type`(serif 기본 / sans / classic, 역할별은 `fonts`). 표지를 처음 보여 줄 때 세 조합의 앞표지를 나란히 렌더링해 고르게 할 수 있다.
 
 ## 9단계. 전달
+- **굿노트·태블릿용 판(기본으로 함께 만든다)**: 아이패드는 쪽을 넘길 때마다 내장 글꼴과 벡터 그림을 새로 그려서, 수백 쪽짜리 내지 PDF가 굿노트에서 느리게 뜨거나 덜 그려진(깨진) 쪽으로 보일 수 있다. 컬러판을 쪽 그림 + 보이지 않는 글자 층(검색 가능)으로 바꾼 판을 만들어 함께 보낸다. Part1·Part2 한 권이면 `--split` 으로 Part별 파일도 만든다(굿노트에는 Part별 파일을 권한다). 인쇄에는 원래 PDF 를 쓴다.
+```bash
+python <skill>/scripts/flatten.py work/book_color.pdf -o work/book_goodnotes.pdf --split
+```
 PDF들(내지, 표지 펼침면, 앞·뒤·책등)을 보내고 짧게: 범위, TOPIC 목록, 검증한 답 개수, 쓴 기본값, 빌더·lint·render 결과(오류 0), 다음 단계. 마지막 한 줄: "원서·강의 자료를 바탕으로 만들었으니 개인 학습용으로만 쓰세요."
 
 ---
