@@ -36,7 +36,14 @@ def resolve(html):
     html = html.replace("</head>", f'<style>@font-face{{font-family:TensorSymbols;src:url("{symbols}")}}</style></head>', 1)
     if "tensor://serif/" not in html:
         links = "".join(f'<link rel="stylesheet" href="tensor://serif/{weight}.css">' for weight in (400, 700))
-        html = html.replace("</head>", links + "</head>", 1)
+        # fontsource 는 한글을 120여 조각(unicode-range)으로 나눈다. 그대로 쓰면 PDF 에 글꼴이 조각마다 따로 들어가
+        # 한 글자마다 글자 객체가 새로 생기고(쪽당 700개 안팎), 아이패드·맥에서 쪽이 늦게 뜬다.
+        # 한글 11,172자와 기본 라틴을 한 파일에 담은 korean 조각을 범위 없이 마지막에 선언해 먼저 쓰게 한다.
+        # 한자 등 그 밖의 글자만 위의 조각 파일로 넘어간다.
+        whole = "".join(f'@font-face{{font-family:"Noto Serif KR";font-weight:{w};font-style:normal;'
+                        f'src:url("tensor://serif/files/noto-serif-kr-korean-{w}-normal.woff2") format("woff2")}}'
+                        for w in (400, 700))
+        html = html.replace("</head>", links + f"<style>{whole}</style>" + "</head>", 1)
     for prefix, directory in resources.items():
         html = html.replace(f"tensor://{prefix}/", directory.as_uri() + "/")
     return html
@@ -83,6 +90,7 @@ def main():
     parser.add_argument("--png", type=Path)
     parser.add_argument("--dpi", type=int, default=80)
     parser.add_argument("--strict", action="store_true")
+    parser.add_argument("--raw", action="store_true", help="마지막 가볍게 다시 쓰기(optimize.py)를 건너뛴다")
     args = parser.parse_args()
     output = args.output or args.html.with_suffix(".pdf")
     source = args.html.read_text(encoding="utf-8")
@@ -91,6 +99,13 @@ def main():
     if not ok:
         raise SystemExit(f"[조판 거부] {args.html.name}: {why}")
     print_sheets([(resolve(source), args.html.parent, output, True)], args.strict)
+    if not args.raw:
+        # 마지막 단계: 크롬이 한 자씩 찍은 글자를 원서처럼 줄 단위로 묶고 선형화한다(보기에는 같은 쪽).
+        import optimize
+        try:
+            print(optimize.optimize(output))
+        except ValueError as e:
+            print(f"[경고] 가볍게 다시 쓰기 생략: {e}")
     if args.png:
         import pymupdf
         args.png.mkdir(parents=True, exist_ok=True)

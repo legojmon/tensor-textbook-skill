@@ -183,10 +183,8 @@ python <skill>/scripts/cover.py work/cover.json -o work/cover/
 - 하단 띠는 기본으로 없다(`band`), 글꼴 조합은 `type`(serif 기본 / sans / classic, 역할별은 `fonts`). 표지를 처음 보여 줄 때 세 조합의 앞표지를 나란히 렌더링해 고르게 할 수 있다.
 
 ## 9단계. 전달
-- **굿노트·태블릿용 판(기본으로 함께 만든다)**: 아이패드는 쪽을 넘길 때마다 내장 글꼴과 벡터 그림을 새로 그려서, 수백 쪽짜리 내지 PDF가 굿노트에서 느리게 뜨거나 덜 그려진(깨진) 쪽으로 보일 수 있다. 컬러판을 쪽 그림 + 보이지 않는 글자 층(검색 가능)으로 바꾼 판을 만들어 함께 보낸다. Part1·Part2 한 권이면 `--split` 으로 Part별 파일도 만든다(굿노트에는 Part별 파일을 권한다). 인쇄에는 원래 PDF 를 쓴다.
-```bash
-python <skill>/scripts/flatten.py work/book_color.pdf -o work/book_goodnotes.pdf --split
-```
+- **가벼운 PDF(자동)**: `render.py` 는 조판이 끝나면 마지막에 `optimize.py` 로 PDF 를 원서처럼 가볍게 다시 쓴다. 크롬이 한 자씩 찍은 글자를 줄 단위 `TJ` 로 묶고(쪽당 글자 명령이 원서와 같은 300개 안팎), 객체 스트림 압축과 선형화를 해서 어느 PDF 뷰어에서든 쪽이 빨리 뜬다. 바꾸기 전후 쪽을 그려 대조하고, 달라지면 원본을 그대로 둔다. 본문 명조는 한글 전체가 든 한 파일(`noto-serif-kr-korean-*.woff2`)을 먼저 쓰게 해서, 글꼴이 조각마다 따로 들어가 글자 객체가 불어나는 일을 막았다. 전달 전에 보고 줄(`가볍게 다시 씀 … 쪽 대조 차이`)이 나왔는지 확인한다. 이미 만든 PDF 는 `python <skill>/scripts/optimize.py work/book.pdf` 로 따로 돌릴 수 있다.
+- 굿노트에서도 느리면(사용자가 요청할 때만) 쪽 그림 + 보이지 않는 글자 층으로 바꾼 판을 만든다: `python <skill>/scripts/flatten.py work/book_color.pdf --split`. 확대하면 글자가 덜 선명하고 파일이 커서 기본 전달물은 아니다.
 PDF들(내지, 표지 펼침면, 앞·뒤·책등)을 보내고 짧게: 범위, TOPIC 목록, 검증한 답 개수, 쓴 기본값, 빌더·lint·render 결과(오류 0), 다음 단계. 마지막 한 줄: "원서·강의 자료를 바탕으로 만들었으니 개인 학습용으로만 쓰세요."
 
 ---

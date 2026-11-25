@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""굿노트·태블릿용 판 — 렌더된 내지 PDF 를 쪽 그림 + 보이지 않는 글자 층으로 바꾼다.
+"""굿노트용 그림 판(요청할 때만) — 렌더된 내지 PDF 를 쪽 그림 + 보이지 않는 글자 층으로 바꾼다.
 
     python flatten.py work/book_color.pdf -o work/book_color_goodnotes.pdf [--dpi 180] [--quality 70] [--split]
 
